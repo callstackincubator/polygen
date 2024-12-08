@@ -6,9 +6,9 @@
 #include <jsi/jsi.h>
 #include "Module.h"
 
-namespace facebook::react {
+namespace callstack::polygen::generated {
 
 const std::vector<std::string>& getAvailableModules();
-std::unique_ptr<Module> loadWebAssemblyModule(std::span<uint8_t> moduleData);
+std::unique_ptr<callstack::polygen::Module> loadWebAssemblyModule(std::span<uint8_t> moduleData);
 
 }

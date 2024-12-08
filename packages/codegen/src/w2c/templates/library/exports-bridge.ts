@@ -10,9 +10,9 @@ export function buildExportBridgeHeader(module: W2CModuleContext) {
     #pragma once
     #include "jsi-imports-bridge.h"
 
-    namespace facebook::react {
+    namespace callstack::polygen::generated {
 
-    jsi::Object create${module.turboModule.generatedClassName}Exports(jsi::Runtime &rt, jsi::Object&& importObject);
+    facebook::jsi::Object create${module.turboModule.generatedClassName}Exports(facebook::jsi::Runtime &rt, facebook::jsi::Object&& importObject);
 
     }
 `;
@@ -82,9 +82,12 @@ export function buildExportBridgeSource(
     #include "wasm-rt.h"
     #include "${module.name}.h"
 
+    using namespace facebook;
+    using namespace callstack::polygen;
+
     ${hackAutoNumberCoerce ? numberCoerceFunc : ''}
 
-    namespace facebook::react {
+    namespace callstack::polygen::generated {
       std::shared_ptr<${module.turboModule.contextClassName}> get${module.turboModule.contextClassName}Context(jsi::Runtime& rt, const jsi::Value& val) {
         auto obj = val.asObject(rt);
         assert(obj.hasNativeState(rt));

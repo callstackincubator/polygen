@@ -3,9 +3,9 @@
 #include <jsi/jsi.h>
 #include <ReactNativePolygen/wasm-rt.h>
 
-namespace facebook::react {
+namespace callstack::polygen {
 
-class Table: public jsi::NativeState {
+class Table: public facebook::jsi::NativeState {
 public:
   const size_t DEFAULT_MAX_SIZE = 512;
   

@@ -12,16 +12,16 @@ export function buildStaticLibraryHeader(module: W2CModuleContext) {
     #pragma once
     #include <ReactNativePolygen/StaticLibraryModule.h>
 
-    namespace facebook::react {
+    namespace callstack::polygen::generated {
 
-    std::shared_ptr<Module> ${module.turboModule.moduleFactoryFunctionName}();
+    std::shared_ptr<callstack::polygen::Module> ${module.turboModule.moduleFactoryFunctionName}();
 
-    class ${className}: public StaticLibraryModule {
+    class ${className}: public callstack::polygen::StaticLibraryModule {
     public:
       ${className}(const std::string& name): StaticLibraryModule(name) {}
       const std::vector<ImportInfo>& getImports() const override;
       const std::vector<ExportInfo>& getExports() const override;
-      jsi::Object createInstance(jsi::Runtime& rt, jsi::Object&& importObject) const override;
+      facebook::jsi::Object createInstance(facebook::jsi::Runtime& rt, facebook::jsi::Object&& importObject) const override;
     };
 
     }
@@ -55,7 +55,9 @@ export function buildStaticLibrarySource(module: W2CModuleContext) {
   #include "static-module.h"
   #include "jsi-exports-bridge.h"
 
-  namespace facebook::react {
+  using namespace facebook;
+
+  namespace callstack::polygen::generated {
 
   const std::vector<Module::ImportInfo> imports { ${moduleImports} };
   const std::vector<Module::ExportInfo> exports { ${moduleExports} };

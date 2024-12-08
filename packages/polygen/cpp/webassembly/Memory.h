@@ -3,9 +3,9 @@
 #include <jsi/jsi.h>
 #include <ReactNativePolygen/wasm-rt.h>
 
-namespace facebook::react {
+namespace callstack::polygen {
 
-class Memory: public jsi::NativeState, public jsi::MutableBuffer {
+class Memory: public facebook::jsi::NativeState, public facebook::jsi::MutableBuffer {
 public:
   explicit Memory(wasm_rt_memory_t* memory): memory_(memory) {}
   

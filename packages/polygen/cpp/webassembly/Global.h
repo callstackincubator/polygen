@@ -3,9 +3,9 @@
 #include <jsi/jsi.h>
 #include <ReactNativePolygen/wasm-rt.h>
 
-namespace facebook::react {
+namespace callstack::polygen {
 
-class Global: public jsi::NativeState {
+class Global: public facebook::jsi::NativeState {
   union Payload {
     uint32_t i32;
     int32_t u32;
@@ -25,11 +25,11 @@ public:
   };
 
   explicit Global(Type type, void* data, bool isMutable = false): type_(type), data_((Payload*)data), isMutable_(isMutable) {}
-  explicit Global(Type type, jsi::Value value, bool isMutable = false): type_(type), isMutable_(isMutable), data_(&ownedData_) {
+  explicit Global(Type type, facebook::jsi::Value value, bool isMutable = false): type_(type), isMutable_(isMutable), data_(&ownedData_) {
     setValueUnsafe(std::move(value));
   }
 
-  jsi::Value getValue() {
+  facebook::jsi::Value getValue() {
     switch (type_) {
       case Type::I32:
         return { (double)data_->i32 };
@@ -50,7 +50,7 @@ public:
     return this->data_;
   }
 
-  void setValueUnsafe(jsi::Value newValue) {
+  void setValueUnsafe(facebook::jsi::Value newValue) {
     switch (type_) {
       case Type::I32:
         data_->i32 = newValue.asNumber();
@@ -73,9 +73,9 @@ public:
     }
   }
 
-  void setValue(jsi::Runtime& rt, jsi::Value newValue) {
+  void setValue(facebook::jsi::Runtime& rt, facebook::jsi::Value newValue) {
     if (!isMutable_) {
-      throw new jsi::JSError(rt, "Cannot change immutable WebAssembly.Global value");
+      throw new facebook::jsi::JSError(rt, "Cannot change immutable WebAssembly.Global value");
     }
 
     setValueUnsafe(std::move(newValue));

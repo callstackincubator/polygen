@@ -15,7 +15,7 @@ export function buildHostHeader() {
     #include <jsi/jsi.h>
     #include <ReactNativePolygen/Module.h>
 
-    namespace facebook::react {
+    namespace callstack::polygen::generated {
 
     const std::vector<std::string>& getAvailableModules();
     std::shared_ptr<Module> loadWebAssemblyModule(std::span<uint8_t> moduleData);
@@ -61,7 +61,7 @@ export function buildHostSource(generatedModules: W2CModuleContext[]) {
       ${moduleChecksumMap}
     };
 
-    namespace facebook::react {
+    namespace callstack::polygen::generated {
 
     const std::vector<std::string>& getAvailableModules() {
       return moduleNames;

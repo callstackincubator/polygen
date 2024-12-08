@@ -2,7 +2,7 @@
 
 #include "Module.h"
 
-namespace facebook::react {
+namespace callstack::polygen {
 
 class StaticLibraryModule : public Module {
 public:

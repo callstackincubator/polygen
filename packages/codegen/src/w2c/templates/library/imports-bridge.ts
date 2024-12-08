@@ -21,16 +21,16 @@ export function buildImportBridgeHeader(module: W2CModuleContext) {
 
     ${importsContextDeclarations.join('\n    ')}
 
-    namespace facebook::react {
+    namespace callstack::polygen::generated {
 
-    class ${module.turboModule.generatedClassName}ModuleContext: public jsi::NativeState {
+    class ${module.turboModule.generatedClassName}ModuleContext: public facebook::jsi::NativeState {
     public:
-      ${module.turboModule.generatedClassName}ModuleContext(jsi::Runtime& rt, jsi::Object&& importObject)
+      ${module.turboModule.generatedClassName}ModuleContext(facebook::jsi::Runtime& rt, facebook::jsi::Object&& importObject)
         : importObject(std::move(importObject))
         ${imports.map((i) => `, INIT_IMPORT_CTX(${i.generatedRootContextFieldName}, "${i.name}")`).join('\n        ')}
       {}
 
-      jsi::Object importObject;
+      facebook::jsi::Object importObject;
       ${module.codegen.generatedContextTypeName} rootCtx;
       ${imports.map((i) => `${i.generatedContextTypeName} ${i.generatedRootContextFieldName};`).join('\n      ')}
     };
@@ -94,7 +94,7 @@ export function buildImportBridgeSource(module: W2CModuleContext) {
     #include <ReactNativePolygen/NativeStateHelper.h>
 
     using namespace facebook;
-    using namespace facebook::react;
+    using namespace callstack::polygen;
 
     #ifdef __cplusplus
     extern "C" {

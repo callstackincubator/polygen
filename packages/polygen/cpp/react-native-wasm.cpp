@@ -5,6 +5,7 @@
 #include "WebAssembly.h"
 #include "NativeStateHelper.h"
 
+using namespace callstack::polygen;
 
 namespace facebook::react {
 
@@ -21,7 +22,7 @@ ReactNativeWebAssembly::~ReactNativeWebAssembly() {
 jsi::Object ReactNativeWebAssembly::loadModule(jsi::Runtime &rt, jsi::Object moduleData) {
   auto buffer = moduleData.getArrayBuffer(rt);
   std::span<uint8_t> bufferView { buffer.data(rt), buffer.size(rt) };
-  auto mod = loadWebAssemblyModule(bufferView);
+  auto mod = generated::loadWebAssemblyModule(bufferView);
 
   return NativeStateHelper::wrap(rt, mod);
 }

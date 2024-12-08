@@ -4,7 +4,7 @@
 #include <ReactNativePolygen/wasm-rt.h>
 #include "Table.h"
 
-namespace facebook::react {
+namespace callstack::polygen {
 
 class ExternRefTable: public Table {
 public:
