@@ -1,25 +1,25 @@
 #pragma once
 
 #include <ReactCommon/TurboModule.h>
-#include <RNWASMSpecJSI.h>
+#include <RNPolygenSpecJSI.h>
 
 namespace facebook::react {
 
-using NativeTableElementType = NativeWebAssemblyNativeTableElementType;
-using NativeTableDescriptor = NativeWebAssemblyNativeTableDescriptor<
+using NativeTableElementType = NativePolygenNativeTableElementType;
+using NativeTableDescriptor = NativePolygenNativeTableDescriptor<
   /* initialSize */ double,
   /* maxSize */ std::optional<double>,
   /* element */ NativeTableElementType
 >;
 
-using NativeTableDescriptorBridging = NativeWebAssemblyNativeTableDescriptorBridging<NativeTableDescriptor>;
+using NativeTableDescriptorBridging = NativePolygenNativeTableDescriptorBridging<NativeTableDescriptor>;
 
-class ReactNativeWebAssembly : public NativeWebAssemblyCxxSpecJSI {
+class ReactNativePolygen : public NativePolygenCxxSpecJSI {
 public:
-  constexpr static auto kModuleName = "WebAssembly";
+  constexpr static auto kModuleName = "Polygen";
 
-  explicit ReactNativeWebAssembly(std::shared_ptr<CallInvoker> jsInvoker);
-  virtual ~ReactNativeWebAssembly();
+  explicit ReactNativePolygen(std::shared_ptr<CallInvoker> jsInvoker);
+  virtual ~ReactNativePolygen();
 
   // Modules
   jsi::Object loadModule(jsi::Runtime &rt, jsi::Object moduleData) override;

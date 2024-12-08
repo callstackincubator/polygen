@@ -1,4 +1,4 @@
-import NativeWASM, { type OpaqueMemoryNativeHandle } from './NativeWebAssembly';
+import NativeWASM, { type OpaqueMemoryNativeHandle } from './NativePolygen';
 
 /**
  * Object describing memory metadata

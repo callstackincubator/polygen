@@ -133,11 +133,11 @@
     ]
   },
   "codegenConfig": {
-    "name": "RNWasmSpec",
+    "name": "RNPolygenSpec",
     "type": "modules",
     "jsSrcsDir": "src",
     "android": {
-      "javaPackageName": "com.callstack.reactnative.webassembly"
+      "javaPackageName": "com.callstack.polygen"
     }
   }
 }

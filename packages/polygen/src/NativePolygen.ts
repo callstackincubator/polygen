@@ -169,4 +169,4 @@ export interface Spec extends TurboModule {
   getTableSize(instance: OpaqueTableNativeHandle): number;
 }
 
-export default TurboModuleRegistry.getEnforcing<Spec>('WebAssembly');
+export default TurboModuleRegistry.getEnforcing<Spec>('Polygen');

@@ -1,7 +1,7 @@
 #include <memory>
 #include <span>
+#include "ReactNativePolygen.h"
 #include "bridge.h"
-#include "react-native-wasm.h"
 #include "WebAssembly.h"
 #include "NativeStateHelper.h"
 
@@ -9,17 +9,17 @@ using namespace callstack::polygen;
 
 namespace facebook::react {
 
-ReactNativeWebAssembly::ReactNativeWebAssembly(std::shared_ptr<CallInvoker> jsInvoker)
-: NativeWebAssemblyCxxSpecJSI(std::move(jsInvoker)) {
+ReactNativePolygen::ReactNativePolygen(std::shared_ptr<CallInvoker> jsInvoker)
+: NativePolygenCxxSpecJSI(std::move(jsInvoker)) {
   wasm_rt_init();
 }
 
-ReactNativeWebAssembly::~ReactNativeWebAssembly() {
+ReactNativePolygen::~ReactNativePolygen() {
   wasm_rt_free();
 }
 
 
-jsi::Object ReactNativeWebAssembly::loadModule(jsi::Runtime &rt, jsi::Object moduleData) {
+jsi::Object ReactNativePolygen::loadModule(jsi::Runtime &rt, jsi::Object moduleData) {
   auto buffer = moduleData.getArrayBuffer(rt);
   std::span<uint8_t> bufferView { buffer.data(rt), buffer.size(rt) };
   auto mod = generated::loadWebAssemblyModule(bufferView);
@@ -27,11 +27,11 @@ jsi::Object ReactNativeWebAssembly::loadModule(jsi::Runtime &rt, jsi::Object mod
   return NativeStateHelper::wrap(rt, mod);
 }
 
-void ReactNativeWebAssembly::unloadModule(jsi::Runtime &rt, jsi::Object module) {
+void ReactNativePolygen::unloadModule(jsi::Runtime &rt, jsi::Object module) {
   module.setNativeState(rt, nullptr);
 }
 
-jsi::Object ReactNativeWebAssembly::getModuleMetadata(jsi::Runtime &rt, jsi::Object moduleHolder) {
+jsi::Object ReactNativePolygen::getModuleMetadata(jsi::Runtime &rt, jsi::Object moduleHolder) {
   auto mod = NativeStateHelper::tryGet<Module>(rt, moduleHolder);
   auto imports = mod->getImports();
   auto exports = mod->getExports();
@@ -63,44 +63,39 @@ jsi::Object ReactNativeWebAssembly::getModuleMetadata(jsi::Runtime &rt, jsi::Obj
   return resultObj;
 }
 
-jsi::Object ReactNativeWebAssembly::createModuleInstance(jsi::Runtime &rt, jsi::Object moduleHolder, jsi::Object importObject) {
+jsi::Object ReactNativePolygen::createModuleInstance(jsi::Runtime &rt, jsi::Object moduleHolder, jsi::Object importObject) {
   auto mod = NativeStateHelper::tryGet<Module>(rt, moduleHolder);
-
-//  auto init = library->get<wasm_function_ptr>("wasm2c_example_instantiate");
-//  auto free = library->get<wasm_function_ptr>("wasm2c_example_free");
-//  auto fib = library->get<wasm_fib>("w2c_example_fib");
-
   return mod->createInstance(rt, std::move(importObject));
 }
 
-void ReactNativeWebAssembly::destroyModuleInstance(jsi::Runtime &rt, jsi::Object instance) {
+void ReactNativePolygen::destroyModuleInstance(jsi::Runtime &rt, jsi::Object instance) {
   instance.setNativeState(rt, nullptr);
 }
 
 
 // Memories
-void ReactNativeWebAssembly::createMemory(jsi::Runtime &rt, jsi::Object holder, double initial, std::optional<double> maximum) {
+void ReactNativePolygen::createMemory(jsi::Runtime &rt, jsi::Object holder, double initial, std::optional<double> maximum) {
   auto maxPages = (uint64_t)maximum.value_or(100);
   auto memory = std::make_shared<Memory>((uint64_t)initial, maxPages, false);
   NativeStateHelper::attach(rt, holder, memory);
 }
 
-jsi::Object ReactNativeWebAssembly::getMemoryBuffer(jsi::Runtime &rt, jsi::Object instance) {
+jsi::Object ReactNativePolygen::getMemoryBuffer(jsi::Runtime &rt, jsi::Object instance) {
   auto memoryState = NativeStateHelper::tryGet<Memory>(rt, instance);
 
   jsi::ArrayBuffer buffer {rt, memoryState};
   return buffer;
 }
 
-void ReactNativeWebAssembly::growMemory(jsi::Runtime &rt, jsi::Object instance, double delta) {
+void ReactNativePolygen::growMemory(jsi::Runtime &rt, jsi::Object instance, double delta) {
   auto memory = NativeStateHelper::tryGet<Memory>(rt, instance);
   memory->grow((uint64_t)delta);
 }
 
 
 // Globals
-void ReactNativeWebAssembly::createGlobal(jsi::Runtime &rt, jsi::Object holder, jsi::Value rawType, bool isMutable, double initialValue) {
-  auto type = Bridging<NativeWebAssemblyNativeType>::fromJs(rt, rawType);
+void ReactNativePolygen::createGlobal(jsi::Runtime &rt, jsi::Object holder, jsi::Value rawType, bool isMutable, double initialValue) {
+  auto type = Bridging<NativePolygenNativeType>::fromJs(rt, rawType);
   auto waType = static_cast<Global::Type>((uint32_t)type);
   jsi::Value initial { initialValue };
   
@@ -109,19 +104,19 @@ void ReactNativeWebAssembly::createGlobal(jsi::Runtime &rt, jsi::Object holder, 
 
 }
 
-double ReactNativeWebAssembly::getGlobalValue(jsi::Runtime &rt, jsi::Object instance) {
+double ReactNativePolygen::getGlobalValue(jsi::Runtime &rt, jsi::Object instance) {
   auto globalVar = NativeStateHelper::tryGet<Global>(rt, instance);
   return globalVar->getValue().asNumber();
 }
 
-void ReactNativeWebAssembly::setGlobalValue(jsi::Runtime &rt, jsi::Object instance, double newValue) {
+void ReactNativePolygen::setGlobalValue(jsi::Runtime &rt, jsi::Object instance, double newValue) {
   auto globalVar = NativeStateHelper::tryGet<Global>(rt, instance);
   globalVar->setValue(rt, {newValue});
 }
 
 
 // Tables
-void ReactNativeWebAssembly::createTable(jsi::Runtime &rt, jsi::Object holder, jsi::Object tableDescriptor) {
+void ReactNativePolygen::createTable(jsi::Runtime &rt, jsi::Object holder, jsi::Object tableDescriptor) {
   auto descriptor = NativeTableDescriptorBridging::fromJs(rt, tableDescriptor, this->jsInvoker_);
   std::shared_ptr<Table> table;
   auto maxSizeNumber = descriptor.maxSize.has_value()
@@ -142,12 +137,12 @@ void ReactNativeWebAssembly::createTable(jsi::Runtime &rt, jsi::Object holder, j
   NativeStateHelper::attach(rt, holder, table);
 }
 
-void ReactNativeWebAssembly::growTable(jsi::Runtime &rt, jsi::Object instance, double delta) {
+void ReactNativePolygen::growTable(jsi::Runtime &rt, jsi::Object instance, double delta) {
   auto table = NativeStateHelper::tryGet<Table>(rt, instance);
   table->grow(delta);
 }
 
-jsi::Object ReactNativeWebAssembly::getTableElement(jsi::Runtime &rt, jsi::Object instance, double index) {
+jsi::Object ReactNativePolygen::getTableElement(jsi::Runtime &rt, jsi::Object instance, double index) {
   assert(0 && "Unsupported");
 //  auto table = NativeStateHelper::tryGet<Table>(rt, instance);
 //  
@@ -159,11 +154,11 @@ jsi::Object ReactNativeWebAssembly::getTableElement(jsi::Runtime &rt, jsi::Objec
 //  }
 }
 
-void ReactNativeWebAssembly::setTableElement(jsi::Runtime &rt, jsi::Object instance, double index, jsi::Object value) {
+void ReactNativePolygen::setTableElement(jsi::Runtime &rt, jsi::Object instance, double index, jsi::Object value) {
   assert(0 && "Unsupported");
 }
 
-double ReactNativeWebAssembly::getTableSize(jsi::Runtime &rt, jsi::Object instance) {
+double ReactNativePolygen::getTableSize(jsi::Runtime &rt, jsi::Object instance) {
   auto table = NativeStateHelper::tryGet<Table>(rt, instance);
   return table->getSize();
 }

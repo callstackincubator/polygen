@@ -3,7 +3,7 @@ import NativeWASM, {
   type InternalModuleMetadata,
   type ModuleExportDescriptor,
   type ModuleImportDescriptor,
-} from './NativeWebAssembly';
+} from './NativePolygen';
 
 /**
  * @spec https://webassembly.github.io/spec/js-api/index.html#modules

@@ -1,5 +1,5 @@
 #ifdef __cplusplus
-#import "react-native-wasm.h"
+#import "ReactNativePolygen.h"
 #endif
 
 @interface Wasm : NSObject

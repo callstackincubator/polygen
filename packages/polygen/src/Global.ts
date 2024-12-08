@@ -1,7 +1,7 @@
 import NativeWASM, {
   type OpaqueMemoryNativeHandle,
   NativeType,
-} from './NativeWebAssembly';
+} from './NativePolygen';
 import type { WebAssemblyType } from './types';
 
 /**
