@@ -1,0 +1,52 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", "!.next/cache/**"]
+    },
+    "type-check": {
+      "dependsOn": ["^type-check"]
+    },
+    "dev": {
+      "persistent": true,
+      "cache": false
+    },
+    "build:android": {
+      "env": ["ORG_GRADLE_PROJECT_newArchEnabled"],
+      "inputs": [
+        "package.json",
+        "android",
+        "!android/build",
+        "src/*.ts",
+        "src/*.tsx",
+        "example/package.json",
+        "example/android",
+        "!example/android/.gradle",
+        "!example/android/build",
+        "!example/android/app/build"
+      ],
+      "outputs": []
+    },
+    "build:ios": {
+      "env": ["RCT_NEW_ARCH_ENABLED"],
+      "inputs": [
+        "package.json",
+        "*.podspec",
+        "ios",
+        "src/*.ts",
+        "src/*.tsx",
+        "example/package.json",
+        "example/ios",
+        "!example/ios/build",
+        "!example/ios/Pods"
+      ],
+      "outputs": []
+    },
+    "//#lint:root": {},
+    "//#lint-fix:root": {
+      "cache": false
+    },
+    "//#test:root": {}
+  }
+}
