@@ -34,6 +34,12 @@ export function validate(_bufferOrView: BufferSource): boolean {
   return true;
 }
 
+/**
+ * Compiles the provided WebAssembly binary module.
+ *
+ * @param bufferOrView ArrayBuffer or DataView containing the WebAssembly module to compile
+ * @return A WebAssemblyModule instance constructed from the binary data.
+ */
 export async function compile(bufferOrView: BufferSource): Promise<Module> {
   return new Module(
     ArrayBuffer.isView(bufferOrView) ? bufferOrView.buffer : bufferOrView

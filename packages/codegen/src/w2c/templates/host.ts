@@ -34,13 +34,14 @@ export function buildHostSource(generatedModules: W2CModuleContext[]) {
 
   const moduleChecksumMap = generatedModules
     .map(
-      (module) => `{ "${module.checksum.toString('hex')}", "${module.name}" }`
+      (module) =>
+        `{ "${module.checksum.toString('hex')}", ${module.turboModule.moduleFactoryFunctionName} }`
     )
     .join(',\n      ')
     .trimEnd();
 
   function makeModuleFactoryDecl(module: W2CModuleContext) {
-    return `std::unique_ptr<Module> ${module.turboModule.moduleFactoryFunctionName}();`;
+    return `std::shared_ptr<Module> ${module.turboModule.moduleFactoryFunctionName}();`;
   }
 
   function makeModuleHandler(module: W2CModuleContext) {
@@ -54,27 +55,39 @@ export function buildHostSource(generatedModules: W2CModuleContext[]) {
     stripIndent(`
     #include "loader.h"
     #include <ReactNativePolygen/w2c.h>
-
-    const std::vector<std::string> moduleNames { ${moduleNames} };
-
-    std::unordered_map<std::string, std::string> moduleByChecksum {
-      ${moduleChecksumMap}
-    };
+    #include <ReactNativePolygen/checksum.h>
 
     namespace callstack::polygen::generated {
+
+    using ModuleFactoryFunction = std::function<std::shared_ptr<Module>()>;
+
+    ${generatedModules.map(makeModuleFactoryDecl).join('\n    ')}
+
+    const std::vector<std::string> moduleNames { ${moduleNames} };
+    std::unordered_map<std::string, ModuleFactoryFunction> moduleFactoryByChecksum {
+      ${moduleChecksumMap}
+    };
 
     const std::vector<std::string>& getAvailableModules() {
       return moduleNames;
     }
 
-    ${generatedModules.map(makeModuleFactoryDecl).join('\n    ')}
-
     std::shared_ptr<Module> loadWebAssemblyModule(std::span<uint8_t> moduleData) {
-      auto metadata = ModuleMetadataView::fromBuffer(moduleData);
-      auto& name = metadata.name;
-      ${indentString(generatedModules.map(makeModuleHandler).join('\n'), 6).trimStart()}
-      return nullptr;
+      if (ModuleMetadataView::isMetadata(moduleData)) {
+        auto metadata = ModuleMetadataView::fromBuffer(moduleData);
+        auto& name = metadata.name;
+        ${indentString(generatedModules.map(makeModuleHandler).join('\n'), 8).trimStart()}
+        return nullptr;
+      } else {
+        auto checksum = computeSHA256(moduleData);
+        if (auto foundModule = moduleFactoryByChecksum.find(checksum); foundModule != moduleFactoryByChecksum.end()) {
+          return foundModule->second();
+        }
+
+        return nullptr;
+      }
     }
+
     }
   `)
   );

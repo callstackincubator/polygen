@@ -5,6 +5,8 @@ import NativeWASM, {
   type ModuleImportDescriptor,
 } from './NativePolygen';
 
+const MAGIC = new Uint8Array('CKWASM'.split('').map((e) => e.charCodeAt(0)));
+
 /**
  * @spec https://webassembly.github.io/spec/js-api/index.html#modules
  */
@@ -15,6 +17,14 @@ export class Module {
   public constructor(buffer: ArrayBuffer) {
     this.nativeHandle = NativeWASM.loadModule(buffer);
     this.metadata = NativeWASM.getModuleMetadata(this.nativeHandle);
+
+    if (!isFakeModule(buffer)) {
+      console.warn(
+        '[polygen] Using non-precompiled WebAssembly module. ' +
+          'This method is meant only for development purposes, ' +
+          'and should not be used in production.'
+      );
+    }
   }
 
   public static imports(mod: Module): ModuleImportDescriptor[] {
@@ -24,4 +34,13 @@ export class Module {
   public static exports(mod: Module): ModuleExportDescriptor[] {
     return mod.metadata.exports;
   }
+}
+
+function isFakeModule(buffer: ArrayBuffer): boolean {
+  if (buffer.byteLength < 6) {
+    return false;
+  }
+
+  const view = new DataView(buffer);
+  return MAGIC.every((byte, i) => view.getUint8(i) === byte);
 }
