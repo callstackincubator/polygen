@@ -28,7 +28,12 @@ export enum NativeTableElementType {
 /**
  * @spec https://webassembly.github.io/spec/js-api/index.html#modules
  */
-export type ImportExportKind = 'function' | 'table' | 'memory' | 'global';
+export enum NativeSymbolKind {
+  Function = 'function',
+  Table = 'table',
+  Memory = 'memory',
+  Global = 'global',
+}
 
 /**
  * Describes a single export from a module.
@@ -46,7 +51,7 @@ export interface ModuleExportDescriptor {
   /**
    * Exported symbol kind.
    */
-  readonly kind: ImportExportKind;
+  readonly kind: NativeSymbolKind;
 }
 
 /**
@@ -70,7 +75,7 @@ export interface ModuleImportDescriptor {
   /**
    * Imported symbol kind.
    */
-  readonly kind: ImportExportKind;
+  readonly kind: NativeSymbolKind;
 }
 
 /**
@@ -88,9 +93,11 @@ export interface InternalModuleMetadata {
   readonly exports: ModuleExportDescriptor[];
 }
 
-/**
- * Representation of internal precomputed module metadata.
- */
+export interface NativeGlobalDescriptor {
+  readonly type: NativeType;
+  readonly isMutable: boolean;
+}
+
 export interface NativeTableDescriptor {
   readonly initialSize: number;
   readonly maxSize?: number;
@@ -147,8 +154,7 @@ export interface Spec extends TurboModule {
   // Globals
   createGlobal(
     holder: OpaqueGlobalNativeHandle,
-    type: NativeType,
-    isMutable: boolean,
+    descriptor: NativeGlobalDescriptor,
     initialValue: number
   ): void;
   getGlobalValue(instance: OpaqueGlobalNativeHandle): number;

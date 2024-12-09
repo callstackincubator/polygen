@@ -36,31 +36,22 @@ jsi::Object ReactNativePolygen::getModuleMetadata(jsi::Runtime &rt, jsi::Object 
   auto imports = mod->getImports();
   auto exports = mod->getExports();
 
-  auto resultObj = jsi::Object {rt};
-  auto importsArray = jsi::Array {rt, imports.size()};
-  auto exportsArray = jsi::Array {rt, exports.size()};
+  std::vector<NativeImportDescriptor> importsMapped;
+  std::vector<NativeExportDescriptor> exportsMapped;
+  
+  importsMapped.reserve(imports.size());
+  exportsMapped.reserve(exports.size());
 
-  auto index = 0;
   for (auto& import_ : imports) {
-//    Bridging<NativeWebAssemblyModuleImportDescriptor<std::string, std::string, std::string>>;
-    auto importObj = jsi::Object {rt};
-    importObj.setProperty(rt, "module", import_.module);
-    importObj.setProperty(rt, "name", import_.name);
-    importObj.setProperty(rt, "kind", "function");
-    importsArray.setValueAtIndex(rt, index++, importObj);
+    importsMapped.push_back({ import_.module, import_.name, static_cast<NativeSymbolKind>(import_.kind) });
   }
 
-  index = 0;
   for (auto& export_ : exports) {
-    auto exportObj = jsi::Object {rt};
-    exportObj.setProperty(rt, "name", export_.name);
-    exportObj.setProperty(rt, "kind", "function");
-    exportsArray.setValueAtIndex(rt, index++, exportObj);
+    exportsMapped.push_back({ export_.name, static_cast<NativeSymbolKind>(export_.kind) });
   }
 
-  resultObj.setProperty(rt, "imports", std::move(importsArray));
-  resultObj.setProperty(rt, "exports", std::move(exportsArray));
-  return resultObj;
+  NativeModuleMetadata result { importsMapped, exportsMapped };
+  return bridging::toJs(rt, result, this->jsInvoker_);
 }
 
 jsi::Object ReactNativePolygen::createModuleInstance(jsi::Runtime &rt, jsi::Object moduleHolder, jsi::Object importObject) {
@@ -94,14 +85,13 @@ void ReactNativePolygen::growMemory(jsi::Runtime &rt, jsi::Object instance, doub
 
 
 // Globals
-void ReactNativePolygen::createGlobal(jsi::Runtime &rt, jsi::Object holder, jsi::Value rawType, bool isMutable, double initialValue) {
-  auto type = Bridging<NativePolygenNativeType>::fromJs(rt, rawType);
-  auto waType = static_cast<Global::Type>((uint32_t)type);
+void ReactNativePolygen::createGlobal(jsi::Runtime &rt, jsi::Object holder, jsi::Object globalDescriptor, double initialValue) {
+  auto descriptor = Bridging<NativeGlobalDescriptor>::fromJs(rt, globalDescriptor, jsInvoker_);
+  auto waType = static_cast<Global::Type>(descriptor.type);
   jsi::Value initial { initialValue };
   
-  auto globalVar = std::make_shared<Global>(waType, std::move(initial), isMutable);
+  auto globalVar = std::make_shared<Global>(waType, std::move(initial), descriptor.isMutable);
   NativeStateHelper::attach(rt, holder, globalVar);
-
 }
 
 double ReactNativePolygen::getGlobalValue(jsi::Runtime &rt, jsi::Object instance) {

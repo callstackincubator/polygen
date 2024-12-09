@@ -51,8 +51,10 @@ export class Global {
     if (isGlobalDescriptor(instance)) {
       NativeWASM.createGlobal(
         this,
-        TypeMapping[instance.type],
-        instance.mutable ?? false,
+        {
+          type: TypeMapping[instance.type],
+          isMutable: instance.mutable ?? false,
+        },
         initialValue ?? 0
       );
     }

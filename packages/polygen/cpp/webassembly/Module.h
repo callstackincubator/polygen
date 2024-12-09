@@ -8,10 +8,7 @@ namespace callstack::polygen {
 class Module: public facebook::jsi::NativeState {
 public:
   enum class SymbolKind {
-    Function,
-    Memory,
-    Global,
-    Table,
+    Function, Table, Memory, Global
   };
   
   struct ExportInfo {

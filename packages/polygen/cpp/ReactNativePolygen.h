@@ -2,8 +2,27 @@
 
 #include <ReactCommon/TurboModule.h>
 #include <RNPolygenSpecJSI.h>
+#include <ReactNativePolygen/WebAssembly.h>
 
 namespace facebook::react {
+
+using NativeType = NativePolygenNativeType;
+using NativeSymbolKind = NativePolygenNativeSymbolKind;
+using NativeGlobalDescriptor = NativePolygenNativeGlobalDescriptor<NativeType, bool>;
+
+using NativeExportDescriptor = NativePolygenModuleExportDescriptor<
+  /* name */ std::string,
+  /* kind */ NativeSymbolKind
+>;
+using NativeImportDescriptor = NativePolygenModuleImportDescriptor<
+  /* module */ std::string,
+  /* name */ std::string,
+  /* kind */ NativeSymbolKind
+>;
+using NativeModuleMetadata = NativePolygenInternalModuleMetadata<
+  /* imports */ std::vector<NativeImportDescriptor>,
+  /* exports */ std::vector<NativeExportDescriptor>
+>;
 
 using NativeTableElementType = NativePolygenNativeTableElementType;
 using NativeTableDescriptor = NativePolygenNativeTableDescriptor<
@@ -11,8 +30,16 @@ using NativeTableDescriptor = NativePolygenNativeTableDescriptor<
   /* maxSize */ std::optional<double>,
   /* element */ NativeTableElementType
 >;
-
 using NativeTableDescriptorBridging = NativePolygenNativeTableDescriptorBridging<NativeTableDescriptor>;
+
+template <>
+struct Bridging<NativeGlobalDescriptor> : public NativePolygenNativeGlobalDescriptorBridging<NativeGlobalDescriptor> {};
+template <>
+struct Bridging<NativeImportDescriptor> : public NativePolygenModuleImportDescriptorBridging<NativeImportDescriptor> {};
+template <>
+struct Bridging<NativeExportDescriptor> : public NativePolygenModuleExportDescriptorBridging<NativeExportDescriptor> {};
+template <>
+struct Bridging<NativeModuleMetadata> : public NativePolygenInternalModuleMetadataBridging<NativeModuleMetadata> {};
 
 class ReactNativePolygen : public NativePolygenCxxSpecJSI {
 public:
@@ -35,7 +62,7 @@ public:
   void growMemory(jsi::Runtime &rt, jsi::Object instance, double delta) override;
 
   // Globals
-  void createGlobal(jsi::Runtime &rt, jsi::Object holder, jsi::Value type, bool isMutable, double initialValue) override;
+  void createGlobal(jsi::Runtime &rt, jsi::Object holder, jsi::Object globalDescriptor, double initialValue) override;
   double getGlobalValue(jsi::Runtime &rt, jsi::Object instance) override;
   void setGlobalValue(jsi::Runtime &rt, jsi::Object instance, double newValue) override;
 
