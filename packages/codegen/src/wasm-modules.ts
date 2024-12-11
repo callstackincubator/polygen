@@ -34,9 +34,15 @@ export async function generateWasmJSModule(
   pathToModule: string
 ) {
   const cleanName = path.basename(pathToModule, '.wasm');
+  const pathInModule = project.globalPathToLocal(
+    project.pathTo(pathToModule),
+    project.localSourceDir
+  );
+  const dirnameInModule = path.dirname(pathInModule);
   const generatedModulePath = path.join(
     project.fullOutputDirectory,
     'modules',
+    dirnameInModule,
     `${cleanName}.js`
   );
 

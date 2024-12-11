@@ -1,78 +1,102 @@
-import { register, WebAssembly } from '@callstack/polygen';
-import { useState, useCallback, useMemo } from 'react';
-import { StyleSheet, View, Text, Button, TextInput } from 'react-native';
-import example from './table_test.wasm';
+import { enableScreens } from 'react-native-screens';
+// run this before any screen render(usually in App.js)
+enableScreens();
 
+import { register } from '@callstack/polygen';
+import {
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  useColorScheme,
+} from 'react-native';
 register();
 
-const iterations = new WebAssembly.Global({ value: 'i32', mutable: true }, 0);
-const imports = {
-  host: {
-    add: (a: number, b: number) => a + b,
+import TableExample from './examples/TableExample';
+import ModuleFromBuffer from './examples/ModuleFromBuffer';
+import {
+  DarkTheme,
+  DefaultTheme,
+  NavigationContainer,
+  useNavigation,
+} from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+
+const examples = [
+  {
+    component: TableExample,
+    title: 'Table Example',
   },
-  env: {
-    iterations,
+  {
+    component: ModuleFromBuffer,
+    title: 'Creating Module from Buffer',
   },
-};
+];
 
-export default function App() {
-  const [module, setModule] = useState<any>();
-  const [instance, setInstance] = useState<any>();
-  const [number, setNumber] = useState<number>(0);
-  const [result, setResult] = useState<number>();
+const Stack = createStackNavigator();
 
-  const numberText = useMemo(() => number.toString(), [number]);
-
-  const loadModule = useCallback(async () => {
-    setModule(await WebAssembly.compile(example));
-  }, []);
-
-  const makeInstance = useCallback(async () => {
-    setInstance(await WebAssembly.instantiate(module!, imports));
-  }, [module]);
-
-  const onNumberChanged = useCallback(
-    (value: string) => {
-      const parsed = parseInt(value.replace(/ /g, ''), 10);
-      setNumber(isNaN(parsed) ? 0 : parsed);
-      setResult(undefined);
-    },
-    [setNumber, setResult]
+function Examples() {
+  const navigation = useNavigation();
+  return (
+    <ScrollView>
+      {examples
+        .filter((example) =>
+          'platform' in example ? example?.platform === Platform.OS : example
+        )
+        .map((example) => (
+          <TouchableOpacity
+            key={example.title}
+            testID={example.title}
+            style={styles.exampleTouchable}
+            onPress={() => {
+              //@ts-ignore
+              navigation.navigate(example.title);
+            }}
+          >
+            <Text style={styles.exampleText}>{example.title}</Text>
+          </TouchableOpacity>
+        ))}
+    </ScrollView>
   );
+}
 
-  const compute = useCallback(() => {
-    setResult(instance.exports.fib(number));
-  }, [number, instance, setResult]);
+const examplesForPlatform = examples
+  .filter((example) =>
+    'platform' in example ? example?.platform === Platform.OS : example
+  )
+  .map((example) => (
+    <Stack.Screen
+      key={example.title}
+      name={example.title}
+      component={example.component}
+    />
+  ));
+
+export default function Navigation() {
+  const colorScheme = useColorScheme();
+  const theme = colorScheme === 'dark' ? DarkTheme : DefaultTheme;
 
   return (
-    <View style={styles.container}>
-      <Button title="Load module" onPress={loadModule} disabled={!!module} />
-      <Text>Module Loaded: {module != null ? 'yes' : 'no'}</Text>
-      <Button
-        title="Create instance"
-        disabled={!module}
-        onPress={makeInstance}
-      />
-      <Text>Instance created: {instance != null ? 'yes' : 'no'}</Text>
-      {instance != null && (
-        <Text>Exports: {JSON.stringify(instance.exports)}</Text>
-      )}
-      <TextInput
-        style={styles.input}
-        value={numberText}
-        onChangeText={onNumberChanged}
-        editable={!!instance}
-        aria-disabled={!instance}
-      />
-      <Button title="Compute" onPress={compute} disabled={!instance} />
-      <Text>
-        fib({number}) = {result ?? '---'}
-      </Text>
-    </View>
+    <SafeAreaProvider>
+      <NavigationContainer theme={theme}>
+        <Stack.Navigator initialRouteName="BottomTabs Example">
+          <Stack.Screen name="BottomTabs Example" component={Examples} />
+          {examplesForPlatform}
+        </Stack.Navigator>
+      </NavigationContainer>
+    </SafeAreaProvider>
   );
 }
 
 const styles = StyleSheet.create({
+  exampleTouchable: {
+    padding: 16,
+  },
+  exampleText: {
+    fontSize: 16,
+  },
   container: {
     flex: 1,
     alignItems: 'center',

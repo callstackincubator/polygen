@@ -19,8 +19,9 @@ export class Module {
     this.metadata = NativeWASM.getModuleMetadata(this.nativeHandle);
 
     if (!isFakeModule(buffer)) {
+      // TODO: add documentation link
       console.warn(
-        '[polygen] Using non-precompiled WebAssembly module. ' +
+        '[polygen] Loaded a WebAssembly module from ArrayBuffer, use a loader plugin instead. ' +
           'This method is meant only for development purposes, ' +
           'and should not be used in production.'
       );

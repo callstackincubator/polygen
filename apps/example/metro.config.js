@@ -12,7 +12,7 @@ const root = path.resolve(__dirname, '..', '..');
  */
 const config = {
   resolver: {
-    unstable_enablePackageExports: true,
+    // unstable_enablePackageExports: true,
   },
   watchFolders: [root],
   transformer: {
