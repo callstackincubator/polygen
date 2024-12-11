@@ -1,5 +1,4 @@
 import { useCallback, useState } from 'react';
-import { WebAssembly } from '@callstack/polygen';
 import { Button, Text, View } from 'react-native';
 import EXAMPLE_WASM_BUFFER from '../example-wasm-buffer';
 
@@ -15,8 +14,7 @@ export default function FetchModuleExample() {
       <Text>Loaded: {module ? 'true' : 'false'}</Text>
       {!!module && (
         <Text>
-          {/* TODO: Fix types */}
-          Exports: {JSON.stringify(WebAssembly.Module.exports(module as any))}
+          Exports: {JSON.stringify(WebAssembly.Module.exports(module))}
         </Text>
       )}
       {/*<Button title="Load invalid module" />*/}
