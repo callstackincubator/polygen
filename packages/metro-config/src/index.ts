@@ -4,12 +4,16 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { Project } from '@callstack/polygen-core-build';
 
-type DeepPartial<T> = {
-  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
-};
+interface PolygenConfig {
+  addPolyfill?: boolean;
+}
 
-export function getPolygenMetroConfig(): DeepPartial<ConfigT> {
+export function withPolygenConfig(
+  defaultConfig: ConfigT,
+  _polygenConfig: PolygenConfig = {}
+): ConfigT {
   const project = Project.findClosestSync();
+  // const addPolyfill = polygenConfig.addPolyfill ?? true;
 
   const resolveRequest: CustomResolver = (context, moduleName, platform) => {
     // If not a WASM module, skip
@@ -51,10 +55,31 @@ export function getPolygenMetroConfig(): DeepPartial<ConfigT> {
     }
   };
 
+  // function getPolyfills(options: { platform: string | null }): readonly string[] {
+  //   return [
+  //     ...defaultConfig.serializer.getPolyfills(options),
+  //     fileURLToPath(import.meta.resolve('@callstack/polygen/polyfill')),
+  //   ];
+  // }
+  //
+  // const serializerOverrides: Partial<ConfigT['serializer']> = {
+  //   getPolyfills: addPolyfill
+  //     ? getPolyfills
+  //     : defaultConfig.serializer.getPolyfills,
+  // };
+  // console.log('getPolyfills', serializerOverrides?.getPolyfills?.({platform: 'ios'}));
+
   return {
+    ...defaultConfig,
     resolver: {
+      ...defaultConfig.resolver,
+      unstable_enablePackageExports: true,
       resolveRequest,
       // sourceExts: ['ts', 'tsx', 'js', 'jsx', 'json', 'wasm'],
     },
+    // serializer: {
+    //   ...defaultConfig.serializer,
+    //   ...serializerOverrides,
+    // },
   };
 }

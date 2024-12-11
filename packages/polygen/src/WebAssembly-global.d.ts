@@ -149,9 +149,9 @@ declare namespace WebAssembly {
   /** [MDN Reference](https://developer.mozilla.org/docs/WebAssembly/JavaScript_interface/compile_static) */
   function compile(bytes: BufferSource): Promise<Module>;
   /** [MDN Reference](https://developer.mozilla.org/docs/WebAssembly/JavaScript_interface/compileStreaming_static) */
-  // function compileStreaming(
-  //   source: Response | PromiseLike<Response>
-  // ): Promise<Module>;
+  function compileStreaming(
+    source: Response | PromiseLike<Response>
+  ): Promise<Module>;
   /** [MDN Reference](https://developer.mozilla.org/docs/WebAssembly/JavaScript_interface/instantiate_static) */
   function instantiate(
     bytes: BufferSource,
@@ -162,10 +162,10 @@ declare namespace WebAssembly {
     importObject?: Imports
   ): Promise<Instance>;
   /** [MDN Reference](https://developer.mozilla.org/docs/WebAssembly/JavaScript_interface/instantiateStreaming_static) */
-  // function instantiateStreaming(
-  //   source: Response | PromiseLike<Response>,
-  //   importObject?: Imports
-  // ): Promise<WebAssemblyInstantiatedSource>;
+  function instantiateStreaming(
+    source: Response | PromiseLike<Response>,
+    importObject?: Imports
+  ): Promise<WebAssemblyInstantiatedSource>;
   /** [MDN Reference](https://developer.mozilla.org/docs/WebAssembly/JavaScript_interface/validate_static) */
   function validate(bytes: BufferSource): boolean;
 }

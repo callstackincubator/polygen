@@ -1,4 +1,10 @@
-import { compile, instantiate, validate } from './WebAssembly';
+import {
+  compile,
+  compileStreaming,
+  instantiate,
+  instantiateStreaming,
+  validate,
+} from './WebAssembly';
 import { Module } from './Module';
 import { Instance } from './Instance';
 import { Memory } from './Memory';
@@ -6,7 +12,9 @@ import { Global } from './Global';
 
 const impl = {
   compile,
+  compileStreaming,
   instantiate,
+  instantiateStreaming,
   validate,
   Module,
   Instance,
@@ -15,10 +23,5 @@ const impl = {
 } as const;
 
 export type Schema = typeof impl;
-
-export function register() {
-  // @ts-ignore
-  global.WebAssembly = Object.freeze(impl) as any;
-}
 
 export const WebAssembly = impl;

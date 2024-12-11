@@ -46,14 +46,14 @@ export async function compile(bufferOrView: BufferSource): Promise<Module> {
   );
 }
 
-export async function instantiate(
-  bufferOrView: BufferSource,
-  imports?: ImportObject
-): Promise<Instance>;
-export async function instantiate(
-  module: Module,
-  imports?: ImportObject
-): Promise<Instance>;
+export async function compileStreaming(
+  source: Response | PromiseLike<Response>
+): Promise<Module> {
+  const response = await source;
+  const buffer = await response.arrayBuffer();
+  return compile(buffer);
+}
+
 export async function instantiate(
   source: Module | BufferSource,
   imports: ImportObject = {}
@@ -64,4 +64,19 @@ export async function instantiate(
     const module = await compile(source);
     return new Instance(module.nativeHandle, imports);
   }
+}
+
+export interface WebAssemblyInstantiatedSource {
+  instance: Instance;
+  module: Module;
+}
+
+export async function instantiateStreaming(
+  source: Response | PromiseLike<Response>,
+  importObject?: ImportObject
+): Promise<WebAssemblyInstantiatedSource> {
+  const module = await compileStreaming(source);
+  const instance = instantiate(module, importObject);
+  // @ts-ignore
+  return { module, instance };
 }

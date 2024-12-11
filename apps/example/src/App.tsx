@@ -1,8 +1,8 @@
 import { enableScreens } from 'react-native-screens';
 // run this before any screen render(usually in App.js)
 enableScreens();
+import '@callstack/polygen/polyfill';
 
-import { register } from '@callstack/polygen';
 import {
   Platform,
   ScrollView,
@@ -11,10 +11,10 @@ import {
   TouchableOpacity,
   useColorScheme,
 } from 'react-native';
-register();
 
 import TableExample from './examples/TableExample';
-import ModuleFromBuffer from './examples/ModuleFromBuffer';
+import ModuleFromBuffer from './examples/ModuleFromBufferExample';
+import FetchModuleExample from './examples/FetchExample';
 import {
   DarkTheme,
   DefaultTheme,
@@ -32,6 +32,10 @@ const examples = [
   {
     component: ModuleFromBuffer,
     title: 'Creating Module from Buffer',
+  },
+  {
+    component: FetchModuleExample,
+    title: 'Creating Module using Fetch',
   },
 ];
 
