@@ -83,7 +83,7 @@ export class Project {
 
   public async getWebAssemblyModules(): Promise<string[]> {
     // TODO: support static list from config
-    return glob('**/*.wasm', { cwd: this.localSourceDir });
+    return glob('**/*.wasm', { cwd: this.fullSourceDir });
   }
 
   public get localOutputDirectory() {

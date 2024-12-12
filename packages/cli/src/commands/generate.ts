@@ -84,7 +84,7 @@ command.action(async (options: Options) => {
       `  Found ${hglt(exports.length)} exports (${statsOf(exports.map((i) => i.target))})`
     );
 
-    await generateWasmJSModule(project, `src/${mod}`);
+    await generateWasmJSModule(project, modPath);
 
     // const buildFile = await engine.renderFile('BUILD.bazel.liquid', {
     //   name,
