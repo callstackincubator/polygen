@@ -75,7 +75,7 @@ export function buildHostSource(generatedModules: W2CModuleContext[]) {
     std::shared_ptr<Module> loadWebAssemblyModule(std::span<uint8_t> moduleData) {
       if (ModuleMetadataView::isMetadata(moduleData)) {
         auto metadata = ModuleMetadataView::fromBuffer(moduleData);
-        auto& name = metadata.name;
+        auto& name = metadata->getName();
         ${indentString(generatedModules.map(makeModuleHandler).join('\n'), 8).trimStart()}
         return nullptr;
       } else {
