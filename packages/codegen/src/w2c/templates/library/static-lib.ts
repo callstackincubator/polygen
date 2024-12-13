@@ -1,5 +1,5 @@
 import { HEADER } from '../common.js';
-import { W2CModuleContext } from '../../context.js';
+import { W2CModuleContext } from '../../context/context.js';
 import stripIndent from 'strip-indent';
 import type { ModuleSymbol } from '@callstack/wasm-parser';
 

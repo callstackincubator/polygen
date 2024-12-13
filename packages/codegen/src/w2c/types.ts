@@ -4,7 +4,7 @@ import type {
   ModuleImport,
   ModuleSymbol,
 } from '@callstack/wasm-parser';
-import type { W2CCodegenImportedModule } from './codegen-context.js';
+import type { W2CCodegenLocalImportedModule } from './context/index.js';
 
 export interface GeneratedFunctionInfo {
   parameterTypeNames: string[];
@@ -13,7 +13,7 @@ export interface GeneratedFunctionInfo {
 
 export interface GeneratedImport<T = ModuleSymbol> extends ModuleImport<T> {
   mangledName: string;
-  moduleInfo: W2CCodegenImportedModule;
+  moduleInfo: W2CCodegenLocalImportedModule;
   generatedFunctionName: string;
 }
 

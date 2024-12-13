@@ -1,21 +1,39 @@
 import { HEADER } from '../common.js';
-import { W2CModuleContext } from '../../context.js';
+import { W2CModuleContext } from '../../context/context.js';
 import type { GeneratedExport, GeneratedFunctionExport } from '../../types.js';
 import stripIndent from 'strip-indent';
 import type { ModuleMemory } from '@callstack/wasm-parser';
 
 export function buildExportBridgeHeader(module: W2CModuleContext) {
-  return `
-    ${HEADER}
-    #pragma once
-    #include "jsi-imports-bridge.h"
+  const imports = module.codegen.importedModules;
+  const includes = imports.map((i) => `#include "${i.name}-imports.h"`);
 
-    namespace callstack::polygen::generated {
+  return (
+    HEADER +
+    stripIndent(`
+      #pragma once
+      #include "${module.name}.h"
+      ${includes.join('\n      ')}
 
-    facebook::jsi::Object create${module.turboModule.generatedClassName}Exports(facebook::jsi::Runtime &rt, facebook::jsi::Object&& importObject);
+      namespace callstack::polygen::generated {
 
-    }
-`;
+      class ${module.turboModule.generatedClassName}ModuleContext: public facebook::jsi::NativeState {
+      public:
+        ${module.turboModule.generatedClassName}ModuleContext(facebook::jsi::Runtime& rt, facebook::jsi::Object&& importObject)
+          : importObject(std::move(importObject))
+          ${imports.map((i) => `, INIT_IMPORT_CTX(${i.generatedRootContextFieldName}, "${i.name}")`).join('\n        ')}
+        {}
+
+        facebook::jsi::Object importObject;
+        ${module.codegen.generatedContextTypeName} rootCtx;
+        ${imports.map((i) => `${i.generatedContextTypeName} ${i.generatedRootContextFieldName};`).join('\n      ')}
+      };
+
+      facebook::jsi::Object create${module.turboModule.generatedClassName}Exports(facebook::jsi::Runtime &rt, facebook::jsi::Object&& importObject);
+
+      }
+`)
+  );
 }
 
 export function buildExportBridgeSource(

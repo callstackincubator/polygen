@@ -4,8 +4,14 @@ import consola from 'consola';
 import { oraPromise } from 'ora';
 import chalk from 'chalk';
 import { Project } from '@callstack/polygen-core-build';
-import { generateWasmJSModule } from '@callstack/polygen-codegen';
-import { W2CGenerator, W2CModuleContext } from '@callstack/polygen-codegen/w2c';
+import {
+  type W2CGeneratorOptions,
+  W2CModuleContext,
+  W2CSharedContext,
+  generateModule,
+  generateHostModule,
+  generateWasmJSModule,
+} from '@callstack/polygen-codegen/w2c';
 import type { ModuleSymbol } from '@callstack/wasm-parser';
 
 const command = new Command('generate')
@@ -34,13 +40,13 @@ command.action(async (options: Options) => {
     project.updateOptionsInMemory({ outputDirectory: options.outputDir });
   }
 
-  const w2cGenerator = new W2CGenerator({
+  const generatorOptions: W2CGeneratorOptions = {
     outputDirectory: project.fullOutputDirectory,
     singleProject: true,
     generateMetadata: true,
     forceGenerate: options.force ?? false,
     hackAutoNumberCoerce: options.forceNumberCoercion ?? false,
-  });
+  };
 
   const modules = await project.getWebAssemblyModules();
   // const pathToRuntimeHeader = path.join(ASSETS_DIR, 'wasm-rt-weak.h');
@@ -53,7 +59,8 @@ command.action(async (options: Options) => {
 
     const generatedModule = await oraPromise(
       async () => {
-        const result = await w2cGenerator.generateModule(modPath);
+        const result = await generateModule(modPath, generatorOptions);
+        await generateWasmJSModule(project, modPath);
         generatedModules.push(result);
         return result;
       },
@@ -84,8 +91,6 @@ command.action(async (options: Options) => {
       `  Found ${hglt(exports.length)} exports (${statsOf(exports.map((i) => i.target))})`
     );
 
-    await generateWasmJSModule(project, modPath);
-
     // const buildFile = await engine.renderFile('BUILD.bazel.liquid', {
     //   name,
     // });
@@ -96,7 +101,8 @@ command.action(async (options: Options) => {
     // );
   }
 
-  await w2cGenerator.generateHostModule(generatedModules);
+  const sharedContext = new W2CSharedContext(generatedModules);
+  await generateHostModule(sharedContext, generatorOptions);
 });
 
 export default command;
