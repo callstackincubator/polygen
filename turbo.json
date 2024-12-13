@@ -1,14 +1,16 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": [
-    "**/.env"
-  ],
+  "globalDependencies": [".env", "**/.env.*local"],
   "tasks": {
+    "topo": {
+      "dependsOn": ["^topo"]
+    },
     "build": {
-      "dependsOn": ["^build"]
+      "dependsOn": ["^build"],
+      "outputs": ["lib/**", "dist/**"]
     },
     "typecheck": {
-      "dependsOn": ["^typecheck"]
+      "dependsOn": ["topo"]
     },
     "dev": {
       "persistent": true,
