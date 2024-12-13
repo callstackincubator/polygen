@@ -6,7 +6,10 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "type": "module",
-  "files": ["data", "dist"],
+  "files": [
+    "data",
+    "dist"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -20,8 +23,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch",
-    "postinstall": "tsc || true",
-    "typecheck": "tsc --noEmit"
+    "postinstall": "tsc -p tsconfig.json || true",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "@callstack/polygen-binary-utils": "workspace:^",
@@ -33,6 +36,7 @@
     "strip-indent": "^4.0.0"
   },
   "devDependencies": {
+    "@callstack/polygen-typescript-config": "workspace:^",
     "@types/node": "^22.10.0",
     "typescript": "^5.7.2"
   }

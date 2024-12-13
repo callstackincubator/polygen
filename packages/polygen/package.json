@@ -48,14 +48,20 @@
     "!**/.*"
   ],
   "scripts": {
-    "typecheck": "tsc --noEmit",
-    "dev": "tsc --watch",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "dev": "tsc -p tsconfig.json --watch",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
-    "prepare": "bob build",
+    "build": "bob build",
     "release": "release-it"
   },
-  "keywords": ["react-native", "ios", "android", "webassembly", "wasm"],
+  "keywords": [
+    "react-native",
+    "ios",
+    "android",
+    "webassembly",
+    "wasm"
+  ],
   "repository": "github:callstack-incubator/polygen",
   "author": "Callstack (https://github.com/callstack)",
   "license": "MIT",
@@ -67,14 +73,15 @@
     "registry": "https://registry.npmjs.org/"
   },
   "devDependencies": {
+    "@callstack/polygen-typescript-config": "workspace:^",
     "@types/react": "^18.2.44",
     "del-cli": "^5.1.0",
     "react": "17.0.2",
     "react-native": "0.75.4",
     "react-native-builder-bob": "^0.30.2",
+    "release-it": "^15.0.0",
     "turbo": "^1.10.7",
-    "typescript": "^5.2.2",
-    "release-it": "^15.0.0"
+    "typescript": "^5.2.2"
   },
   "resolutions": {
     "@types/react": "^18.2.44"

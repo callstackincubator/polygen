@@ -44,6 +44,5 @@
   },
   "engines": {
     "node": ">=18"
-  },
-  "eslintIgnore": ["node_modules/", "lib/"]
+  }
 }

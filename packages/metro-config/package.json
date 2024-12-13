@@ -4,17 +4,20 @@
   "description": "Provides Polygen support for metro bundler",
   "main": "./dist/index.js",
   "type": "module",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
-    "postinstall": "tsc || true",
-    "typecheck": "tsc --noEmit"
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json --watch",
+    "postinstall": "tsc -p tsconfig.json || true",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "@callstack/polygen-core-build": "workspace:^"
   },
   "devDependencies": {
+    "@callstack/polygen-typescript-config": "workspace:^",
     "typescript": "^5.7.2"
   },
   "license": "MIT"

@@ -6,12 +6,14 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "type": "module",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch",
-    "postinstall": "tsc || true",
-    "typecheck": "tsc --noEmit",
+    "postinstall": "tsc -p tsconfig.json || true",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
     "@callstack/polygen-binary-utils": "workspace:^"
   },
   "devDependencies": {

@@ -7,7 +7,9 @@
     "polygen": "./dist/index.js"
   },
   "type": "module",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch",
@@ -24,6 +26,7 @@
     "ora": "^8.1.0"
   },
   "devDependencies": {
+    "@callstack/polygen-typescript-config": "workspace:^",
     "typescript": "^5.7.2"
   }
 }
