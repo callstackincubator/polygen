@@ -1,11 +1,14 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": [
+    "**/.env"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"]
     },
-    "type-check": {
-      "dependsOn": ["^type-check"]
+    "typecheck": {
+      "dependsOn": ["^typecheck"]
     },
     "dev": {
       "persistent": true,
