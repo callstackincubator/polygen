@@ -218,7 +218,7 @@ export class BinaryWriter {
    * @param buffer - The source buffer containing the bytes to be copied. It can either be an ArrayLike of numbers or an ArrayBufferLike object.
    * @return void
    */
-  copyBytes(buffer: ArrayLike<number> | ArrayBufferLike) {
+  copyBytes(buffer: ArrayLike<number> | ArrayBuffer) {
     const bufferArray = new Uint8Array(this.buffer);
     const dataBuffer = new Uint8Array(buffer);
     bufferArray.set(dataBuffer, this.offset);

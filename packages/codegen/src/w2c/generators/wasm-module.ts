@@ -14,12 +14,12 @@ export async function generateWasmJSModuleSource(
   const rawName = new TextEncoder().encode(cleanName);
   const stat = await fs.stat(pathToModule);
   const writer = new BinaryWriter(ByteOrder.LittleEndian);
-  writer.copyBytes(MAGIC_NUMBER.buffer);
+  writer.copyBytes(MAGIC_NUMBER.buffer as ArrayBuffer);
   writer.writeUint8(1);
   writer.writeUint64(BigInt(stat.size));
-  writer.copyBytes(checksum.buffer);
+  writer.copyBytes(checksum.buffer as ArrayBuffer);
   writer.writeUint16(rawName.length);
-  writer.copyBytes(rawName.buffer);
+  writer.copyBytes(rawName.buffer as ArrayBuffer);
   // null terminator just in case
   writer.writeUint8(0);
 
