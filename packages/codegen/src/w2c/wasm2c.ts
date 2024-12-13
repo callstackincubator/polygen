@@ -1,5 +1,5 @@
-import consola from 'consola';
 import path from 'path';
+import consola from 'consola';
 import { execa } from 'execa';
 
 const waToolkitPath = process.env.WABT_PATH;

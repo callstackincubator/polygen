@@ -1,3 +1,5 @@
+import { BinaryReader } from '@callstack/polygen-binary-utils';
+import { WebAssemblyDecodeError } from './errors.js';
 import type {
   FunctionType,
   GlobalType,
@@ -10,9 +12,7 @@ import type {
   ValueType,
   VectorType,
 } from './types.js';
-import { BinaryReader } from '@callstack/polygen-binary-utils';
 import { readLookup, readVector } from './utils.js';
-import { WebAssemblyDecodeError } from './errors.js';
 
 /**
  * A mapping of binary encoding of a type to its respective type name.

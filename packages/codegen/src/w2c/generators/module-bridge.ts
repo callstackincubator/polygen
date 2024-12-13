@@ -1,8 +1,8 @@
 import consola from 'consola';
 import type { W2CModuleContext } from '../context/context.js';
 import { OutputGenerator } from '../helpers/output-generator.js';
-import { generateCSources } from '../wasm2c.js';
 import * as templates from '../templates/library/index.js';
+import { generateCSources } from '../wasm2c.js';
 
 export interface ModuleGeneratorOptions {
   renderMetadata?: boolean;

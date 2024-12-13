@@ -1,5 +1,5 @@
-import { OutputGenerator } from '../helpers/output-generator.js';
 import type { W2CImportedModule } from '../context/index.js';
+import { OutputGenerator } from '../helpers/output-generator.js';
 import * as templates from '../templates/library/index.js';
 
 export async function generateImportedModuleBridge(

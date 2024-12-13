@@ -1,6 +1,6 @@
-import { W2CModuleContext } from './context.js';
 import type { GeneratedImport } from '../types.js';
 import { W2CCodegenLocalImportedModule } from './codegen-context.js';
+import { W2CModuleContext } from './context.js';
 
 /**
  * Represents an imported module in the shared context.

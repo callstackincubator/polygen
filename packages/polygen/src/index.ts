@@ -1,3 +1,7 @@
+import { Global } from './Global';
+import { Instance } from './Instance';
+import { Memory } from './Memory';
+import { Module } from './Module';
 import {
   compile,
   compileStreaming,
@@ -5,10 +9,6 @@ import {
   instantiateStreaming,
   validate,
 } from './WebAssembly';
-import { Module } from './Module';
-import { Instance } from './Instance';
-import { Memory } from './Memory';
-import { Global } from './Global';
 
 const impl = {
   compile,

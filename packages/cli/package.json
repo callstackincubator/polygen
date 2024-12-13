@@ -7,9 +7,7 @@
     "polygen": "./dist/index.js"
   },
   "type": "module",
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch",
@@ -27,9 +25,5 @@
   },
   "devDependencies": {
     "typescript": "^5.7.2"
-  },
-  "eslintIgnore": [
-    "node_modules/",
-    "dist/"
-  ]
+  }
 }

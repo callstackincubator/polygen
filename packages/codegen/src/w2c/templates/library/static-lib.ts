@@ -1,7 +1,7 @@
-import { HEADER } from '../common.js';
-import { W2CModuleContext } from '../../context/context.js';
-import stripIndent from 'strip-indent';
 import type { ModuleSymbol } from '@callstack/wasm-parser';
+import stripIndent from 'strip-indent';
+import { W2CModuleContext } from '../../context/context.js';
+import { HEADER } from '../common.js';
 
 export function buildStaticLibraryHeader(module: W2CModuleContext) {
   const className = `WASM${module.turboModule.generatedClassName}Module`;

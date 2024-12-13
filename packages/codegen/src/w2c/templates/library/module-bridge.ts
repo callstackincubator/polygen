@@ -1,8 +1,8 @@
-import { HEADER } from '../common.js';
+import type { ModuleMemory } from '@callstack/wasm-parser';
+import stripIndent from 'strip-indent';
 import { W2CModuleContext } from '../../context/context.js';
 import type { GeneratedExport, GeneratedFunctionExport } from '../../types.js';
-import stripIndent from 'strip-indent';
-import type { ModuleMemory } from '@callstack/wasm-parser';
+import { HEADER } from '../common.js';
 
 export function buildExportBridgeHeader(module: W2CModuleContext) {
   const imports = module.codegen.importedModules;

@@ -1,8 +1,8 @@
-import { HEADER } from '../common.js';
-import type { GeneratedFunctionImport, GeneratedImport } from '../../types.js';
-import stripIndent from 'strip-indent';
 import type { ModuleGlobal } from '@callstack/wasm-parser';
+import stripIndent from 'strip-indent';
 import { W2CImportedModule } from '../../context/index.js';
+import type { GeneratedFunctionImport, GeneratedImport } from '../../types.js';
+import { HEADER } from '../common.js';
 
 export function buildImportBridgeHeader(importedModule: W2CImportedModule) {
   function makeDeclaration(symbol: GeneratedImport): string {

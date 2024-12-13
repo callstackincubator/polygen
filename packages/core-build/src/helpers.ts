@@ -1,8 +1,8 @@
+import fsClassic from 'node:fs';
+import fs from 'node:fs/promises';
+import path from 'path';
 import { findUp, findUpSync } from 'find-up';
 import { UnknownProjectError } from './errors.js';
-import path from 'path';
-import fs from 'node:fs/promises';
-import fsClassic from 'node:fs';
 
 /**
  * Finds project root that contains a `package.json`.

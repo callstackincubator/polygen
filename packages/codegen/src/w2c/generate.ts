@@ -1,14 +1,14 @@
-import path from 'node:path';
-import { W2CModuleContext } from './context/context.js';
-import { generateModuleExportsBridge } from './generators/module-bridge.js';
-import { generateHostModuleBridge } from './generators/host.js';
 import fs from 'node:fs/promises';
-import { OutputGenerator } from './helpers/output-generator.js';
+import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { W2CImportedModule, W2CSharedContext } from './context/index.js';
-import { generateImportedModuleBridge } from './generators/import-bridge.js';
 import { Project } from '@callstack/polygen-core-build';
+import { W2CModuleContext } from './context/context.js';
+import { W2CImportedModule, W2CSharedContext } from './context/index.js';
+import { generateHostModuleBridge } from './generators/host.js';
+import { generateImportedModuleBridge } from './generators/import-bridge.js';
+import { generateModuleExportsBridge } from './generators/module-bridge.js';
 import { generateWasmJSModuleSource } from './generators/wasm-module.js';
+import { OutputGenerator } from './helpers/output-generator.js';
 
 const UMBRELLA_PROJECT_NAME = '@host';
 

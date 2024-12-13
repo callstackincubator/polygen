@@ -1,28 +1,28 @@
-import type {
-  CustomSection,
-  ImportDescriptor,
-  Export,
-  ExportSection,
-  FunctionSection,
-  Global,
-  GlobalSection,
-  Import,
-  ImportSection,
-  MemorySection,
-  Section,
-  TableSection,
-  TypeSection,
-  ExportDescriptor,
-} from './types.js';
 import { BinaryReader } from '@callstack/polygen-binary-utils';
-import { readString, readVector } from './utils.js';
+import { WebAssemblyDecodeError } from './errors.js';
 import {
   readFunctionType,
   readGlobalType,
   readMemoryType,
   readTableType,
 } from './type-reader.js';
-import { WebAssemblyDecodeError } from './errors.js';
+import type {
+  CustomSection,
+  Export,
+  ExportDescriptor,
+  ExportSection,
+  FunctionSection,
+  Global,
+  GlobalSection,
+  Import,
+  ImportDescriptor,
+  ImportSection,
+  MemorySection,
+  Section,
+  TableSection,
+  TypeSection,
+} from './types.js';
+import { readString, readVector } from './utils.js';
 
 type SectionReader =
   | ((reader: BinaryReader) => Section | undefined)

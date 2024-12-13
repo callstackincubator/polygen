@@ -1,13 +1,11 @@
 {
-  "include": [
-    "src"
-  ],
+  "include": ["src"],
   "compilerOptions": {
     "rootDir": "./src",
     "typeRoots": [
       "src/types",
       "node_modules/@types",
-      "../../node_modules/@types",
+      "../../node_modules/@types"
     ],
     "declaration": true,
     "outDir": "dist",

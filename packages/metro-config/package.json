@@ -4,9 +4,7 @@
   "description": "Provides Polygen support for metro bundler",
   "main": "./dist/index.js",
   "type": "module",
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
@@ -19,9 +17,5 @@
   "devDependencies": {
     "typescript": "^5.7.2"
   },
-  "license": "MIT",
-  "eslintIgnore": [
-    "node_modules/",
-    "dist/"
-  ]
+  "license": "MIT"
 }

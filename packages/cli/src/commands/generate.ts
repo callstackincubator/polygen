@@ -1,19 +1,19 @@
 #!/usr/bin/env node
-import { Command, Option } from 'commander';
-import consola from 'consola';
-import { oraPromise } from 'ora';
-import chalk from 'chalk';
-import { Project } from '@callstack/polygen-core-build';
 import {
   type W2CGeneratorOptions,
   W2CModuleContext,
   W2CSharedContext,
-  generateModule,
   generateHostModule,
-  generateWasmJSModule,
   generateImportedModule,
+  generateModule,
+  generateWasmJSModule,
 } from '@callstack/polygen-codegen/w2c';
+import { Project } from '@callstack/polygen-core-build';
 import type { ModuleSymbol } from '@callstack/wasm-parser';
+import chalk from 'chalk';
+import { Command, Option } from 'commander';
+import consola from 'consola';
+import { oraPromise } from 'ora';
 
 const command = new Command('generate')
   .description('Generates React Native Modules from Wasm')

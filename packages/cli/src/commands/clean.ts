@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-import { Command } from 'commander';
-import { oraPromise } from 'ora';
 import fs from 'node:fs/promises';
 import { Project } from '@callstack/polygen-core-build';
 import chalk from 'chalk';
+import { Command } from 'commander';
 import consola from 'consola';
+import { oraPromise } from 'ora';
 
 // TODO: move to project info
 const GENERATED_DIR = 'wasm/_generated';

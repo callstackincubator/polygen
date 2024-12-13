@@ -1,12 +1,5 @@
-import type {
-  ModuleExport,
-  ModuleFunction,
-  ModuleGlobal,
-  ModuleImport,
-  ModuleMemory,
-  ModuleSymbol,
-  ModuleTable,
-} from './types.js';
+import { WebAssemblyDecodeError } from './reader/errors.js';
+import { readModuleRaw } from './reader/module-reader.js';
 import type {
   Export,
   ExportDescriptor,
@@ -24,8 +17,15 @@ import type {
   TableType,
   TypeSection,
 } from './reader/types.js';
-import { WebAssemblyDecodeError } from './reader/errors.js';
-import { readModuleRaw } from './reader/module-reader.js';
+import type {
+  ModuleExport,
+  ModuleFunction,
+  ModuleGlobal,
+  ModuleImport,
+  ModuleMemory,
+  ModuleSymbol,
+  ModuleTable,
+} from './types.js';
 
 /**
  * Class representing a WebAssembly Module.

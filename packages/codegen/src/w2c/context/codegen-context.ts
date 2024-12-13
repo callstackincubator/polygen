@@ -1,12 +1,12 @@
+import { Module, type ModuleMemory } from '@callstack/wasm-parser';
+import type { ModuleFunction, ValueType } from '@callstack/wasm-parser';
+import { mangleModuleName, mangleName } from '../mangle.js';
 import type {
   GeneratedExport,
   GeneratedFunctionExport,
   GeneratedFunctionInfo,
   GeneratedImport,
 } from '../types.js';
-import { mangleModuleName, mangleName } from '../mangle.js';
-import { Module, type ModuleMemory } from '@callstack/wasm-parser';
-import type { ModuleFunction, ValueType } from '@callstack/wasm-parser';
 
 type ImportMap = Record<string, W2CCodegenLocalImportedModule>;
 

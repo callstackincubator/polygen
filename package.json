@@ -1,5 +1,5 @@
 {
-  "name": "polygen",
+  "name": "@callstack/polygen-root",
   "private": true,
   "version": "0.1.0",
   "description": "React Native Module for running WebAssembly modules without interpretng.",
@@ -9,8 +9,8 @@
   "scripts": {
     "dev": "turbo run dev",
     "typecheck": "turbo run typecheck",
-    "lint": "turbo run lint lint:root",
-    "lint:fix": "turbo run lint:fix lint-fix:root",
+    "lint": "biome check .",
+    "lint:fix": "biome check . --fix",
     "clean": "turbo run clean && rm -rf node_modules",
     "build": "turbo run build",
     "lint:root": "eslint \"packages/*/**/*.{js,jsx,ts,tsx}\" \"apps/*/**/*.{js,jsx,ts,tsx}\"",
@@ -26,27 +26,19 @@
     "webassembly"
   ],
   "devDependencies": {
-    "@eslint/eslintrc": "^3.2.0",
-    "@eslint/js": "^9.15.0",
+    "@commitlint/config-conventional": "^17.0.2",
     "@evilmartians/lefthook": "^1.5.0",
+    "@release-it/conventional-changelog": "^5.0.0",
+    "@biomejs/biome": "1.9.4",
     "@react-native/eslint-config": "^0.73.1",
-    "eslint": "^8.51.0",
-    "eslint-config-prettier": "^9.0.0",
-    "eslint-plugin-prettier": "^5.2.1",
-    "prettier": "^3.0.3",
     "turbo": "^2.3.3",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "commitlint": "^17.0.2",
+    "release-it": "^15.0.0"
   },
   "workspaces": [
     "apps/*",
     "packages/*"
   ],
-  "prettier": {
-    "quoteProps": "consistent",
-    "singleQuote": true,
-    "tabWidth": 2,
-    "trailingComma": "es5",
-    "useTabs": false
-  },
   "packageManager": "yarn@4.5.3"
 }

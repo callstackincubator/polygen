@@ -1,5 +1,5 @@
-import fs from 'node:fs';
 import crypto from 'node:crypto';
+import fs from 'node:fs';
 
 /**
  * Computes the SHA-256 checksum of a file located at the given path and returns it as a Buffer.

@@ -1,6 +1,6 @@
-import * as templates from '../templates/host.js';
-import { OutputGenerator } from '../helpers/output-generator.js';
 import { W2CModuleContext } from '../context/index.js';
+import { OutputGenerator } from '../helpers/output-generator.js';
+import * as templates from '../templates/host.js';
 
 /**
  * Generates the host module bridge by creating necessary files

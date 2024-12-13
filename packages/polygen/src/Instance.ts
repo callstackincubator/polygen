@@ -1,6 +1,6 @@
-import type { ImportObject } from './WebAssembly';
-import NativeWASM, { type OpaqueModuleNativeHandle } from './NativePolygen';
 import { Memory } from './Memory';
+import NativeWASM, { type OpaqueModuleNativeHandle } from './NativePolygen';
+import type { ImportObject } from './WebAssembly';
 
 export class Instance {
   // @ts-ignore

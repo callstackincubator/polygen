@@ -12,9 +12,6 @@ import {
   useColorScheme,
 } from 'react-native';
 
-import TableExample from './examples/TableExample';
-import ModuleFromBuffer from './examples/ModuleFromBufferExample';
-import FetchModuleExample from './examples/FetchExample';
 import {
   DarkTheme,
   DefaultTheme,
@@ -23,6 +20,9 @@ import {
 } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import FetchModuleExample from './examples/FetchExample';
+import ModuleFromBuffer from './examples/ModuleFromBufferExample';
+import TableExample from './examples/TableExample';
 
 const examples = [
   {

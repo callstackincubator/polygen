@@ -1,5 +1,5 @@
-import { Module } from './Module';
 import { Instance } from './Instance';
+import { Module } from './Module';
 import type { BufferSource } from './types';
 
 /**

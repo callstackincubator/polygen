@@ -1,6 +1,6 @@
 import * as path from 'node:path';
-import { computeChecksumBuffer } from '../helpers/checksum.js';
 import { Module } from '@callstack/wasm-parser';
+import { computeChecksumBuffer } from '../helpers/checksum.js';
 import { W2CModuleCodegenContext } from './codegen-context.js';
 import { W2CModuleTurboModuleContext } from './turbomodule-context.js';
 

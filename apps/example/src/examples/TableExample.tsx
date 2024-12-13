@@ -1,5 +1,5 @@
-import { useState, useCallback, useMemo } from 'react';
-import { StyleSheet, View, Text, Button, TextInput } from 'react-native';
+import { useCallback, useMemo, useState } from 'react';
+import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
 import example from '../table_test.wasm';
 
 const iterations = new WebAssembly.Global({ value: 'i32', mutable: true }, 0);
@@ -28,18 +28,15 @@ export default function TableExample() {
     setInstance(await WebAssembly.instantiate(module!, imports));
   }, [module]);
 
-  const onNumberChanged = useCallback(
-    (value: string) => {
-      const parsed = parseInt(value.replace(/ /g, ''), 10);
-      setNumber(isNaN(parsed) ? 0 : parsed);
-      setResult(undefined);
-    },
-    [setNumber, setResult]
-  );
+  const onNumberChanged = useCallback((value: string) => {
+    const parsed = parseInt(value.replace(/ /g, ''), 10);
+    setNumber(isNaN(parsed) ? 0 : parsed);
+    setResult(undefined);
+  }, []);
 
   const compute = useCallback(() => {
     setResult(instance.exports.fib(number));
-  }, [number, instance, setResult]);
+  }, [number, instance]);
 
   return (
     <View style={styles.container}>

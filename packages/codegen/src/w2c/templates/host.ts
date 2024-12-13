@@ -1,7 +1,7 @@
-import { HEADER } from './common.js';
-import { W2CModuleContext } from '../context/context.js';
-import stripIndent from 'strip-indent';
 import indentString from 'indent-string';
+import stripIndent from 'strip-indent';
+import { W2CModuleContext } from '../context/context.js';
+import { HEADER } from './common.js';
 
 export function buildHostHeader() {
   return (
