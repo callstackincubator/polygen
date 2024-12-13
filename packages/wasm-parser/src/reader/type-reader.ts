@@ -10,7 +10,7 @@ import type {
   ValueType,
   VectorType,
 } from './types.js';
-import { BinaryReader } from '../helpers/binary-reader.js';
+import { BinaryReader } from '@callstack/polygen-binary-utils';
 import { readLookup, readVector } from './utils.js';
 import { WebAssemblyDecodeError } from './errors.js';
 

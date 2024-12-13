@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { arrayBuffersEqual } from '../binary.js';
+import { arrayBuffersEqual } from '../helpers.js';
 
 describe('arrayBuffersEqual', () => {
   it('should return true for equal buffers', () => {

@@ -1,4 +1,4 @@
-import { BinaryReader } from '../helpers/binary-reader.js';
+import { BinaryReader } from '@callstack/polygen-binary-utils';
 import { WebAssemblyDecodeError } from './errors.js';
 
 const decoder = new TextDecoder();

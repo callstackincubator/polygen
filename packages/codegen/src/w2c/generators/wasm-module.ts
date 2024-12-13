@@ -1,7 +1,7 @@
 import path from 'path';
 import fs from 'node:fs/promises';
 import { computeFileChecksumBuffer } from '../helpers/checksum.js';
-import { BinaryWriter, ByteOrder } from '../../utils/binary-writer.js';
+import { BinaryWriter, ByteOrder } from '@callstack/polygen-binary-utils';
 
 const MAGIC_NUMBER = new TextEncoder().encode('CKWASM');
 

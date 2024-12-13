@@ -27,6 +27,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@callstack/polygen-binary-utils": "workspace:^",
     "@callstack/wasm-parser": "workspace:^",
     "execa": "^9.4.1",
     "find-up": "^7.0.0",

@@ -14,7 +14,7 @@ import type {
   TypeSection,
   ExportDescriptor,
 } from './types.js';
-import { BinaryReader } from '../helpers/binary-reader.js';
+import { BinaryReader } from '@callstack/polygen-binary-utils';
 import { readString, readVector } from './utils.js';
 import {
   readFunctionType,

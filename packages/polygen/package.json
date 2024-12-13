@@ -48,7 +48,6 @@
     "!**/.*"
   ],
   "scripts": {
-    "test": "jest",
     "typecheck": "tsc --noEmit",
     "dev": "tsc --watch",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { BinaryReader, ByteOrder } from '../binary-reader.js';
+import { ByteOrder } from '../common.js';
+import { BinaryReader } from '../binary-reader.js';
 
 describe('BinaryReader', () => {
   it('should initialize with given buffer and byte order', () => {

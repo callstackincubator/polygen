@@ -1583,6 +1583,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@callstack/polygen-binary-utils@workspace:^, @callstack/polygen-binary-utils@workspace:packages/binary-utils":
+  version: 0.0.0-use.local
+  resolution: "@callstack/polygen-binary-utils@workspace:packages/binary-utils"
+  dependencies:
+    "@types/node": "npm:^22.10.0"
+    typescript: "npm:^5.7.2"
+    vitest: "npm:^2.1.8"
+  languageName: unknown
+  linkType: soft
+
 "@callstack/polygen-cli@workspace:packages/cli":
   version: 0.0.0-use.local
   resolution: "@callstack/polygen-cli@workspace:packages/cli"
@@ -1603,6 +1613,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@callstack/polygen-codegen@workspace:packages/codegen"
   dependencies:
+    "@callstack/polygen-binary-utils": "workspace:^"
     "@callstack/wasm-parser": "workspace:^"
     "@types/node": "npm:^22.10.0"
     execa: "npm:^9.4.1"

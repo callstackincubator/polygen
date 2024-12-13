@@ -1,5 +1,8 @@
-import { arrayBuffersEqual } from '../helpers/binary.js';
-import { BinaryReader, ByteOrder } from '../helpers/binary-reader.js';
+import {
+  arrayBuffersEqual,
+  BinaryReader,
+  ByteOrder,
+} from '@callstack/polygen-binary-utils';
 import { WebAssemblyDecodeError } from './errors.js';
 import { readSections } from './section-reader.js';
 
