@@ -11,6 +11,7 @@ import {
   generateModule,
   generateHostModule,
   generateWasmJSModule,
+  generateImportedModule,
 } from '@callstack/polygen-codegen/w2c';
 import type { ModuleSymbol } from '@callstack/wasm-parser';
 
@@ -56,6 +57,7 @@ command.action(async (options: Options) => {
 
   for (const mod of modules) {
     const modPath = project.pathToSource(mod);
+    const localModPath = project.globalPathToLocal(modPath);
 
     const generatedModule = await oraPromise(
       async () => {
@@ -64,7 +66,7 @@ command.action(async (options: Options) => {
         generatedModules.push(result);
         return result;
       },
-      `Processing ${chalk.magenta(mod)} module`
+      `Processing ${chalk.magenta(mod)} module ${chalk.dim(`(${localModPath})`)}`
     );
 
     const imports = generatedModule.codegen.imports;
@@ -103,6 +105,16 @@ command.action(async (options: Options) => {
 
   const sharedContext = new W2CSharedContext(generatedModules);
   await generateHostModule(sharedContext, generatorOptions);
+  consola.success('Generated host module');
+
+  const generateImportsPromises = sharedContext.importedModules.map(
+    async (mod) => {
+      await generateImportedModule(mod, generatorOptions);
+      consola.success(`Generated import ${chalk.magenta(mod.name)} bridge`);
+    }
+  );
+
+  await Promise.allSettled(generateImportsPromises);
 });
 
 export default command;

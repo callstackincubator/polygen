@@ -5,7 +5,7 @@ import { generateHostModuleBridge } from './generators/host.js';
 import fs from 'node:fs/promises';
 import { OutputGenerator } from './helpers/output-generator.js';
 import { fileURLToPath } from 'node:url';
-import { W2CSharedContext } from './context/index.js';
+import { W2CImportedModule, W2CSharedContext } from './context/index.js';
 import { generateImportedModuleBridge } from './generators/import-bridge.js';
 import { Project } from '@callstack/polygen-core-build';
 import { generateWasmJSModuleSource } from './generators/wasm-module.js';
@@ -108,11 +108,30 @@ export async function generateHostModule(
   });
 
   await generateHostModuleBridge(generator, context.modules);
+}
 
-  const generateImportsPromises = context.importedModules.map((mod) =>
-    generateImportedModuleBridge(generator.forPath(`imports`), mod)
+/**
+ * Generates the imported module by creating necessary files and configurations in the specified output directory.
+ *
+ * @param module The imported module data that needs to be processed and generated.
+ * @param options The generator options that include the output directory and other configurations.
+ * @return A promise that resolves when the module generation process is completed.
+ */
+export async function generateImportedModule(
+  module: W2CImportedModule,
+  options: W2CGeneratorOptions
+) {
+  const moduleOutputDir = path.join(
+    options.outputDirectory,
+    UMBRELLA_PROJECT_NAME
   );
-  return Promise.allSettled(generateImportsPromises);
+
+  const generator = new OutputGenerator({
+    outputDirectory: moduleOutputDir,
+    assetsDirectory: ASSETS_DIR,
+  });
+
+  await generateImportedModuleBridge(generator.forPath(`imports`), module);
 }
 
 /**
