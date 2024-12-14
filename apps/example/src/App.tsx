@@ -21,14 +21,11 @@ import {
 import { createStackNavigator } from '@react-navigation/stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import FetchModuleExample from './examples/FetchExample';
+import ImportValidationExample from './examples/ImportValidationExample';
 import ModuleFromBuffer from './examples/ModuleFromBufferExample';
 import TableExample from './examples/TableExample';
 
 const examples = [
-  {
-    component: TableExample,
-    title: 'Table Example',
-  },
   {
     component: ModuleFromBuffer,
     title: 'Creating Module from Buffer',
@@ -36,6 +33,14 @@ const examples = [
   {
     component: FetchModuleExample,
     title: 'Creating Module using Fetch',
+  },
+  {
+    component: TableExample,
+    title: 'Table Example',
+  },
+  {
+    component: ImportValidationExample,
+    title: 'Import Validation',
   },
 ];
 
