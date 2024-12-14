@@ -49,7 +49,7 @@ public:
   
   virtual const std::vector<ImportInfo>& getImports() const = 0;
   virtual const std::vector<ExportInfo>& getExports() const = 0;
-  virtual facebook::jsi::Object createInstance(facebook::jsi::Runtime& rt, facebook::jsi::Object&& importObject) const = 0;
+  virtual void createInstance(facebook::jsi::Runtime& rt, facebook::jsi::Object& target, facebook::jsi::Object&& importObject) const = 0;
   
 protected:
   std::string name_;

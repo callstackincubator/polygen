@@ -3,7 +3,8 @@ import NativeWASM, {
   type InternalModuleMetadata,
   type ModuleExportDescriptor,
   type ModuleImportDescriptor,
-} from './NativePolygen';
+} from '../NativePolygen';
+import { CompileError } from './errors';
 
 const MAGIC = new Uint8Array('CKWASM'.split('').map((e) => e.charCodeAt(0)));
 
@@ -11,12 +12,14 @@ const MAGIC = new Uint8Array('CKWASM'.split('').map((e) => e.charCodeAt(0)));
  * @spec https://webassembly.github.io/spec/js-api/index.html#modules
  */
 export class Module {
-  public nativeHandle: OpaqueModuleNativeHandle;
   metadata: InternalModuleMetadata;
 
   public constructor(buffer: ArrayBuffer) {
-    this.nativeHandle = NativeWASM.loadModule(buffer);
-    this.metadata = NativeWASM.getModuleMetadata(this.nativeHandle);
+    try {
+      this.metadata = NativeWASM.loadModule(this, buffer);
+    } catch (e) {
+      throw new CompileError((e as Error).message);
+    }
 
     if (!isFakeModule(buffer)) {
       // TODO: add documentation link

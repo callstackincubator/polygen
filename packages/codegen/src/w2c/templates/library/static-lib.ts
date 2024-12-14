@@ -21,7 +21,7 @@ export function buildStaticLibraryHeader(module: W2CModuleContext) {
       ${className}(const std::string& name): StaticLibraryModule(name) {}
       const std::vector<ImportInfo>& getImports() const override;
       const std::vector<ExportInfo>& getExports() const override;
-      facebook::jsi::Object createInstance(facebook::jsi::Runtime& rt, facebook::jsi::Object&& importObject) const override;
+      void createInstance(facebook::jsi::Runtime& rt, facebook::jsi::Object& target, facebook::jsi::Object&& importObject) const override;
     };
 
     }
@@ -74,8 +74,8 @@ export function buildStaticLibrarySource(module: W2CModuleContext) {
     return exports;
   }
 
-  jsi::Object ${className}::createInstance(jsi::Runtime& rt, jsi::Object&& importObject) const {
-    return create${module.turboModule.generatedClassName}Exports(rt, std::move(importObject));
+  void ${className}::createInstance(jsi::Runtime& rt, facebook::jsi::Object& target, jsi::Object&& importObject) const {
+    return create${module.turboModule.generatedClassName}Exports(rt, target, std::move(importObject));
   }
 
   }

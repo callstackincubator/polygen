@@ -131,15 +131,19 @@ export type OpaqueTableNativeHandle = UnsafeObject;
 
 export interface Spec extends TurboModule {
   // Modules
-  loadModule(moduleData: UnsafeArrayBuffer): OpaqueModuleNativeHandle;
+  loadModule(
+    holder: OpaqueModuleNativeHandle,
+    moduleData: UnsafeArrayBuffer
+  ): InternalModuleMetadata;
   unloadModule(module: OpaqueModuleNativeHandle): void;
   getModuleMetadata(module: OpaqueModuleNativeHandle): InternalModuleMetadata;
 
   // Module instances
   createModuleInstance(
+    holder: OpaqueModuleInstanceNativeHandle,
     mod: OpaqueModuleNativeHandle,
     importObject: NativeImportObject
-  ): OpaqueModuleInstanceNativeHandle;
+  ): void;
   destroyModuleInstance(instance: OpaqueModuleInstanceNativeHandle): void;
 
   // Memory

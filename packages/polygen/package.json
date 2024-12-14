@@ -5,6 +5,7 @@
   "source": "./src/index.ts",
   "main": "./lib/commonjs/index.js",
   "module": "./lib/module/index.js",
+  "types": "./lib/typescript/module/index.d.ts",
   "react-native": "",
   "exports": {
     ".": {
@@ -55,13 +56,7 @@
     "build": "bob build",
     "release": "release-it"
   },
-  "keywords": [
-    "react-native",
-    "ios",
-    "android",
-    "webassembly",
-    "wasm"
-  ],
+  "keywords": ["react-native", "ios", "android", "webassembly", "wasm"],
   "repository": "github:callstack-incubator/polygen",
   "author": "Callstack (https://github.com/callstack)",
   "license": "MIT",

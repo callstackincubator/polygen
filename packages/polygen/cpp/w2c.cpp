@@ -22,7 +22,6 @@ ModuleMetadataView* ModuleMetadataView::fromBuffer(std::span<uint8_t> moduleData
   auto* view = ((ModuleMetadataView*)moduleData.data());
   
   if constexpr (std::endian::native == std::endian::big) {
-    view->size = byteswap<uint64_t>(view->size);
     view->nameLength = byteswap<uint16_t>(view->nameLength);
   }
   return view;

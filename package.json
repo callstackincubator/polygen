@@ -18,13 +18,7 @@
     "test": "turbo run test test:root",
     "test:root": "vitest"
   },
-  "keywords": [
-    "react-native",
-    "ios",
-    "android",
-    "wasm",
-    "webassembly"
-  ],
+  "keywords": ["react-native", "ios", "android", "wasm", "webassembly"],
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@commitlint/config-conventional": "^17.0.2",
@@ -36,9 +30,6 @@
     "turbo": "^2.3.3",
     "typescript": "^5.2.2"
   },
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "workspaces": ["apps/*", "packages/*"],
   "packageManager": "yarn@4.5.3"
 }

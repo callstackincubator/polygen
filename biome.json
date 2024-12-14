@@ -7,7 +7,9 @@
       "**/ios",
       "**/android",
       "**/dist",
-      "**/lib"
+      "**/lib",
+      "**/.turbo",
+      ".yarn"
     ]
   },
   "formatter": {

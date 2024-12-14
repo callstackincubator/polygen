@@ -1,6 +1,6 @@
+import type { BufferSource } from '../types';
 import { Instance } from './Instance';
 import { Module } from './Module';
-import type { BufferSource } from './types';
 
 /**
  * Type representing object with imports
@@ -59,10 +59,10 @@ export async function instantiate(
   imports: ImportObject = {}
 ): Promise<Instance> {
   if (source instanceof Module) {
-    return new Instance(source.nativeHandle, imports);
+    return new Instance(source, imports);
   } else {
     const module = await compile(source);
-    return new Instance(module.nativeHandle, imports);
+    return new Instance(module, imports);
   }
 }
 

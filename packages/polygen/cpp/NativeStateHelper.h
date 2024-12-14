@@ -19,7 +19,7 @@ struct NativeStateHelper {
    * Attaches specified object to holder object, assuring that object has no state already attached.
    */
   template <typename T>
-  static void attach(facebook::jsi::Runtime& rt, const facebook::jsi::Object& holder, T&& state) {
+  static void attach(facebook::jsi::Runtime& rt, const facebook::jsi::Object& holder, const T& state) {
     assert(!holder.hasNativeState(rt));
     holder.setNativeState(rt, std::move(state));
   }

@@ -5,11 +5,24 @@
 
 namespace callstack::polygen {
 
+/**
+ * Represents WebAssembly Module metadata that is provided by bundler support.
+ */
 struct __attribute__ ((packed)) ModuleMetadataView {
+  /**
+   * Magic number that verifies the buffer contains metadata rather than Module binary contents.
+   */
   char magic[6];
+  
+  /**
+   * Metadata version
+   */
   uint8_t version;
-  uint64_t size;
-  uint8_t checksum[32];
+  
+  /**
+   * SHA-256 checksum of the module contents, null terminated.
+   */
+  char checksum[65];
 private:
   // should use getName instead
   uint16_t nameLength;

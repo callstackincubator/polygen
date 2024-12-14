@@ -1,9 +1,7 @@
 {
   "name": "wasm-rust-example",
   "private": true,
-  "files": [
-    "src"
-  ],
+  "files": ["src"],
   "exports": {
     "./module.wasm": "./src/rust_example.wasm"
   }

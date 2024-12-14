@@ -2,10 +2,16 @@ import { useCallback, useState } from 'react';
 import { Button, Text, View } from 'react-native';
 import EXAMPLE_WASM_BUFFER from '../example-wasm-buffer';
 
+const INVALID_WASM_BUFFER = new ArrayBuffer(6);
+
 export default function ModuleFromBufferExample() {
   const [module, setModule] = useState<WebAssembly.Module>();
   const loadModule = useCallback(() => {
     setModule(new WebAssembly.Module(EXAMPLE_WASM_BUFFER));
+  }, []);
+
+  const loadInvalidModule = useCallback(() => {
+    setModule(new WebAssembly.Module(INVALID_WASM_BUFFER));
   }, []);
 
   return (
@@ -17,7 +23,7 @@ export default function ModuleFromBufferExample() {
           Exports: {JSON.stringify(WebAssembly.Module.exports(module))}
         </Text>
       )}
-      {/*<Button title="Load invalid module" />*/}
+      <Button title="Load invalid module" onPress={loadInvalidModule} />
     </View>
   );
 }

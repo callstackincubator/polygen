@@ -3,28 +3,6 @@ import stripIndent from 'strip-indent';
 import { W2CModuleContext } from '../context/context.js';
 import { HEADER } from './common.js';
 
-export function buildHostHeader() {
-  return (
-    HEADER +
-    stripIndent(`
-    #pragma once
-    #include <span>
-    #include <memory>
-    #include <string>
-    #include <vector>
-    #include <jsi/jsi.h>
-    #include <ReactNativePolygen/Module.h>
-
-    namespace callstack::polygen::generated {
-
-    const std::vector<std::string>& getAvailableModules();
-    std::shared_ptr<Module> loadWebAssemblyModule(std::span<uint8_t> moduleData);
-
-    }
-  `).trimStart()
-  );
-}
-
 export function buildHostSource(generatedModules: W2CModuleContext[]) {
   const moduleNames = generatedModules
     .map((module) => `"${module.name}"`)
@@ -32,7 +10,15 @@ export function buildHostSource(generatedModules: W2CModuleContext[]) {
     .trimEnd()
     .replace(/,$/, '');
 
-  const moduleChecksumMap = generatedModules
+  const moduleChecksums = generatedModules
+    .map(
+      (module) => `{ "${module.name}", "${module.checksum.toString('hex')}" }`
+    )
+    .join(',\n      ')
+    .trimEnd()
+    .replace(/,$/, '');
+
+  const moduleFactoriesMap = generatedModules
     .map(
       (module) =>
         `{ "${module.checksum.toString('hex')}", ${module.turboModule.moduleFactoryFunctionName} }`
@@ -53,9 +39,10 @@ export function buildHostSource(generatedModules: W2CModuleContext[]) {
   return (
     HEADER +
     stripIndent(`
-    #include "loader.h"
+    #include <sstream>
     #include <ReactNativePolygen/w2c.h>
     #include <ReactNativePolygen/checksum.h>
+    #include <ReactNativePolygen/bridge.h>
 
     namespace callstack::polygen::generated {
 
@@ -64,8 +51,12 @@ export function buildHostSource(generatedModules: W2CModuleContext[]) {
     ${generatedModules.map(makeModuleFactoryDecl).join('\n    ')}
 
     const std::vector<std::string> moduleNames { ${moduleNames} };
+    // TODO: skip in release
+    const std::unordered_map<std::string, std::string> moduleChecksums {
+      ${moduleChecksums}
+    };
     std::unordered_map<std::string, ModuleFactoryFunction> moduleFactoryByChecksum {
-      ${moduleChecksumMap}
+      ${moduleFactoriesMap}
     };
 
     const std::vector<std::string>& getAvailableModules() {
@@ -76,15 +67,25 @@ export function buildHostSource(generatedModules: W2CModuleContext[]) {
       if (ModuleMetadataView::isMetadata(moduleData)) {
         auto metadata = ModuleMetadataView::fromBuffer(moduleData);
         auto& name = metadata->getName();
+
+        // TODO: skip in release
+        if (auto foundModule = moduleChecksums.find(metadata->checksum); foundModule != moduleChecksums.end()) {
+          std::ostringstream errorMsgStream;
+          errorMsgStream << "Module checksums for '" << name << "' differ, this means that the precompiled module is different from the one that was generated. Perhaps you forgot to rebuild the project?";
+          throw LoaderError { errorMsgStream.str() };
+        }
+
         ${indentString(generatedModules.map(makeModuleHandler).join('\n'), 8).trimStart()}
-        return nullptr;
+        std::ostringstream errorMsgStream;
+        errorMsgStream << "Failed to load WebAssembly Module '" << name << "'. The module is not precompiled. Perhaps you forgot to run 'polygen generate'?";
+        throw LoaderError { errorMsgStream.str() };
       } else {
         auto checksum = computeSHA256(moduleData);
         if (auto foundModule = moduleFactoryByChecksum.find(checksum); foundModule != moduleFactoryByChecksum.end()) {
           return foundModule->second();
         }
 
-        return nullptr;
+        throw LoaderError { "Tried to load an unknown WebAssembly Module from binary buffer. Polygen can only load statically precompilied modules." };
       }
     }
 

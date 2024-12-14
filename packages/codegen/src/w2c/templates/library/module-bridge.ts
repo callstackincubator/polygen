@@ -29,7 +29,7 @@ export function buildExportBridgeHeader(module: W2CModuleContext) {
         ${imports.map((i) => `${i.generatedContextTypeName} ${i.generatedRootContextFieldName};`).join('\n      ')}
       };
 
-      facebook::jsi::Object create${module.turboModule.generatedClassName}Exports(facebook::jsi::Runtime &rt, facebook::jsi::Object&& importObject);
+      void create${module.turboModule.generatedClassName}Exports(facebook::jsi::Runtime &rt, facebook::jsi::Object& target, facebook::jsi::Object&& importObject);
 
       }
 `)
@@ -114,9 +114,7 @@ export function buildExportBridgeSource(
         return ctx;
       }
 
-      jsi::Object create${module.turboModule.generatedClassName}Exports(jsi::Runtime &rt, jsi::Object&& importObject) {
-        jsi::Object mod { rt };
-
+      void create${module.turboModule.generatedClassName}Exports(jsi::Runtime &rt, jsi::Object& target, jsi::Object&& importObject) {
         if (!wasm_rt_is_initialized()) {
           wasm_rt_init();
         }
@@ -124,20 +122,18 @@ export function buildExportBridgeSource(
         auto inst = std::make_shared<${module.turboModule.contextClassName}>(rt, std::move(importObject));
         wasm2c_${module.codegen.mangledName}_instantiate(&inst->rootCtx${initArgs});
 
-        mod.setNativeState(rt, inst);
+        target.setNativeState(rt, inst);
 
         // Memories
         jsi::Object memories {rt};
         ${module.codegen.exportedMemories.map(makeExportMemory).join('\n        ')}
-        mod.setProperty(rt, "memories", std::move(memories));
+        target.setProperty(rt, "memories", std::move(memories));
 
         // Exported functions
         jsi::Object exports {rt};
         ${module.codegen.exportedFunctions.map(makeExportFunc).join('\n        ')}
         exports.setNativeState(rt, inst);
-        mod.setProperty(rt, "exports", std::move(exports));
-
-        return std::move(mod);
+        target.setProperty(rt, "exports", std::move(exports));
       }
     }
   `)

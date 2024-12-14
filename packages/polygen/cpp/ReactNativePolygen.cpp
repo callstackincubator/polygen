@@ -19,12 +19,16 @@ ReactNativePolygen::~ReactNativePolygen() {
 }
 
 
-jsi::Object ReactNativePolygen::loadModule(jsi::Runtime &rt, jsi::Object moduleData) {
+jsi::Object ReactNativePolygen::loadModule(jsi::Runtime &rt, jsi::Object holder, jsi::Object moduleData) {
   auto buffer = moduleData.getArrayBuffer(rt);
   std::span<uint8_t> bufferView { buffer.data(rt), buffer.size(rt) };
-  auto mod = generated::loadWebAssemblyModule(bufferView);
-
-  return NativeStateHelper::wrap(rt, mod);
+  try {
+    auto mod = generated::loadWebAssemblyModule(bufferView);
+    NativeStateHelper::attach(rt, holder, mod);
+    return buildModuleMetadata(rt, mod);
+  } catch (const LoaderError& loaderError) {
+    throw jsi::JSError(rt, loaderError.what());
+  }
 }
 
 void ReactNativePolygen::unloadModule(jsi::Runtime &rt, jsi::Object module) {
@@ -33,30 +37,12 @@ void ReactNativePolygen::unloadModule(jsi::Runtime &rt, jsi::Object module) {
 
 jsi::Object ReactNativePolygen::getModuleMetadata(jsi::Runtime &rt, jsi::Object moduleHolder) {
   auto mod = NativeStateHelper::tryGet<Module>(rt, moduleHolder);
-  auto imports = mod->getImports();
-  auto exports = mod->getExports();
-
-  std::vector<NativeImportDescriptor> importsMapped;
-  std::vector<NativeExportDescriptor> exportsMapped;
-  
-  importsMapped.reserve(imports.size());
-  exportsMapped.reserve(exports.size());
-
-  for (auto& import_ : imports) {
-    importsMapped.push_back({ import_.module, import_.name, static_cast<NativeSymbolKind>(import_.kind) });
-  }
-
-  for (auto& export_ : exports) {
-    exportsMapped.push_back({ export_.name, static_cast<NativeSymbolKind>(export_.kind) });
-  }
-
-  NativeModuleMetadata result { importsMapped, exportsMapped };
-  return bridging::toJs(rt, result, this->jsInvoker_);
+  return buildModuleMetadata(rt, mod);
 }
 
-jsi::Object ReactNativePolygen::createModuleInstance(jsi::Runtime &rt, jsi::Object moduleHolder, jsi::Object importObject) {
+void ReactNativePolygen::createModuleInstance(jsi::Runtime &rt, jsi::Object instanceHolder, jsi::Object moduleHolder, jsi::Object importObject) {
   auto mod = NativeStateHelper::tryGet<Module>(rt, moduleHolder);
-  return mod->createInstance(rt, std::move(importObject));
+  mod->createInstance(rt, instanceHolder, std::move(importObject));
 }
 
 void ReactNativePolygen::destroyModuleInstance(jsi::Runtime &rt, jsi::Object instance) {
@@ -151,6 +137,28 @@ void ReactNativePolygen::setTableElement(jsi::Runtime &rt, jsi::Object instance,
 double ReactNativePolygen::getTableSize(jsi::Runtime &rt, jsi::Object instance) {
   auto table = NativeStateHelper::tryGet<Table>(rt, instance);
   return table->getSize();
+}
+
+jsi::Object ReactNativePolygen::buildModuleMetadata(jsi::Runtime& rt, const std::shared_ptr<Module>& mod) {
+  auto imports = mod->getImports();
+  auto exports = mod->getExports();
+
+  std::vector<NativeImportDescriptor> importsMapped;
+  std::vector<NativeExportDescriptor> exportsMapped;
+  
+  importsMapped.reserve(imports.size());
+  exportsMapped.reserve(exports.size());
+
+  for (auto& import_ : imports) {
+    importsMapped.push_back({ import_.module, import_.name, static_cast<NativeSymbolKind>(import_.kind) });
+  }
+
+  for (auto& export_ : exports) {
+    exportsMapped.push_back({ export_.name, static_cast<NativeSymbolKind>(export_.kind) });
+  }
+
+  NativeModuleMetadata result { importsMapped, exportsMapped };
+  return bridging::toJs(rt, result, this->jsInvoker_);
 }
 
 }

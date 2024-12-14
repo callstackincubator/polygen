@@ -17,7 +17,6 @@ export async function generateHostModuleBridge(
   await Promise.all([
     generator.copyAsset('wasm-rt'),
     generator.writeAllTo({
-      'loader.h': templates.buildHostHeader(),
       'loader.cpp': templates.buildHostSource(modules),
       'ReactNativeWebAssemblyHost.podspec': templates.buildPodspec(),
     }),
