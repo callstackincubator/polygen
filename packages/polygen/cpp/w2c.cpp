@@ -16,7 +16,6 @@ constexpr T byteswap(T value) noexcept
     return std::bit_cast<T>(value_representation);
 }
 
-
 ModuleMetadataView* ModuleMetadataView::fromBuffer(std::span<uint8_t> moduleData) {
   assert(moduleData.size() >= sizeof(ModuleMetadataView));
   auto* view = ((ModuleMetadataView*)moduleData.data());

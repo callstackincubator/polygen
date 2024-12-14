@@ -7,6 +7,13 @@
 
 namespace callstack::polygen {
 
+class FuncRefState: public facebook::jsi::NativeState {
+public:
+  explicit FuncRefState(wasm_rt_funcref_t ref): funcRef(ref) {}
+  
+  wasm_rt_funcref_t funcRef;
+};
+
 class FuncRefTable: public Table {
 public:
   explicit FuncRefTable(wasm_rt_funcref_table_t* table): table_(table) {}
@@ -37,8 +44,8 @@ public:
     return this->table_->max_size;
   }
   
-  wasm_rt_funcref_t getElement(size_t index) {
-    return this->table_->data[index];
+  std::shared_ptr<facebook::jsi::NativeState> getElement(size_t index) const override {
+    return std::make_shared<FuncRefState>(this->table_->data[index]);
   }
   
   void grow(ptrdiff_t delta) {

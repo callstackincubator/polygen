@@ -92,7 +92,7 @@ void ReactNativePolygen::setGlobalValue(jsi::Runtime &rt, jsi::Object instance, 
 
 
 // Tables
-void ReactNativePolygen::createTable(jsi::Runtime &rt, jsi::Object holder, jsi::Object tableDescriptor) {
+void ReactNativePolygen::createTable(jsi::Runtime &rt, jsi::Object holder, jsi::Object tableDescriptor, std::optional<jsi::Object> initial) {
   auto descriptor = NativeTableDescriptorBridging::fromJs(rt, tableDescriptor, this->jsInvoker_);
   std::shared_ptr<Table> table;
   auto maxSizeNumber = descriptor.maxSize.has_value()
@@ -119,15 +119,10 @@ void ReactNativePolygen::growTable(jsi::Runtime &rt, jsi::Object instance, doubl
 }
 
 jsi::Object ReactNativePolygen::getTableElement(jsi::Runtime &rt, jsi::Object instance, double index) {
-  assert(0 && "Unsupported");
-//  auto table = NativeStateHelper::tryGet<Table>(rt, instance);
-//  
-//  auto funcTable = std::dynamic_pointer_cast<FuncRefTable>(table);
-//  if (funcTable) {
-//    auto func = funcTable->getElement(index);
-//    auto type = func.func_type;
-//    return jsi::Function::createFromHostFunction(rt, "", type, )
-//  }
+  auto table = NativeStateHelper::tryGet<Table>(rt, instance);
+  
+  auto element = table->getElement(index);
+  return NativeStateHelper::wrap(rt, element);
 }
 
 void ReactNativePolygen::setTableElement(jsi::Runtime &rt, jsi::Object instance, double index, jsi::Object value) {

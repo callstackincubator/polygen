@@ -6,6 +6,13 @@
 
 namespace callstack::polygen {
 
+class ExternRefState: public facebook::jsi::NativeState {
+public:
+  explicit ExternRefState(wasm_rt_externref_t ref): externRef(ref) {}
+  
+  wasm_rt_externref_t externRef;
+};
+
 class ExternRefTable: public Table {
 public:
   explicit ExternRefTable(wasm_rt_externref_table_t* table): table_(table) {}
@@ -36,8 +43,8 @@ public:
     return this->table_->max_size;
   }
   
-  wasm_rt_externref_t getElement(size_t index) {
-    return this->table_->data[index];
+  std::shared_ptr<facebook::jsi::NativeState> getElement(size_t index) const override {
+    return std::make_shared<ExternRefState>(this->table_->data[index]);
   }
   
   void grow(ptrdiff_t delta) override {

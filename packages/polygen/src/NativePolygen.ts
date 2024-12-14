@@ -167,7 +167,8 @@ export interface Spec extends TurboModule {
   // Tables
   createTable(
     holder: OpaqueTableNativeHandle,
-    descriptor: NativeTableDescriptor
+    descriptor: NativeTableDescriptor,
+    initial?: unknown
   ): void;
   growTable(instance: OpaqueTableNativeHandle, delta: number): void;
   getTableElement(instance: OpaqueTableNativeHandle, index: number): unknown;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <jsi/jsi.h>
 #include <ReactNativePolygen/wasm-rt.h>
 
@@ -19,6 +20,7 @@ public:
   virtual size_t getSize() const = 0;
   virtual size_t getCapacity() const = 0;
   virtual void grow(ptrdiff_t delta) = 0;
+  virtual std::shared_ptr<facebook::jsi::NativeState> getElement(size_t index) const = 0;
 };
 
 }
