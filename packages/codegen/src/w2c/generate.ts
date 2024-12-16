@@ -14,7 +14,7 @@ const UMBRELLA_PROJECT_NAME = '@host';
 
 const ASSETS_DIR = path.join(
   path.dirname(fileURLToPath(import.meta.url)),
-  '../../data/assets'
+  '../../assets'
 );
 
 /**
