@@ -52,7 +52,6 @@ command.action(async (options: Options) => {
   };
   const generator = await W2CGenerator.create(project, generatorOptions);
   const modules = await project.getWebAssemblyModules();
-  // const pathToRuntimeHeader = path.join(ASSETS_DIR, 'wasm-rt-weak.h');
 
   consola.info('Found', chalk.bold(modules.length), 'WebAssembly module(s)');
 

@@ -6,9 +6,6 @@ import { Command } from 'commander';
 import consola from 'consola';
 import { oraPromise } from 'ora';
 
-// TODO: move to project info
-const GENERATED_DIR = 'wasm/_generated';
-
 const command = new Command('clean')
   .description('Cleans all WASM generated output files')
   .option('-y, --yes', 'Remove files without confirmation');
@@ -16,12 +13,13 @@ const command = new Command('clean')
 command.action(async (options) => {
   const project = await Project.findClosest();
   const generatedPath = project.fullOutputDirectory;
+  const displayPath = project.localOutputDirectory;
 
   let confirmed = options.yes;
 
   if (!confirmed) {
     confirmed = await consola.prompt(
-      `Remove directory ${chalk.bold(generatedPath)}?`,
+      `Remove directory ${chalk.bold(displayPath)}?`,
       {
         type: 'confirm',
       }
@@ -34,8 +32,8 @@ command.action(async (options) => {
   }
 
   await oraPromise(
-    fs.rm(generatedPath, { recursive: true }),
-    `Removing ${chalk.bold(GENERATED_DIR)}`
+    fs.rm(generatedPath, { recursive: true, force: true }),
+    `Removing ${chalk.bold(displayPath)}`
   );
 
   consola.success('Generated files removed!');
