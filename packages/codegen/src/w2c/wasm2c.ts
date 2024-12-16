@@ -3,6 +3,7 @@ import consola from 'consola';
 import { execa } from 'execa';
 
 const waToolkitPath = process.env.WABT_PATH;
+let wasm2cValidated = false;
 
 /**
  * Validates the presence of the `WABT_PATH` environment variable.
@@ -11,13 +12,41 @@ const waToolkitPath = process.env.WABT_PATH;
  *
  * @return No value is returned from this function.
  */
-export function validate() {
+export async function validate() {
+  function assertVersion(output: string) {
+    if (!output.startsWith('1.0.36')) {
+      const version = output.split(' ')[0];
+      consola.error(
+        `Unsupported wasm2c version: ${version}. Please use version 1.0.36.`
+      );
+      process.exit(1);
+    }
+  }
+
+  if (wasm2cValidated) {
+    return;
+  }
+
+  try {
+    const { stdout } = await execa`wasm2c --version`;
+    assertVersion(stdout);
+    wasm2cValidated = true;
+    return;
+  } catch (e) {}
+
   if (!waToolkitPath) {
     consola.error(
       'WABT_PATH environment variable is not set. Set it to a directory containing WABT toolkit'
     );
     process.exit(1);
   }
+
+  try {
+    const { stdout } = await execa(`${waToolkitPath}/wasm2c`, ['--version']);
+    assertVersion(stdout);
+  } catch (e) {}
+
+  wasm2cValidated = true;
 }
 
 /**
@@ -43,7 +72,7 @@ export async function generateCSources(
   outputSourceFile: string,
   options?: Wasm2cGenerateOptions
 ) {
-  validate();
+  await validate();
 
   const binary = path.join(waToolkitPath!, 'wasm2c');
   const args = [inputFile, '-o', `${outputSourceFile}.c`];
