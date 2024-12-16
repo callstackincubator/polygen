@@ -107,12 +107,16 @@ export function buildPodspec() {
 
     Pod::Spec.new do |s|
       s.name         = "ReactNativeWebAssemblyHost"
-      s.version      = package["version"]
-      s.summary      = package["description"]
-      s.homepage     = package["homepage"]
-      s.license      = package["license"]
-      s.authors      = package["author"]
-      s.source       = { :git => package["repository"]["url"], :tag => "#{s.version}" }
+      s.version      = package["version"] || "0.0.1"
+      s.summary      = package["description"] || "No summary"
+      s.homepage     = package["homepage"] || "no-homepage"
+      s.license      = package["license"] || "Unknown License"
+      s.authors      = package["author"] || "Unknown Author"
+      if package["repository"]
+        s.source       = { :git => package["repository"]["url"], :tag => "#{s.version}" }
+      else
+        s.source = { :git => "Unknown Source", :tag => "master" }
+      end
 
       s.platforms    = { :ios => min_ios_version_supported }
       s.source_files = "*.{h,hpp,c,cpp}", "*/*.{h,hpp,c,cpp}"
