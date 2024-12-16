@@ -132,7 +132,9 @@ jsi::Object ReactNativePolygen::getTableElement(jsi::Runtime &rt, jsi::Object in
 }
 
 void ReactNativePolygen::setTableElement(jsi::Runtime &rt, jsi::Object instance, double index, jsi::Object value) {
-  assert(0 && "Unsupported");
+  auto table = NativeStateHelper::tryGet<Table>(rt, instance);
+  auto element = NativeStateHelper::tryGet<TableElement>(rt, value);
+  table->setElement(index, element);
 }
 
 double ReactNativePolygen::getTableSize(jsi::Runtime &rt, jsi::Object instance) {

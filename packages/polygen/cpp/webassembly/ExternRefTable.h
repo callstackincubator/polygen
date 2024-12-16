@@ -12,15 +12,15 @@
 
 namespace callstack::polygen {
 
-class ExternRefState: public facebook::jsi::NativeState {
-public:
-  explicit ExternRefState(wasm_rt_externref_t ref): externRef(ref) {}
-  
-  wasm_rt_externref_t externRef;
-};
-
 class ExternRefTable: public Table {
 public:
+  class Element: public TableElement {
+  public:
+    explicit Element(wasm_rt_externref_t ref): externRef(ref) {}
+    
+    wasm_rt_externref_t externRef;
+  };
+  
   explicit ExternRefTable(wasm_rt_externref_table_t* table): table_(table) {}
   explicit ExternRefTable(size_t initialSize, std::optional<size_t> maxSize = std::nullopt): maxSize_(maxSize) {
     this->table_ = &this->ownedTable_;
@@ -49,12 +49,21 @@ public:
     return this->table_->max_size;
   }
   
-  std::shared_ptr<facebook::jsi::NativeState> getElement(size_t index) const override {
-    return std::make_shared<ExternRefState>(this->table_->data[index]);
-  }
-  
   void grow(ptrdiff_t delta) override {
     wasm_rt_grow_externref_table(table_, delta, nullptr);
+  }
+  
+  std::shared_ptr<TableElement> getElement(size_t index) const override {
+    return std::make_shared<Element>(this->table_->data[index]);
+  }
+  
+  void setElement(size_t index, std::shared_ptr<TableElement> element) override {
+    if (auto externElement = std::dynamic_pointer_cast<Element>(element); externElement) {
+      this->table_->data[index] = externElement->externRef;
+      return;
+    }
+    
+    throw TableElementTypeError {"Passed invalid element type to Table of 'externref' elementtype."};
   }
   
 protected:

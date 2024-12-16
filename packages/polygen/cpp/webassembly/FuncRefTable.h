@@ -13,15 +13,15 @@
 
 namespace callstack::polygen {
 
-class FuncRefState: public facebook::jsi::NativeState {
-public:
-  explicit FuncRefState(wasm_rt_funcref_t ref): funcRef(ref) {}
-  
-  wasm_rt_funcref_t funcRef;
-};
-
 class FuncRefTable: public Table {
 public:
+  class Element: public TableElement {
+  public:
+    explicit Element(wasm_rt_funcref_t ref): funcRef(ref) {}
+    
+    wasm_rt_funcref_t funcRef;
+  };
+  
   explicit FuncRefTable(wasm_rt_funcref_table_t* table): table_(table) {}
   explicit FuncRefTable(size_t initialSize, std::optional<size_t> maxSize = std::nullopt): maxSize_(maxSize) {
     this->table_ = &this->ownedTable_;
@@ -50,12 +50,21 @@ public:
     return this->table_->max_size;
   }
   
-  std::shared_ptr<facebook::jsi::NativeState> getElement(size_t index) const override {
-    return std::make_shared<FuncRefState>(this->table_->data[index]);
-  }
-  
   void grow(ptrdiff_t delta) {
     wasm_rt_grow_funcref_table(this->table_, delta, { nullptr, nullptr, nullptr, nullptr });
+  }
+  
+  std::shared_ptr<TableElement> getElement(size_t index) const override {
+    return std::make_shared<Element>(this->table_->data[index]);
+  }
+  
+  void setElement(size_t index, std::shared_ptr<TableElement> element) override {
+    if (auto funcElement = std::dynamic_pointer_cast<Element>(element); funcElement) {
+      this->table_->data[index] = funcElement->funcRef;
+      return;
+    }
+    
+    throw TableElementTypeError {"Passed invalid element type to Table of 'anyfunc' elementtype."};
   }
   
 protected:
