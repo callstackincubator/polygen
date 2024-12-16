@@ -107,7 +107,6 @@ export class W2CGenerator {
       );
       previouslyWrittenFiles = JSON.parse(previousMap).files;
     } catch (e) {
-      console.log(e);
       if (e && typeof e === 'object' && 'code' in e && e.code !== 'ENOENT') {
         throw e;
       }
