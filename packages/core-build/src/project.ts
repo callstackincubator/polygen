@@ -7,7 +7,13 @@ import {
   findProjectRootSync,
 } from './helpers.js';
 
+/**
+ * Options that can be defined
+ */
 export interface ProjectOptions {
+  /**
+   * Output directory for generated files.
+   */
   outputDirectory?: string;
 }
 
@@ -15,7 +21,14 @@ export interface ProjectOptions {
  * Represents a local project
  */
 export class Project {
+  /**
+   * Root directory of the project
+   */
   public readonly projectRoot: string;
+
+  /**
+   * Project options specified by the user
+   */
   public readonly options: ProjectOptions;
 
   constructor(projectRoot: string, options: ProjectOptions) {
@@ -81,23 +94,38 @@ export class Project {
     return targetPath;
   }
 
+  /**
+   * Get all WebAssembly modules in the project
+   */
   public async getWebAssemblyModules(): Promise<string[]> {
     // TODO: support static list from config
     return glob('**/*.wasm', { cwd: this.fullSourceDir });
   }
 
+  /**
+   * Local output directory
+   */
   public get localOutputDirectory() {
     return this.options.outputDirectory ?? 'node_modules/.polygen-out';
   }
 
+  /**
+   * Full path to the output directory
+   */
   public get fullOutputDirectory() {
     return this.pathTo(this.localOutputDirectory);
   }
 
+  /**
+   * Local source directory
+   */
   public get localSourceDir(): string {
     return 'src';
   }
 
+  /**
+   * Full path to the source directory
+   */
   public get fullSourceDir(): string {
     return this.pathToSource();
   }
