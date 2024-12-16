@@ -2,6 +2,37 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 
 /**
+ * Represents a map of written files and their last modified times.
+ */
+export type WrittenFilesMap = Record<string, number>;
+
+/**
+ * Error thrown when a file would be overwritten by the output generator.
+ */
+export class FileOverwriteError extends Error {
+  public path: string;
+
+  constructor(path: string) {
+    super(`File ${path} already exists and would be overwritten`);
+    this.path = path;
+    this.name = 'FileOverwriteError';
+  }
+}
+
+/**
+ * Error thrown when a file would be overwritten by the output generator.
+ */
+export class FileExternallyChangedError extends Error {
+  public path: string;
+
+  constructor(path: string) {
+    super(`File ${path} was changed externally`);
+    this.path = path;
+    this.name = 'FileExternallyChangedError';
+  }
+}
+
+/**
  * Represents configuration options for the output generator.
  *
  * This interface is used to configure the behavior of the output generation process,
@@ -34,8 +65,39 @@ export class OutputGenerator {
    */
   public readonly options: OutputGeneratorOptions;
 
-  constructor(options: OutputGeneratorOptions) {
+  /**
+   * Set of files that have been written by the output generator.
+   */
+  public readonly writtenFiles: WrittenFilesMap = {};
+
+  /**
+   * A map of previously written files, used to determine if the output files are outdated.
+   */
+  private readonly previousWrittenFiles?: WrittenFilesMap;
+
+  /**
+   * Local path within output directory that is currently bound to this output generator.
+   *
+   * For root generator this is empty, for any generator created by `forPath` method this
+   * is the path that was passed to it.
+   */
+  private boundNestedPath: string[] = [];
+
+  /**
+   * Root output generator instance.
+   *
+   * For root generator this is the same instance, for any generator created by `forPath` method
+   * this is the root generator instance.
+   */
+  private rootGenerator: OutputGenerator;
+
+  constructor(
+    options: OutputGeneratorOptions,
+    previousWrittenFiles?: WrittenFilesMap
+  ) {
     this.options = Object.freeze(options);
+    this.previousWrittenFiles = previousWrittenFiles;
+    this.rootGenerator = this;
   }
 
   /**
@@ -46,10 +108,24 @@ export class OutputGenerator {
    * @return A new OutputGenerator instance with the updated output directory path.
    */
   public forPath(nestedDirPath: string): OutputGenerator {
-    return new OutputGenerator({
-      ...this.options,
-      outputDirectory: path.join(this.options.outputDirectory, nestedDirPath),
-    });
+    const generator = new OutputGenerator(
+      this.options,
+      this.previousWrittenFiles
+    );
+    generator.rootGenerator = this.rootGenerator;
+    generator.boundNestedPath = [...this.boundNestedPath, nestedDirPath];
+    return generator;
+  }
+
+  public async markAsWritten(filePath: string): Promise<void> {
+    let finalPath = filePath;
+    if (finalPath.startsWith(this.options.outputDirectory)) {
+      finalPath = finalPath
+        .substring(this.options.outputDirectory.length)
+        .replace(/^\//, '');
+    }
+    const stat = await fs.stat(filePath);
+    this.rootGenerator.writtenFiles[finalPath] = stat.mtimeMs;
   }
 
   /**
@@ -58,7 +134,11 @@ export class OutputGenerator {
    * @param names Path components
    */
   public outputPathTo(...names: string[]): string {
-    return path.join(this.options.outputDirectory, ...names);
+    return path.join(
+      this.options.outputDirectory,
+      ...this.boundNestedPath,
+      ...names
+    );
   }
 
   /**
@@ -70,9 +150,12 @@ export class OutputGenerator {
    */
   async writeTo(to: string, text: string): Promise<void> {
     const targetPath = this.outputPathTo(to);
+    await this.assertSafeToWrite(targetPath);
+
     const dirname = path.dirname(targetPath);
     await fs.mkdir(dirname, { recursive: true });
     await fs.writeFile(targetPath, text, { encoding: 'utf8' });
+    await this.markAsWritten(targetPath);
   }
 
   /**
@@ -97,6 +180,8 @@ export class OutputGenerator {
    */
   async copyAsset(assetPath: string, to: string = assetPath): Promise<void> {
     const targetPath = this.outputPathTo(to);
+    await this.assertSafeToWrite(targetPath);
+
     const dirname = path.dirname(targetPath);
     await fs.mkdir(dirname, { recursive: true });
 
@@ -108,6 +193,7 @@ export class OutputGenerator {
         errorOnExist: false,
       }
     );
+    await this.markAsWritten(targetPath);
   }
 
   /**
@@ -151,6 +237,41 @@ export class OutputGenerator {
 
     if (latestSource > oldestOutput) {
       return cb();
+    }
+  }
+
+  private async assertSafeToWrite(fullPath: string) {
+    if (this.options.forceGenerate) {
+      return;
+    }
+
+    let pathInOutputDir = fullPath;
+    if (pathInOutputDir.startsWith(this.options.outputDirectory)) {
+      pathInOutputDir = pathInOutputDir
+        .substring(this.options.outputDirectory.length)
+        .replace(/^\//, '');
+    }
+    const lastWrittenTime = this.previousWrittenFiles?.[pathInOutputDir];
+
+    let mtime: number | undefined;
+    try {
+      mtime = (await fs.stat(fullPath)).mtimeMs;
+    } catch (e) {
+      if (e && typeof e === 'object' && 'code' in e && e.code !== 'ENOENT') {
+        throw e;
+      }
+    }
+
+    if (
+      lastWrittenTime !== undefined &&
+      mtime !== undefined &&
+      mtime > lastWrittenTime
+    ) {
+      throw new FileExternallyChangedError(pathInOutputDir);
+    }
+
+    if (!lastWrittenTime && mtime !== undefined) {
+      throw new FileOverwriteError(pathInOutputDir);
     }
   }
 }

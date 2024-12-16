@@ -8,7 +8,15 @@ import { generateHostModuleBridge } from './generators/host.js';
 import { generateImportedModuleBridge } from './generators/import-bridge.js';
 import { generateModuleExportsBridge } from './generators/module-bridge.js';
 import { generateWasmJSModuleSource } from './generators/wasm-module.js';
-import { OutputGenerator } from './helpers/output-generator.js';
+import {
+  OutputGenerator,
+  WrittenFilesMap,
+} from './helpers/output-generator.js';
+
+export {
+  FileExternallyChangedError,
+  FileOverwriteError,
+} from './helpers/output-generator.js';
 
 const UMBRELLA_PROJECT_NAME = '@host';
 
@@ -27,7 +35,7 @@ export interface W2CGeneratorOptions {
    * Directories for specific modules will be created within this
    * directory.
    */
-  outputDirectory: string;
+  outputDirectory?: string;
 
   /**
    * If true, all modules are built into single turbo module.
@@ -60,118 +68,148 @@ export interface W2CGeneratorOptions {
   hackAutoNumberCoerce?: boolean;
 }
 
-/**
- * Generates all code for specified WebAssembly module.
- */
-export async function generateModule(
-  modulePath: string,
-  options: W2CGeneratorOptions
-): Promise<W2CModuleContext> {
-  const moduleContents = await fs.readFile(modulePath, { encoding: null });
-  const module = new W2CModuleContext(
-    moduleContents.buffer as ArrayBuffer,
-    modulePath
-  );
-  const moduleOutputDir = outputPathForModule(module.name, options);
-  const generator = new OutputGenerator({
-    outputDirectory: moduleOutputDir,
-    assetsDirectory: ASSETS_DIR,
-  });
+export class W2CGenerator {
+  public readonly project: Project;
+  public readonly options: W2CGeneratorOptions;
+  public readonly generator: OutputGenerator;
+  public readonly generatedModules: W2CModuleContext[] = [];
 
-  await generateModuleExportsBridge(generator, module, {
-    renderMetadata: options.generateMetadata,
-    forceGenerate: options.forceGenerate,
-    hackAutoNumberCoerce: options.hackAutoNumberCoerce,
-  });
-
-  return module;
-}
-
-/**
- * Generates the host module and its corresponding bridges using the specified context and options.
- *
- * @param context The shared context containing module information and configurations.
- * @param options The generator options, including output directory and other configurations.
- * @return A promise that resolves with the results of generating bridges for imported modules. Each promise result contains the status of the operation (fulfilled or rejected).
- */
-export async function generateHostModule(
-  context: W2CSharedContext,
-  options: W2CGeneratorOptions
-) {
-  const moduleOutputDir = path.join(
-    options.outputDirectory,
-    UMBRELLA_PROJECT_NAME
-  );
-  const generator = new OutputGenerator({
-    outputDirectory: moduleOutputDir,
-    assetsDirectory: ASSETS_DIR,
-  });
-
-  await generateHostModuleBridge(generator, context.modules);
-}
-
-/**
- * Generates the imported module by creating necessary files and configurations in the specified output directory.
- *
- * @param module The imported module data that needs to be processed and generated.
- * @param options The generator options that include the output directory and other configurations.
- * @return A promise that resolves when the module generation process is completed.
- */
-export async function generateImportedModule(
-  module: W2CImportedModule,
-  options: W2CGeneratorOptions
-) {
-  const moduleOutputDir = path.join(
-    options.outputDirectory,
-    UMBRELLA_PROJECT_NAME
-  );
-
-  const generator = new OutputGenerator({
-    outputDirectory: moduleOutputDir,
-    assetsDirectory: ASSETS_DIR,
-  });
-
-  await generateImportedModuleBridge(generator.forPath(`imports`), module);
-}
-
-/**
- * Generates a JavaScript module file for a given WebAssembly (.wasm) module.
- * The generated module will be placed under the project's output directory.
- *
- * @param project - The project instance that provides path resolution and output configuration.
- * @param pathToModule - The file path to the WebAssembly (.wasm) module that needs to be processed.
- * @return A promise that resolves when the JavaScript module file is successfully created.
- */
-export async function generateWasmJSModule(
-  project: Project,
-  pathToModule: string
-) {
-  const cleanName = path.basename(pathToModule, '.wasm');
-  const pathInModule = project.globalPathToLocal(
-    pathToModule,
-    project.localSourceDir
-  );
-  const dirnameInModule = path.dirname(pathInModule);
-  const generatedModulePath = path.join(
-    project.fullOutputDirectory,
-    'modules',
-    dirnameInModule,
-    `${cleanName}.js`
-  );
-
-  await fs.mkdir(path.dirname(generatedModulePath), { recursive: true });
-  const source = await generateWasmJSModuleSource(pathToModule);
-  await fs.writeFile(generatedModulePath, source, 'utf8');
-}
-
-function outputPathForModule(moduleName: string, options: W2CGeneratorOptions) {
-  if (options.singleProject) {
-    return path.join(
-      options.outputDirectory,
-      UMBRELLA_PROJECT_NAME,
-      moduleName
+  private constructor(
+    project: Project,
+    options: W2CGeneratorOptions = {},
+    previousWrittenFiles?: WrittenFilesMap
+  ) {
+    this.project = project;
+    this.options = options;
+    this.generator = new OutputGenerator(
+      {
+        outputDirectory: this.outputDirectory,
+        assetsDirectory: ASSETS_DIR,
+        forceGenerate: options.forceGenerate,
+      },
+      previousWrittenFiles
     );
   }
 
-  return path.join(options.outputDirectory, moduleName);
+  /**
+   * Creates a new W2CGenerator instance for the specified project and options.
+   */
+  public static async create(
+    project: Project,
+    options: W2CGeneratorOptions = {}
+  ): Promise<W2CGenerator> {
+    let previouslyWrittenFiles: WrittenFilesMap | undefined;
+    try {
+      const outputDir = options.outputDirectory ?? project.fullOutputDirectory;
+      const previousMap = await fs.readFile(
+        path.join(outputDir, 'polygen-output.json'),
+        { encoding: 'utf-8' }
+      );
+      previouslyWrittenFiles = JSON.parse(previousMap).files;
+    } catch (e) {
+      console.log(e);
+      if (e && typeof e === 'object' && 'code' in e && e.code !== 'ENOENT') {
+        throw e;
+      }
+    }
+
+    return new W2CGenerator(project, options, previouslyWrittenFiles);
+  }
+
+  /**
+   * Path to output directory where generated files will be created.
+   */
+  public get outputDirectory(): string {
+    return this.options.outputDirectory ?? this.project.fullOutputDirectory;
+  }
+
+  /**
+   * Generates all code for specified WebAssembly module.
+   */
+  async generateModule(modulePath: string): Promise<W2CModuleContext> {
+    const moduleContents = await fs.readFile(modulePath, { encoding: null });
+    const module = new W2CModuleContext(
+      moduleContents.buffer as ArrayBuffer,
+      modulePath
+    );
+    const generator = this.generator.forPath(
+      this.outputPathForModule(module.name)
+    );
+    await generateModuleExportsBridge(generator, module, {
+      renderMetadata: this.options.generateMetadata,
+      forceGenerate: this.options.forceGenerate,
+      hackAutoNumberCoerce: this.options.hackAutoNumberCoerce,
+    });
+
+    this.generatedModules.push(module);
+    await this.generateWasmJSModule(modulePath);
+
+    return module;
+  }
+
+  /**
+   * Generates a JavaScript module file for a given WebAssembly (.wasm) module.
+   * The generated module will be placed under the project's output directory.
+   *
+   * @param pathToModule - The file path to the WebAssembly (.wasm) module that needs to be processed.
+   * @return A promise that resolves when the JavaScript module file is successfully created.
+   */
+  async generateWasmJSModule(pathToModule: string) {
+    const cleanName = path.basename(pathToModule, '.wasm');
+    const pathInModule = this.project.globalPathToLocal(
+      pathToModule,
+      this.project.localSourceDir
+    );
+    const dirnameInModule = path.dirname(pathInModule);
+    const generatedModulePath = path.join(dirnameInModule, `${cleanName}.js`);
+
+    const generator = this.generator.forPath('modules');
+    const source = await generateWasmJSModuleSource(pathToModule);
+    await generator.writeTo(generatedModulePath, source);
+  }
+
+  /**
+   * Generates the host module and its corresponding bridges using the specified context and options.
+   *
+   * @param context The shared context containing module information and configurations.
+   * @return A promise that resolves with the results of generating bridges for imported modules. Each promise result contains the status of the operation (fulfilled or rejected).
+   */
+  async generateHostModule(context: W2CSharedContext) {
+    const generator = this.generator.forPath(UMBRELLA_PROJECT_NAME);
+    await generateHostModuleBridge(generator, context.modules);
+  }
+
+  /**
+   * Generates the imported module by creating necessary files and configurations in the specified output directory.
+   *
+   * @param module The imported module data that needs to be processed and generated.
+   * @return A promise that resolves when the module generation process is completed.
+   */
+  async generateImportedModule(module: W2CImportedModule) {
+    const generator = this.generator.forPath(UMBRELLA_PROJECT_NAME);
+    await generateImportedModuleBridge(generator.forPath(`imports`), module);
+  }
+
+  /**
+   * Finalizes the generation process by writing the generated files to the output directory.
+   */
+  async finalize() {
+    const generatedMapPath = this.generator.outputPathTo('polygen-output.json');
+    const contents = {
+      files: this.generator.writtenFiles,
+    };
+
+    await fs.writeFile(
+      generatedMapPath,
+      JSON.stringify(contents, undefined, 2)
+    );
+  }
+
+  private outputPathForModule(moduleName: string) {
+    if (this.options.singleProject) {
+      return path.join(UMBRELLA_PROJECT_NAME, moduleName);
+    }
+
+    return moduleName;
+  }
 }

@@ -3,8 +3,6 @@
   "version": "0.0.1",
   "description": "The code generator for @callstack/polygen",
   "license": "MIT",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
   "type": "module",
   "files": ["data", "dist"],
   "exports": {

@@ -1,12 +1,10 @@
 #!/usr/bin/env node
 import {
+  FileExternallyChangedError,
+  FileOverwriteError,
+  W2CGenerator,
   type W2CGeneratorOptions,
-  W2CModuleContext,
   W2CSharedContext,
-  generateHostModule,
-  generateImportedModule,
-  generateModule,
-  generateWasmJSModule,
 } from '@callstack/polygen-codegen/w2c';
 import { Project } from '@callstack/polygen-core-build';
 import type { ModuleSymbol } from '@callstack/wasm-parser';
@@ -41,6 +39,10 @@ command.action(async (options: Options) => {
     project.updateOptionsInMemory({ outputDirectory: options.outputDir });
   }
 
+  if (options.force) {
+    consola.warn('Using force overwrite flag, all files will be overwritten');
+  }
+
   const generatorOptions: W2CGeneratorOptions = {
     outputDirectory: project.fullOutputDirectory,
     singleProject: true,
@@ -48,73 +50,79 @@ command.action(async (options: Options) => {
     forceGenerate: options.force ?? false,
     hackAutoNumberCoerce: options.forceNumberCoercion ?? false,
   };
-
+  const generator = await W2CGenerator.create(project, generatorOptions);
   const modules = await project.getWebAssemblyModules();
   // const pathToRuntimeHeader = path.join(ASSETS_DIR, 'wasm-rt-weak.h');
 
   consola.info('Found', chalk.bold(modules.length), 'WebAssembly module(s)');
-  const generatedModules: W2CModuleContext[] = [];
 
-  for (const mod of modules) {
-    const modPath = project.pathToSource(mod);
-    const localModPath = project.globalPathToLocal(modPath);
+  try {
+    for (const mod of modules) {
+      const modPath = project.pathToSource(mod);
+      const localModPath = project.globalPathToLocal(modPath);
 
-    const generatedModule = await oraPromise(
-      async () => {
-        const result = await generateModule(modPath, generatorOptions);
-        await generateWasmJSModule(project, modPath);
-        generatedModules.push(result);
-        return result;
-      },
-      `Processing ${chalk.magenta(mod)} module ${chalk.dim(`(${localModPath})`)}`
-    );
+      const generatedModule = await oraPromise(
+        async () => generator.generateModule(modPath),
+        `Processing ${chalk.magenta(mod)} module ${chalk.dim(`(${localModPath})`)}`
+      );
 
-    const imports = generatedModule.codegen.imports;
-    const exports = generatedModule.codegen.exports;
-    const hglt = chalk.dim;
+      const imports = generatedModule.codegen.imports;
+      const exports = generatedModule.codegen.exports;
+      const hglt = chalk.dim;
 
-    function statsOf(set: ModuleSymbol[]): string {
-      const highlight = chalk.dim;
-      const grouped = Object.groupBy(set, (s) => s.kind);
-      const countOf = (type: ModuleSymbol['kind']) =>
-        grouped[type]?.length ?? 0;
-      return [
-        `${highlight(countOf('function'))} functions`,
-        `${highlight(countOf('memory'))} memories`,
-        `${highlight(countOf('global'))} globals`,
-        `${highlight(countOf('table'))} tables`,
-      ].join(', ');
+      function statsOf(set: ModuleSymbol[]): string {
+        const highlight = chalk.dim;
+        const grouped = Object.groupBy(set, (s) => s.kind);
+        const countOf = (type: ModuleSymbol['kind']) =>
+          grouped[type]?.length ?? 0;
+        return [
+          `${highlight(countOf('function'))} functions`,
+          `${highlight(countOf('memory'))} memories`,
+          `${highlight(countOf('global'))} globals`,
+          `${highlight(countOf('table'))} tables`,
+        ].join(', ');
+      }
+
+      consola.info(
+        `  Found ${hglt(imports.length)} imports (${statsOf(imports.map((i) => i.target))})`
+      );
+      consola.info(
+        `  Found ${hglt(exports.length)} exports (${statsOf(exports.map((i) => i.target))})`
+      );
     }
 
-    consola.info(
-      `  Found ${hglt(imports.length)} imports (${statsOf(imports.map((i) => i.target))})`
-    );
-    consola.info(
-      `  Found ${hglt(exports.length)} exports (${statsOf(exports.map((i) => i.target))})`
+    const sharedContext = new W2CSharedContext(generator.generatedModules);
+    await generator.generateHostModule(sharedContext);
+    consola.success('Generated host module');
+
+    const generateImportsPromises = sharedContext.importedModules.map(
+      async (mod) => {
+        await generator.generateImportedModule(mod);
+        consola.success(`Generated import ${chalk.magenta(mod.name)} bridge`);
+      }
     );
 
-    // const buildFile = await engine.renderFile('BUILD.bazel.liquid', {
-    //   name,
-    // });
-    // await fs.writeFile(path.join(libOutputDir, 'BUILD'), buildFile);
-    // await fs.copyFile(
-    //   path.join(ASSETS_DIR, 'Info.plist'),
-    //   path.join(libOutputDir, 'Info.plist')
-    // );
+    await Promise.allSettled(generateImportsPromises);
+    await generator.finalize();
+  } catch (error: unknown) {
+    if (error instanceof FileExternallyChangedError) {
+      consola.error(
+        `File ${chalk.magenta(error.path)} has been changed externally`
+      );
+      consola.info(
+        `Use ${chalk.bold('-f')} flag to force generate and overwrite files`
+      );
+    } else if (error instanceof FileOverwriteError) {
+      consola.error(
+        `File ${chalk.magenta(error.path)} already exists and would be overwritten`
+      );
+      consola.info(
+        `Use ${chalk.bold('-f')} flag to force generate and overwrite files`
+      );
+    } else {
+      consola.error('Error generating modules:', error);
+    }
   }
-
-  const sharedContext = new W2CSharedContext(generatedModules);
-  await generateHostModule(sharedContext, generatorOptions);
-  consola.success('Generated host module');
-
-  const generateImportsPromises = sharedContext.importedModules.map(
-    async (mod) => {
-      await generateImportedModule(mod, generatorOptions);
-      consola.success(`Generated import ${chalk.magenta(mod.name)} bridge`);
-    }
-  );
-
-  await Promise.allSettled(generateImportsPromises);
 });
 
 export default command;
