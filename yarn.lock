@@ -1559,7 +1559,7 @@ __metadata:
     ora: "npm:^8.1.0"
     typescript: "npm:^5.7.2"
   bin:
-    polygen: ./dist/index.js
+    polygen: ./bin/polygen
   languageName: unknown
   linkType: soft
 

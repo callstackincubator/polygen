@@ -4,7 +4,7 @@
   "description": "The Command Line Interface for @callstack/polygen",
   "main": "./dist/index.js",
   "bin": {
-    "polygen": "./dist/index.js"
+    "polygen": "bin/polygen.js"
   },
   "type": "module",
   "files": ["dist"],
