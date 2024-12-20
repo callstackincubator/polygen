@@ -38,4 +38,6 @@ Pod::Spec.new do |s|
       s.dependency "ReactCommon/turbomodule/core"
     end
   end
+
+  s.prepare_command = "sh scripts/regenerate.sh"
 end

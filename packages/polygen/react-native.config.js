@@ -10,6 +10,15 @@ module.exports = {
       android: {
         cmakeListsPath: 'build/generated/source/polygen/jni/CMakeLists.txt',
       },
+      ios: {
+        scriptPhases: [
+          {
+            name: '[Polygen] Generate Codegen Artifacts',
+            execution_position: 'before_compile',
+            script: './scripts/regenerate.sh',
+          },
+        ],
+      },
     },
   },
 };
