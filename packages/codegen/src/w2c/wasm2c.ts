@@ -1,9 +1,44 @@
-import path from 'path';
-import consola from 'consola';
+import path from 'node:path';
 import { execa } from 'execa';
 
 const waToolkitPath = process.env.WABT_PATH;
-let wasm2cValidated = false;
+let finalWasm2cPath: string | undefined;
+
+/**
+ * Error class for wasm2c validation errors.
+ */
+class Wasm2cError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'Wasm2cError';
+  }
+}
+
+function assertVersion(output: string) {
+  if (!output.startsWith('1.0.36')) {
+    const version = output.split(' ')[0];
+    throw new Wasm2cError(
+      `Unsupported wasm2c version: ${version}. Please use version 1.0.36.`
+    );
+  }
+}
+
+async function findBinary(): Promise<string | undefined> {
+  try {
+    const { stdout, exitCode } = await execa`which wasm2c`;
+    if (exitCode === 0) {
+      return stdout.trim();
+    }
+  } catch (e) {}
+
+  if (!waToolkitPath) {
+    throw new Wasm2cError(
+      'WABT_PATH environment variable is not set. Set it to a directory containing WABT toolkit'
+    );
+  }
+
+  return `${waToolkitPath}/wasm2c`;
+}
 
 /**
  * Validates the presence of the `WABT_PATH` environment variable.
@@ -13,40 +48,17 @@ let wasm2cValidated = false;
  * @return No value is returned from this function.
  */
 export async function validate() {
-  function assertVersion(output: string) {
-    if (!output.startsWith('1.0.36')) {
-      const version = output.split(' ')[0];
-      consola.error(
-        `Unsupported wasm2c version: ${version}. Please use version 1.0.36.`
-      );
-      process.exit(1);
-    }
-  }
-
-  if (wasm2cValidated) {
+  if (finalWasm2cPath) {
     return;
   }
 
+  finalWasm2cPath = await findBinary();
+
   try {
-    const { stdout } = await execa`wasm2c --version`;
+    const { stdout } = await execa(finalWasm2cPath!, ['--version']);
     assertVersion(stdout);
-    wasm2cValidated = true;
     return;
   } catch (e) {}
-
-  if (!waToolkitPath) {
-    consola.error(
-      'WABT_PATH environment variable is not set. Set it to a directory containing WABT toolkit'
-    );
-    process.exit(1);
-  }
-
-  try {
-    const { stdout } = await execa(`${waToolkitPath}/wasm2c`, ['--version']);
-    assertVersion(stdout);
-  } catch (e) {}
-
-  wasm2cValidated = true;
 }
 
 /**
@@ -74,7 +86,6 @@ export async function generateCSources(
 ) {
   await validate();
 
-  const binary = path.join(waToolkitPath!, 'wasm2c');
   const args = [inputFile, '-o', `${outputSourceFile}.c`];
   const defaultModuleName = path.basename(inputFile, '.wasm');
   const moduleName = options?.moduleName ?? defaultModuleName;
@@ -82,5 +93,5 @@ export async function generateCSources(
   args.push('--module-name');
   args.push(moduleName);
 
-  await execa(binary, args);
+  await execa(finalWasm2cPath!, args);
 }

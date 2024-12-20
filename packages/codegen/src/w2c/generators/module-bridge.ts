@@ -35,14 +35,8 @@ async function generateCSource(
   const outputPath = generator.outputPathTo(module.name);
   const generatedFiles = [`${outputPath}.c`, `${outputPath}.h`];
 
-  return generatingFromModule(
-    generator,
-    module,
-    options,
-    generatedFiles,
-    async () => {
-      await generateCSources(module.sourceModulePath, outputPath);
-    }
+  return generatingFromModule(generator, module, options, generatedFiles, () =>
+    generateCSources(module.sourceModulePath, outputPath)
   );
 }
 
@@ -83,10 +77,6 @@ async function generatingFromModule<R>(
   targets: string[],
   cb: () => R
 ): Promise<R | void> {
-  if (options.forceGenerate) {
-    return cb();
-  }
-
   return generator.generating<R>([module.sourceModulePath], targets, cb);
 }
 

@@ -1,3 +1,4 @@
+import type { Stats } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
@@ -227,8 +228,23 @@ export class OutputGenerator {
     outputs: string[],
     cb: () => R
   ): Promise<R | void> {
+    if (this.options.forceGenerate) {
+      return cb();
+    }
+
     const sourceStats = await Promise.all(sources.map((file) => fs.stat(file)));
-    const outputStats = await Promise.all(outputs.map((file) => fs.stat(file)));
+
+    // If any of the output file does not exist, we should generate them
+    let outputStats: Stats[] = [];
+    try {
+      outputStats = await Promise.all(outputs.map((file) => fs.stat(file)));
+    } catch (e) {
+      if (e && typeof e === 'object' && 'code' in e && e.code === 'ENOENT') {
+        return cb();
+      }
+
+      throw e;
+    }
 
     const sourceAccessTimes = sourceStats.map((e) => e.mtimeMs);
     const outputAccessTimes = outputStats.map((e) => e.mtimeMs);
