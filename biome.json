@@ -4,6 +4,7 @@
   "files": {
     "ignoreUnknown": false,
     "ignore": [
+      "**/package.json",
       "**/ios",
       "**/android",
       "**/dist",
