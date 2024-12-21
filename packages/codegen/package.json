@@ -4,7 +4,10 @@
   "description": "The code generator for @callstack/polygen",
   "license": "MIT",
   "type": "module",
-  "files": ["data", "dist"],
+  "files": [
+    "data",
+    "dist"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

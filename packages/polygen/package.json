@@ -56,7 +56,13 @@
     "build": "bob build",
     "release": "release-it"
   },
-  "keywords": ["react-native", "ios", "android", "webassembly", "wasm"],
+  "keywords": [
+    "react-native",
+    "ios",
+    "android",
+    "webassembly",
+    "wasm"
+  ],
   "repository": "github:callstack-incubator/polygen",
   "author": "Callstack (https://github.com/callstack)",
   "license": "MIT",
