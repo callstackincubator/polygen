@@ -1,7 +1,7 @@
 import fsClassic from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'path';
-import { findUp, findUpSync } from 'find-up';
+import findUp from 'find-up';
 import { UnknownProjectError } from './errors.js';
 
 /**
@@ -33,7 +33,7 @@ export async function findProjectRoot(
  * @param from Directory path to start looking from, default to current directory
  */
 export function findProjectRootSync(from: string = process.cwd()): string {
-  const packageJsonPath = findUpSync('package.json', { cwd: from });
+  const packageJsonPath = findUp.sync('package.json', { cwd: from });
 
   if (!packageJsonPath) {
     throw new UnknownProjectError('Could not locate package.json');

@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Provides Polygen support for metro bundler",
   "main": "./dist/index.js",
-  "type": "module",
+  "type": "commonjs",
   "files": ["dist"],
   "scripts": {
     "build": "tsc -p tsconfig.json",
