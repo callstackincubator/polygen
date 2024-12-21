@@ -23,7 +23,7 @@ function assertVersion(output: string) {
   }
 }
 
-async function findBinary(): Promise<string | undefined> {
+async function findBinary(): Promise<string> {
   try {
     const { stdout, exitCode } = await execa`which wasm2c`;
     if (exitCode === 0) {
