@@ -34,6 +34,7 @@
     "@babel/preset-env": "^7.20.0",
     "@babel/runtime": "^7.20.0",
     "@callstack/polygen": "workspace:^",
+    "@callstack/polygen-cli": "workspace:^",
     "@callstack/polygen-metro-config": "workspace:^",
     "@react-native/babel-preset": "0.75.4",
     "@react-native/metro-config": "0.75.4",

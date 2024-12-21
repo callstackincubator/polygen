@@ -1546,7 +1546,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@callstack/polygen-cli@workspace:packages/cli":
+"@callstack/polygen-cli@workspace:^, @callstack/polygen-cli@workspace:packages/cli":
   version: 0.0.0-use.local
   resolution: "@callstack/polygen-cli@workspace:packages/cli"
   dependencies:
@@ -10290,6 +10290,7 @@ __metadata:
     "@babel/preset-env": "npm:^7.20.0"
     "@babel/runtime": "npm:^7.20.0"
     "@callstack/polygen": "workspace:^"
+    "@callstack/polygen-cli": "workspace:^"
     "@callstack/polygen-metro-config": "workspace:^"
     "@react-native/babel-preset": "npm:0.75.4"
     "@react-native/metro-config": "npm:0.75.4"
