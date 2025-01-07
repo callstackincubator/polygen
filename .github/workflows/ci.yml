@@ -150,6 +150,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cocoapods-
 
+      - name: Run polygen
+        run: |
+          cd apps/example
+          yarn run polygen
+
       - name: Install cocoapods
 #        if: env.turbo_cache_hit != 1 && steps.cocoapods-cache.outputs.cache-hit != 'true'
         run: |
