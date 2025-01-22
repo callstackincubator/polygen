@@ -41,22 +41,35 @@ This gives us the ability to run WebAssembly modules in a statically compiled wa
 
 ## Prerequisites
 
-Because Polygen Codegen depends on `wasm2c` tool, you need to have it installed on your machine.
-You can install it by running:
+Because Polygen Codegen depends on [`wasm2c`](https://github.com/WebAssembly/wabt) tool, you need to have it installed on your machine.
+You can install it by either:
 
-```sh
-$ git clone --recursive https://github.com/WebAssembly/wabt
-$ cd wabt
-$ git submodule update --init
-$ cmake -B build -S .
-$ cmake --build build
-```
+1. Downloading precompiled binaries from the [releases page](https://github.com/WebAssembly/wabt/releases) of wabt project.
+2. Building it from the source:
 
-Then set the `WABT_PATH` environment variable `wabt/build`:
+   ```sh
+   $ git clone --recursive https://github.com/WebAssembly/wabt
+   $ cd wabt
+   $ git submodule update --init
+   $ cmake -B build -S .
+   $ cmake --build build
+   ```
 
-```sh
-$ export WABT_PATH=$(pwd)/build
-```
+Then, you need to make binaries visible to polygen tool. You can do this in two ways:
+
+- Set the `WABT_PATH` environment variable to the directory with binaries (`wabt/build` if you built it from source):
+
+  ```sh
+  # assumes build from source path
+  $ export WABT_PATH=$(pwd)/build
+  ```
+
+- Append the `PATH` environment variable to the directory with binaries (`wabt/build` if you built it from source):
+
+  ```sh
+  # assumes build from source path
+  $ export PATH="$PATH:$(pwd)/build"
+  ```
 
 ## Installation
 
