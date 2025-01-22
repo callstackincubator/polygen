@@ -210,8 +210,8 @@ function readImportSection(reader: BinaryReader): ImportSection {
  * @return An object representing the section.
  */
 function readFunctionSection(reader: BinaryReader): FunctionSection {
-  const indicies = readVector(reader, () => reader.readUnsignedLEB128());
-  return { type: 'function', indicies };
+  const indices = readVector(reader, () => reader.readUnsignedLEB128());
+  return { type: 'function', indices };
 }
 
 /**

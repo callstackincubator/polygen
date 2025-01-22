@@ -39,11 +39,6 @@ export interface TypeSection {
   types: FunctionType[];
 }
 
-export interface DescriptorValue<T extends string> {
-  type: T;
-  index: number;
-}
-
 export type ImportDescriptor =
   | { type: 'function'; index: number }
   | { type: 'table'; table: TableType }
@@ -63,7 +58,7 @@ export interface ImportSection {
 
 export interface FunctionSection {
   type: 'function';
-  indicies: number[];
+  indices: number[];
 }
 
 export interface TableSection {

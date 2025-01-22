@@ -50,6 +50,7 @@ export type ModuleSymbol =
  * Represents an import in a WebAssembly module.
  */
 export interface ModuleImport<T = ModuleSymbol> {
+  kind: 'import';
   module: string;
   name: string;
   target: T;
@@ -59,6 +60,7 @@ export interface ModuleImport<T = ModuleSymbol> {
  * Represents an export in a WebAssembly module.
  */
 export interface ModuleExport<T = ModuleSymbol> {
+  kind: 'export';
   name: string;
   target: T;
 }

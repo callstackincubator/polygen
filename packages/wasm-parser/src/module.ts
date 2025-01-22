@@ -4,6 +4,7 @@ import type {
   Export,
   ExportDescriptor,
   ExportSection,
+  FunctionSection,
   FunctionType,
   GlobalSection,
   GlobalType,
@@ -31,11 +32,11 @@ import type {
  * Class representing a WebAssembly Module.
  */
 export class Module {
-  private importsByType: Record<ModuleSymbol['kind'], number> = {
-    function: 0,
-    global: 0,
-    memory: 0,
-    table: 0,
+  private importsByType: Record<ModuleSymbol['kind'], ModuleSymbol[]> = {
+    function: [],
+    global: [],
+    memory: [],
+    table: [],
   };
 
   /**
@@ -78,14 +79,25 @@ export class Module {
       return sections[type]?.[0] as T | undefined;
     }
 
-    this.addFunctions(getSection<TypeSection>('type')?.types ?? []);
-    this.addGlobals(
-      getSection<GlobalSection>('global')?.globals?.map((g) => g.type) ?? []
+    const types = getSection<TypeSection>('type')?.types ?? [];
+    const processedImports = getSection<ImportSection>('import')?.imports?.map(
+      (i) => mapImport(i, types)
     );
+    this.addImports(processedImports ?? []);
+
+    const indices = getSection<FunctionSection>('function')?.indices ?? [];
+    const functions = indices
+      .map((i) => types?.[i])
+      .filter(Boolean) as FunctionType[];
+    this.addFunctions(functions);
+
+    const globals = getSection<GlobalSection>('global')?.globals?.map(
+      (g) => g.type
+    );
+    this.addGlobals(globals ?? []);
     this.addMemories(getSection<MemorySection>('memory')?.memories ?? []);
     this.addTables(getSection<TableSection>('table')?.tables ?? []);
 
-    this.addImports(getSection<ImportSection>('import')?.imports ?? []);
     this.addExports(getSection<ExportSection>('export')?.exports ?? []);
   }
 
@@ -121,19 +133,22 @@ export class Module {
     this.memories = this.memories.concat(memories.map(mapMemory));
   }
 
-  public addImport(imp: Import) {
-    this.imports.push(mapImport(this, imp));
-    this.importsByType[imp.descriptor.type]++;
+  public addImport(imp: ModuleImport) {
+    this.imports.push(imp);
+    this.importsByType[imp.target.kind].push(imp.target);
   }
 
-  public addImports(imports: Import[]) {
-    this.imports = this.imports.concat(imports.map((i) => mapImport(this, i)));
+  public addImports(imports: ModuleImport[]) {
+    this.imports = this.imports.concat(imports);
 
-    const grouped = Object.groupBy(imports, (i) => i.descriptor.type);
-    this.importsByType.function += grouped.function?.length ?? 0;
-    this.importsByType.global += grouped.global?.length ?? 0;
-    this.importsByType.memory += grouped.memory?.length ?? 0;
-    this.importsByType.table += grouped.table?.length ?? 0;
+    const grouped = Object.groupBy(
+      imports.map((i) => i.target),
+      (i) => i.kind
+    );
+    this.importsByType.function.push(...(grouped.function ?? []));
+    this.importsByType.global.push(...(grouped.global ?? []));
+    this.importsByType.memory.push(...(grouped.memory ?? []));
+    this.importsByType.table.push(...(grouped.table ?? []));
   }
 
   public addExport(exported: Export) {
@@ -145,30 +160,6 @@ export class Module {
   }
 
   /**
-   * Resolves an import descriptor into a corresponding module symbol.
-   *
-   * @param descriptor - The descriptor that needs to be resolved into a module symbol.
-   *                      It specifies the type and index of the symbol within the module.
-   * @returns The module symbol corresponding to the descriptor, or `undefined` if the descriptor
-   *          cannot be resolved. The symbol can be a function, global, memory, or table, depending
-   *          on the descriptor's type.
-   */
-  resolveImportDescriptor(
-    descriptor: ImportDescriptor
-  ): ModuleSymbol | undefined {
-    switch (descriptor.type) {
-      case 'function':
-        return this.functions[descriptor.index];
-      case 'global':
-        return mapGlobal(descriptor.global);
-      case 'memory':
-        return mapMemory(descriptor.memory);
-      case 'table':
-        return mapTable(descriptor.table);
-    }
-  }
-
-  /**
    * Resolves an export descriptor to its corresponding module symbol.
    *
    * @param descriptor - The export descriptor indicating the type and index of the export.
@@ -177,15 +168,21 @@ export class Module {
   resolveExportDescriptor(
     descriptor: ExportDescriptor
   ): ModuleSymbol | undefined {
+    const importsOfType = this.importsByType[descriptor.type];
+    if (descriptor.index < importsOfType.length) {
+      return importsOfType[descriptor.index];
+    }
+
+    const localIndex = descriptor.index - importsOfType.length;
     switch (descriptor.type) {
       case 'function':
-        return this.functions[descriptor.index];
+        return this.functions[localIndex];
       case 'global':
-        return this.globals[descriptor.index - this.importsByType.global];
+        return this.globals[localIndex];
       case 'memory':
-        return this.memories[descriptor.index - this.importsByType.memory];
+        return this.memories[localIndex];
       case 'table':
-        return this.tables[descriptor.index - this.importsByType.table];
+        return this.tables[localIndex];
     }
   }
 }
@@ -223,8 +220,45 @@ function mapTable(table: TableType): ModuleTable {
   };
 }
 
-function mapImport(module: Module, imp: Import) {
-  const target = module.resolveImportDescriptor(imp.descriptor);
+/**
+ * Resolves an import descriptor into a corresponding module symbol.
+ *
+ * @param descriptor - The descriptor that needs to be resolved into a module symbol.
+ *                      It specifies the type and index of the symbol within the module.
+ * @param types - Array of module types.
+ * @returns The module symbol corresponding to the descriptor, or `undefined` if the descriptor
+ *          cannot be resolved. The symbol can be a function, global, memory, or table, depending
+ *          on the descriptor's type.
+ */
+function resolveImportDescriptor(
+  descriptor: ImportDescriptor,
+  types: FunctionType[]
+): ModuleSymbol | undefined {
+  switch (descriptor.type) {
+    case 'function':
+      const targetType = types[descriptor.index];
+      if (!targetType) {
+        throw new WebAssemblyDecodeError(
+          `Could not decode import descriptor with index: ${descriptor.index}`
+        );
+      }
+
+      return {
+        kind: 'function',
+        parametersTypes: targetType.parameterTypes,
+        resultTypes: targetType.returnTypes,
+      };
+    case 'global':
+      return mapGlobal(descriptor.global);
+    case 'memory':
+      return mapMemory(descriptor.memory);
+    case 'table':
+      return mapTable(descriptor.table);
+  }
+}
+
+function mapImport(imp: Import, types: FunctionType[]): ModuleImport {
+  const target = resolveImportDescriptor(imp.descriptor, types);
 
   if (!target) {
     throw new WebAssemblyDecodeError(
@@ -240,7 +274,7 @@ function mapImport(module: Module, imp: Import) {
   };
 }
 
-function mapExport(module: Module, exp: Export) {
+function mapExport(module: Module, exp: Export): ModuleExport {
   const target = module.resolveExportDescriptor(exp.descriptor);
 
   if (!target) {
