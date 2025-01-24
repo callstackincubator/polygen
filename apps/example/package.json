@@ -2,13 +2,13 @@
   "name": "polygen-example",
   "description": "Example app for React Native",
   "license": "MIT",
-  "homepage": "https://github.com/callstack/polygen",
+  "homepage": "https://github.com/callstackincubator/polygen",
   "version": "0.0.1",
   "author": "Robert Pasiński <robert.pasinski@callstack.com>",
   "private": true,
   "repository": {
     "type": "git",
-    "url": "https://github.com/callstack/polygen.git"
+    "url": "https://github.com/callstackincubator/polygen.git"
   },
   "scripts": {
     "dev": "true",

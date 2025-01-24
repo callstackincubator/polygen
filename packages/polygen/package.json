@@ -1,6 +1,6 @@
 {
   "name": "@callstack/polygen",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "React Native Module for running WebAssembly modules, with native performance.",
   "source": "./src/index.ts",
   "main": "./lib/commonjs/index.js",
@@ -67,9 +67,9 @@
   "author": "Callstack (https://github.com/callstack)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/callstack/react-native-wasm/issues"
+    "url": "https://github.com/callstackincubator/polygen/issues"
   },
-  "homepage": "https://github.com/callstack/polygen",
+  "homepage": "https://github.com/callstackincubator/polygen",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },

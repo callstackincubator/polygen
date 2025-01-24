@@ -1,11 +1,11 @@
 {
   "name": "@callstack/polygen-codegen",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "The code generator for @callstack/polygen",
   "license": "MIT",
   "type": "module",
   "files": [
-    "data",
+    "assets",
     "dist"
   ],
   "exports": {
@@ -25,8 +25,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@callstack/polygen-binary-utils": "workspace:^",
-    "@callstack/wasm-parser": "workspace:^",
+    "@callstack/polygen-binary-utils": "0.1.0",
+    "@callstack/wasm-parser": "0.1.0",
     "execa": "^9.4.1",
     "indent-string": "^5.0.0",
     "strip-indent": "^4.0.0"
