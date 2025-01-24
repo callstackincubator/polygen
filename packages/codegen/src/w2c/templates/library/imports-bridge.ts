@@ -11,7 +11,9 @@ export function buildImportBridgeHeader(importedModule: W2CImportedModule) {
         return makeImportFunc(symbol as GeneratedFunctionImport, false);
       }
       case 'global':
-        return `${symbol.target.type.replace('i', 'u')}* ${symbol.generatedFunctionName}(${importedModule.generatedContextTypeName}* ctx);`;
+        return `${symbol.target.type.replace('i', 'u')}* ${
+          symbol.generatedFunctionName
+        }(${importedModule.generatedContextTypeName}* ctx);`;
       default:
         console.warn('Unknown import type', symbol.target.kind);
         return '';
@@ -82,6 +84,13 @@ export function buildImportBridgeSource(importedModule: W2CImportedModule) {
     using namespace facebook;
     using namespace callstack::polygen;
 
+    double getNumericVal(const facebook::jsi::Value& val) {
+      if (val.isBool()) {
+        return (double)val.asBool();
+      }
+      return val.asNumber();
+    }
+
     #ifdef __cplusplus
     extern "C" {
     #endif
@@ -107,8 +116,9 @@ function makeImportFunc(
     .map((_, i) => `, jsi::Value { (double)arg${i} }`)
     .join('');
 
-  const returnKeyword = func.target.resultTypes.length > 0 ? 'return ' : '';
-  const castSuffix = func.target.resultTypes.length > 0 ? '.asNumber()' : '';
+  const returnKeyword =
+    func.target.resultTypes.length > 0 ? 'return getNumericVal(' : '';
+  const castSuffix = func.target.resultTypes.length > 0 ? ')' : '';
 
   const prototype = `${func.returnTypeName} ${func.generatedFunctionName}(${func.moduleInfo.generatedContextTypeName}* ctx${declarationParams})`;
   const body = `{
