@@ -18,9 +18,7 @@ export class Instance {
   constructor(module: Module, imports: ImportObject = {}) {
     this.#imports = imports;
 
-    console.log('create instance');
     if (module instanceof Module) {
-      console.log('is module');
       validateImports(imports, module.metadata);
     } else {
       throw new TypeError('Invalid module type');
@@ -38,7 +36,6 @@ function validateImports(
   imports: ImportObject,
   metadata: InternalModuleMetadata
 ) {
-  console.log('validate imports', { imports, metadata });
   for (const importDesc of metadata.imports) {
     const mod = imports[importDesc.module];
     if (!mod) {
