@@ -57,7 +57,9 @@ export class W2CModuleCodegenContext {
    * @return An array containing the imported modules in reverse order.
    */
   public get importedModules() {
-    return Object.values(this.moduleImports).toReversed();
+    return Object.values(this.moduleImports).toSorted((a, b) =>
+      a.name.localeCompare(b.name)
+    );
   }
 
   /**

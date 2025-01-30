@@ -30,6 +30,10 @@ public:
     return this->memory_;
   }
   
+  wasm_rt_memory_t* getMemory() {
+    return this->memory_;
+  }
+  
   bool isOwned() const {
     return this->memory_ == &this->ownedMemory_;
   }

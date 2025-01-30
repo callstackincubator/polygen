@@ -1,18 +1,37 @@
-import type { ModuleGlobal } from '@callstack/wasm-parser';
+import type {
+  ModuleGlobal,
+  ModuleMemory,
+  ModuleTable,
+  RefType,
+} from '@callstack/wasm-parser';
 import stripIndent from 'strip-indent';
 import { W2CImportedModule } from '../../context/index.js';
 import type { GeneratedFunctionImport, GeneratedImport } from '../../types.js';
 import { HEADER } from '../common.js';
 
+const TABLE_KIND_TO_NATIVE_C_TYPE: Record<RefType, string> = {
+  funcref: 'wasm_rt_funcref_table_t',
+  externref: 'wasm_rt_externref_table_t',
+};
+
+const TABLE_KIND_TO_CLASS_NAME: Record<RefType, string> = {
+  funcref: 'FuncRefTable',
+  externref: 'ExternRefTable',
+};
+
 export function buildImportBridgeHeader(importedModule: W2CImportedModule) {
   function makeDeclaration(symbol: GeneratedImport): string {
     switch (symbol.target.kind) {
-      case 'function': {
+      case 'function':
         return makeImportFunc(symbol as GeneratedFunctionImport, false);
-      }
       case 'global':
-        return `${symbol.target.type.replace('i', 'u')}* ${symbol.generatedFunctionName}(${importedModule.generatedContextTypeName}* ctx);`;
+        return makeImportGlobal(symbol as GeneratedImport<ModuleGlobal>, false);
+      case 'memory':
+        return makeImportMemory(symbol as GeneratedImport<ModuleMemory>, false);
+      case 'table':
+        return makeImportTable(symbol as GeneratedImport<ModuleTable>, false);
       default:
+        // @ts-ignore
         console.warn('Unknown import type', symbol.target.kind);
         return '';
     }
@@ -25,6 +44,7 @@ export function buildImportBridgeHeader(importedModule: W2CImportedModule) {
     stripIndent(`
     #pragma once
     #include <jsi/jsi.h>
+    #include <wasm-rt.h>
     #include <ReactNativePolygen/gen-utils.h>
 
     struct ${importedModule.generatedContextTypeName} {
@@ -47,26 +67,18 @@ export function buildImportBridgeHeader(importedModule: W2CImportedModule) {
 }
 
 export function buildImportBridgeSource(importedModule: W2CImportedModule) {
-  function makeImportGlobal(global: GeneratedImport<ModuleGlobal>): string {
-    const cType = global.target.type.replace('i', 'u') + '*';
-
-    return `
-      /* import: '${global.module}' '${global.name}' */
-      ${cType} ${global.generatedFunctionName}(${global.moduleInfo.generatedContextTypeName}* ctx) {
-        auto obj = ctx->importObj.getPropertyAsObject(ctx->rt, "${global.name}");
-        auto global = NativeStateHelper::tryGet<Global>(ctx->rt, obj);
-        return (${cType})global->getUnsafePayloadPtr();
-      }
-    `;
-  }
-
   function makeImport(imp: GeneratedImport): string {
     switch (imp.target.kind) {
       case 'function':
         return makeImportFunc(imp as GeneratedFunctionImport, true);
       case 'global':
-        return makeImportGlobal(imp as GeneratedImport<ModuleGlobal>);
+        return makeImportGlobal(imp as GeneratedImport<ModuleGlobal>, true);
+      case 'memory':
+        return makeImportMemory(imp as GeneratedImport<ModuleMemory>, true);
+      case 'table':
+        return makeImportTable(imp as GeneratedImport<ModuleTable>, true);
       default:
+        // @ts-ignore
         console.warn('Unknown import type', imp.target.kind);
         return '';
     }
@@ -119,6 +131,60 @@ function makeImportFunc(
 
   return `
     /* import: '${func.module}' '${func.name}' */
+    ${prototype}${withBody ? body : ';'}
+  `;
+}
+
+function makeImportGlobal(
+  global: GeneratedImport<ModuleGlobal>,
+  withBody: boolean
+): string {
+  const cType = global.target.type.replace('i', 'u') + '*';
+  const prototype = `${cType} ${global.generatedFunctionName}(${global.moduleInfo.generatedContextTypeName}* ctx)`;
+  const body = `{
+      auto obj = ctx->importObj.getPropertyAsObject(ctx->rt, "${global.name}");
+      auto global = NativeStateHelper::tryGet<Global>(ctx->rt, obj);
+      return (${cType})global->getUnsafePayloadPtr();
+    }
+  `;
+
+  return `
+    /* import: '${global.module}' '${global.name}' */
+    ${prototype}${withBody ? body : ';'}
+  `;
+}
+
+function makeImportMemory(
+  memory: GeneratedImport<ModuleMemory>,
+  withBody: boolean
+): string {
+  const prototype = `wasm_rt_memory_t* ${memory.generatedFunctionName}(${memory.moduleInfo.generatedContextTypeName}* ctx)`;
+  const body = `{
+    auto memoryHolder = ctx->importObj.getPropertyAsObject(ctx->rt, "${memory.name}");
+    auto memoryState = NativeStateHelper::tryGet<Memory>(ctx->rt, memoryHolder);
+    return memoryState->getMemory();
+  }`;
+
+  return `
+    /* import: '${memory.module}' '${memory.name}' */
+    ${prototype}${withBody ? body : ';'}
+  `;
+}
+
+function makeImportTable(
+  table: GeneratedImport<ModuleTable>,
+  withBody: boolean
+): string {
+  const prototype = `${TABLE_KIND_TO_NATIVE_C_TYPE[table.target.elementType]}* ${table.generatedFunctionName}(${table.moduleInfo.generatedContextTypeName}* ctx)`;
+  const body = `{
+    auto tableHolder = ctx->importObj.getPropertyAsObject(ctx->rt, "${table.name}");
+    auto table = NativeStateHelper::tryGet<${TABLE_KIND_TO_CLASS_NAME[table.target.elementType]}>(ctx->rt, tableHolder);
+    assert(table != nullptr);
+    return table->getTableData();
+  }`;
+
+  return `
+    /* import: '${table.module}' '${table.name}' */
     ${prototype}${withBody ? body : ';'}
   `;
 }

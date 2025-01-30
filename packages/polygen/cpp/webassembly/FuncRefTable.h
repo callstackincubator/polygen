@@ -67,6 +67,11 @@ public:
     throw TableElementTypeError {"Passed invalid element type to Table of 'anyfunc' elementtype."};
   }
   
+  wasm_rt_funcref_table_t* getTableData() {
+    return table_;
+  }
+  
+  
 protected:
   std::optional<size_t> maxSize_;
   wasm_rt_funcref_table_t ownedTable_;

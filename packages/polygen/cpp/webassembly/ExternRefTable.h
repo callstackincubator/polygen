@@ -66,6 +66,10 @@ public:
     throw TableElementTypeError {"Passed invalid element type to Table of 'externref' elementtype."};
   }
   
+  wasm_rt_externref_table_t* getTableData() {
+    return table_;
+  }
+  
 protected:
   std::optional<size_t> maxSize_;
   wasm_rt_externref_table_t ownedTable_;
