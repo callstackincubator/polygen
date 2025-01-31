@@ -73,7 +73,6 @@ export function withPolygenConfig(
     ...defaultConfig,
     resolver: {
       ...defaultConfig.resolver,
-      unstable_enablePackageExports: true,
       resolveRequest,
       // sourceExts: ['ts', 'tsx', 'js', 'jsx', 'json', 'wasm'],
     },

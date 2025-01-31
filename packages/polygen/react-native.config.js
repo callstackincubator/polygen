@@ -2,9 +2,6 @@
  * @type {import('@react-native-community/cli-types').UserDependencyConfig}
  */
 module.exports = {
-  resolver: {
-    unstable_enablePackageExports: true,
-  },
   dependency: {
     platforms: {
       android: {
