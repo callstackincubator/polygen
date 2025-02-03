@@ -1,4 +1,4 @@
-import type { ModuleMemory } from '@callstack/wasm-parser';
+import type { ModuleMemory, ValueType } from '@callstack/wasm-parser';
 import stripIndent from 'strip-indent';
 import { W2CModuleContext } from '../../context/context.js';
 import type { GeneratedExport, GeneratedFunctionExport } from '../../types.js';
@@ -36,6 +36,18 @@ export function buildExportBridgeHeader(module: W2CModuleContext) {
   );
 }
 
+// https://github.com/WebAssembly/wabt/blob/46648b09614b8c675e49a0fa5831e2dd8125b11d/src/c-writer.cc#L655
+const TYPE_MULTI_STRUCT_PREFIX: Record<ValueType, string> = {
+  i32: 'i',
+  i64: 'j',
+  f32: 'f',
+  f64: 'd',
+  v128: 'o',
+  funcref: 'r',
+  externref: 'e',
+  // exnref
+};
+
 export function buildExportBridgeSource(
   module: W2CModuleContext,
   { hackAutoNumberCoerce }: { hackAutoNumberCoerce?: boolean } = {}
@@ -59,10 +71,20 @@ export function buildExportBridgeSource(
       )
       .join('');
     const res = func.target.resultTypes.length > 0 ? 'auto res = ' : '';
-    const returnPart =
-      func.target.resultTypes.length > 0
-        ? 'return jsi::Value { (double)res };'
-        : 'return jsi::Value::undefined()';
+    let returnPart = '';
+    if (func.target.resultTypes.length > 1) {
+      const elements = func.target.resultTypes
+        .map(
+          (t, i) =>
+            `jsi::Value { (double)res.${TYPE_MULTI_STRUCT_PREFIX[t]}${i} }`
+        )
+        .join(', ');
+      returnPart = `return jsi::Array::createWithElements(rt, ${elements})`;
+    } else if (func.target.resultTypes.length === 1) {
+      returnPart = 'return jsi::Value { (double)res }';
+    } else {
+      returnPart = 'return jsi::Value::undefined()';
+    }
 
     return `
       /* export: '${func.name}' */
