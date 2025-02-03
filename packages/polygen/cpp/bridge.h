@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <wasm-rt.h>
 #include "Module.h"
 
 namespace callstack::polygen {
@@ -41,5 +42,19 @@ class LoaderError: public std::runtime_error {
 public:
   explicit LoaderError(const std::string& what);
 };
-  
+
+/**
+ * Thrown when WebAssembly module evaluation traps.
+ */
+class TrapError: public std::runtime_error {
+public:
+  wasm_rt_trap_t type;
+  explicit TrapError(wasm_rt_trap_t type);
+};
+
+extern "C"
+[[noreturn]]
+void polygen_trap_handler(wasm_rt_trap_t trap);
+
 }
+

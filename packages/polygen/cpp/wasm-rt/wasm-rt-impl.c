@@ -42,6 +42,11 @@
 #define DEBUG_PRINTF(...)
 #endif
 
+/**
+ * Polygen customisation
+ */
+#define WASM_RT_TRAP_HANDLER polygen_trap_handler
+
 #if WASM_RT_INSTALL_SIGNAL_HANDLER
 static bool g_signal_handler_installed = false;
 #ifdef _WIN32
