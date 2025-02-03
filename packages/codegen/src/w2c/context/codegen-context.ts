@@ -213,8 +213,9 @@ function matchW2CRType(t?: ValueType): string {
     return 'void';
   }
 
-  if (t.startsWith('u') || t.startsWith('i')) {
-    return 'u32';
+  // TODO: figure out why wasm2c returns u32 for number types sometimes
+  if (t.startsWith('i')) {
+    return t.replace(/^i/, 'u');
   }
-  return 'f64';
+  return t;
 }
