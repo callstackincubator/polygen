@@ -1,10 +1,8 @@
-import NativeWASM, {
-  InternalModuleMetadata,
-  type OpaqueModuleNativeHandle,
-} from '../NativePolygen';
+import NativeWASM, { InternalModuleMetadata } from '../NativePolygen';
 import { Global } from './Global';
-import { Memory, type MemoryDescriptor } from './Memory';
+import { Memory } from './Memory';
 import { Module } from './Module';
+import { Table } from './Table';
 import type { ImportObject } from './WebAssembly';
 import { LinkError } from './errors';
 
@@ -13,7 +11,8 @@ export class Instance {
   #imports: ImportObject;
 
   public exports: any;
-  private memories: Record<string, MemoryDescriptor> = {};
+  private memories: Record<string, object> = {};
+  private tables: Record<string, object> = {};
 
   constructor(module: Module, imports: ImportObject = {}) {
     this.#imports = imports;
@@ -28,6 +27,10 @@ export class Instance {
 
     for (const memoryName in this.memories) {
       this.exports[memoryName] = new Memory(this.memories[memoryName]!);
+    }
+
+    for (const tableName in this.tables) {
+      this.exports[tableName] = new Table(this.tables[tableName]!);
     }
   }
 }

@@ -1,4 +1,4 @@
-import { Module, type ModuleMemory } from '@callstack/wasm-parser';
+import { Module, type ModuleMemory, ModuleTable } from '@callstack/wasm-parser';
 import type { ModuleFunction, ValueType } from '@callstack/wasm-parser';
 import { mangleModuleName, mangleName } from '../mangle.js';
 import type {
@@ -78,6 +78,15 @@ export class W2CModuleCodegenContext {
     return this.exports.filter(
       (i) => i.target.kind === 'function'
     ) as GeneratedFunctionExport[];
+  }
+
+  /**
+   * Retrieves an array of all exported tables.
+   */
+  public get exportedTables(): GeneratedExport<ModuleTable>[] {
+    return this.exports.filter(
+      (i) => i.target.kind === 'table'
+    ) as GeneratedExport<ModuleTable>[];
   }
 }
 

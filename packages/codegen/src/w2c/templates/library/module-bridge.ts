@@ -1,8 +1,12 @@
-import type { ModuleMemory, ValueType } from '@callstack/wasm-parser';
+import type {
+  ModuleMemory,
+  ModuleTable,
+  ValueType,
+} from '@callstack/wasm-parser';
 import stripIndent from 'strip-indent';
 import { W2CModuleContext } from '../../context/context.js';
 import type { GeneratedExport, GeneratedFunctionExport } from '../../types.js';
-import { HEADER } from '../common.js';
+import { HEADER, TABLE_KIND_TO_CLASS_NAME } from '../common.js';
 
 export function buildExportBridgeHeader(module: W2CModuleContext) {
   const imports = module.codegen.importedModules;
@@ -109,6 +113,19 @@ export function buildExportBridgeSource(
     `;
   }
 
+  function makeExportTable(table: GeneratedExport<ModuleTable>) {
+    const className = TABLE_KIND_TO_CLASS_NAME[table.target.elementType];
+    return `
+      /* exported table: '${table.name}' */
+      {
+        jsi::Object holder {rt};
+        auto table = std::make_shared<${className}>(${table.generatedFunctionName}(&inst->rootCtx));
+        holder.setNativeState(rt, std::move(table));
+        tables.setProperty(rt, "${table.name}", std::move(holder));
+      }
+    `;
+  }
+
   const initArgs = module.codegen.importedModules
     .map((mod) => `, &inst->${mod.generatedRootContextFieldName}`)
     .join('');
@@ -117,7 +134,7 @@ export function buildExportBridgeSource(
     HEADER +
     stripIndent(`
     #include <ReactNativePolygen/gen-utils.h>
-    #include <ReactNativePolygen/Memory.h>
+    #include <ReactNativePolygen/WebAssembly.h>
     #include "jsi-exports-bridge.h"
     #include "wasm-rt.h"
     #include "${module.name}.h"
@@ -150,6 +167,11 @@ export function buildExportBridgeSource(
         jsi::Object memories {rt};
         ${module.codegen.exportedMemories.map(makeExportMemory).join('\n        ')}
         target.setProperty(rt, "memories", std::move(memories));
+
+        // Tables
+        jsi::Object tables {rt};
+        ${module.codegen.exportedTables.map(makeExportTable).join('\n        ')}
+        target.setProperty(rt, "tables", std::move(tables));
 
         // Exported functions
         jsi::Object exports {rt};

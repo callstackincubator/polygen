@@ -7,17 +7,11 @@ import type {
 import stripIndent from 'strip-indent';
 import { W2CImportedModule } from '../../context/index.js';
 import type { GeneratedFunctionImport, GeneratedImport } from '../../types.js';
-import { HEADER } from '../common.js';
-
-const TABLE_KIND_TO_NATIVE_C_TYPE: Record<RefType, string> = {
-  funcref: 'wasm_rt_funcref_table_t',
-  externref: 'wasm_rt_externref_table_t',
-};
-
-const TABLE_KIND_TO_CLASS_NAME: Record<RefType, string> = {
-  funcref: 'FuncRefTable',
-  externref: 'ExternRefTable',
-};
+import {
+  HEADER,
+  TABLE_KIND_TO_CLASS_NAME,
+  TABLE_KIND_TO_NATIVE_C_TYPE,
+} from '../common.js';
 
 export function buildImportBridgeHeader(importedModule: W2CImportedModule) {
   function makeDeclaration(symbol: GeneratedImport): string {
