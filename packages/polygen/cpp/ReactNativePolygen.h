@@ -54,6 +54,8 @@ public:
   explicit ReactNativePolygen(std::shared_ptr<CallInvoker> jsInvoker);
   virtual ~ReactNativePolygen();
 
+  bool copyNativeHandle(jsi::Runtime &rt, jsi::Object holder, jsi::Object source) override;
+
   // Modules
   jsi::Object loadModule(jsi::Runtime &rt, jsi::Object holder, jsi::Object moduleData) override;
   void unloadModule(jsi::Runtime &rt, jsi::Object moduleHolder) override;
@@ -78,7 +80,7 @@ public:
   jsi::Object getTableElement(jsi::Runtime &rt, jsi::Object instance, double index) override;
   void setTableElement(jsi::Runtime &rt, jsi::Object instance, double index, jsi::Object value) override;
   double getTableSize(jsi::Runtime &rt, jsi::Object instance) override;
-  
+
 private:
   // Utility
   jsi::Object buildModuleMetadata(jsi::Runtime &rt, const std::shared_ptr<callstack::polygen::Module>& mod);

@@ -56,6 +56,8 @@ export class Table {
         },
         value
       );
+    } else {
+      NativeWASM.copyNativeHandle(this, instance);
     }
   }
 

@@ -24,6 +24,16 @@ ReactNativePolygen::~ReactNativePolygen() {
   wasm_rt_free();
 }
 
+bool ReactNativePolygen::copyNativeHandle(jsi::Runtime &rt, jsi::Object holder, jsi::Object source) {
+  auto hasNativeState = source.hasNativeState(rt);
+
+  if (hasNativeState) {
+    holder.setNativeState(rt, source.getNativeState(rt));
+  }
+
+  return hasNativeState;
+}
+
 
 jsi::Object ReactNativePolygen::loadModule(jsi::Runtime &rt, jsi::Object holder, jsi::Object moduleData) {
   auto buffer = moduleData.getArrayBuffer(rt);
@@ -81,7 +91,7 @@ void ReactNativePolygen::createGlobal(jsi::Runtime &rt, jsi::Object holder, jsi:
   auto descriptor = Bridging<NativeGlobalDescriptor>::fromJs(rt, globalDescriptor, jsInvoker_);
   auto waType = static_cast<Global::Type>(descriptor.type);
   jsi::Value initial { initialValue };
-  
+
   auto globalVar = std::make_shared<Global>(waType, std::move(initial), descriptor.isMutable);
   NativeStateHelper::attach(rt, holder, globalVar);
 }
@@ -104,7 +114,7 @@ void ReactNativePolygen::createTable(jsi::Runtime &rt, jsi::Object holder, jsi::
   auto maxSizeNumber = descriptor.maxSize.has_value()
     ? std::make_optional((double)descriptor.maxSize.value())
     : std::nullopt;
-  
+
   switch (descriptor.element) {
     case NativeTableElementType::AnyFunc:
       table = std::make_shared<FuncRefTable>((size_t)descriptor.initialSize, descriptor.maxSize);
@@ -115,7 +125,7 @@ void ReactNativePolygen::createTable(jsi::Runtime &rt, jsi::Object holder, jsi::
     default:
       assert(0);
   }
-  
+
   NativeStateHelper::attach(rt, holder, table);
 }
 
@@ -126,7 +136,7 @@ void ReactNativePolygen::growTable(jsi::Runtime &rt, jsi::Object instance, doubl
 
 jsi::Object ReactNativePolygen::getTableElement(jsi::Runtime &rt, jsi::Object instance, double index) {
   auto table = NativeStateHelper::tryGet<Table>(rt, instance);
-  
+
   auto element = table->getElement(index);
   return NativeStateHelper::wrap(rt, element);
 }
@@ -148,7 +158,7 @@ jsi::Object ReactNativePolygen::buildModuleMetadata(jsi::Runtime& rt, const std:
 
   std::vector<NativeImportDescriptor> importsMapped;
   std::vector<NativeExportDescriptor> exportsMapped;
-  
+
   importsMapped.reserve(imports.size());
   exportsMapped.reserve(exports.size());
 

@@ -57,6 +57,8 @@ export class Global {
         },
         initialValue ?? 0
       );
+    } else {
+      NativeWASM.copyNativeHandle(this, instance);
     }
   }
 

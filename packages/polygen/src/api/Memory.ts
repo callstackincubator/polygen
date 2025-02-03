@@ -34,6 +34,8 @@ export class Memory {
   constructor(instance: OpaqueMemoryNativeHandle | MemoryDescriptor) {
     if (isMemoryDescriptor(instance)) {
       NativeWASM.createMemory(this, instance.initial, instance.maximum);
+    } else {
+      NativeWASM.copyNativeHandle(this, instance);
     }
   }
 
