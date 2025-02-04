@@ -1,4 +1,4 @@
-import type { RefType } from '@callstack/wasm-parser';
+import type { RefType, ValueType } from '@callstack/wasm-parser';
 
 export const HEADER = `
 //
@@ -8,12 +8,45 @@ export const HEADER = `
 //
 `.trimStart();
 
+/**
+ * Mapping from WebAssembly table kind to the native C type, used by `wasm2c`.
+ */
 export const TABLE_KIND_TO_NATIVE_C_TYPE: Record<RefType, string> = {
   funcref: 'wasm_rt_funcref_table_t',
   externref: 'wasm_rt_externref_table_t',
 };
 
+/**
+ * Mapping from WebAssembly table kind to the name of corresponding C++ class.
+ *
+ * The C++ Class is a Polygen wrapper to encapsulate common operations.
+ */
 export const TABLE_KIND_TO_CLASS_NAME: Record<RefType, string> = {
   funcref: 'FuncRefTable',
   externref: 'ExternRefTable',
 };
+
+// https://github.com/WebAssembly/wabt/blob/46648b09614b8c675e49a0fa5831e2dd8125b11d/src/c-writer.cc#L655
+/**
+ * When a function returns multiple values, the result is wrapped into a C struct.
+ *
+ * Each field of the struct is prefixed with a type-specific character.
+ */
+export const STRUCT_TYPE_PREFIX: Record<ValueType, string> = {
+  i32: 'i',
+  i64: 'j',
+  f32: 'f',
+  f64: 'd',
+  v128: 'o',
+  funcref: 'r',
+  externref: 'e',
+  // exnref
+};
+
+export function toJSINumber(expr: string): string {
+  return `jsi::Value { (double)(${expr}) }`;
+}
+
+export function fromJSINumber(expr: string, type: string): string {
+  return `coerceToNumber<${type}>(${expr})`;
+}

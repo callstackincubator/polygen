@@ -2,15 +2,16 @@ import type {
   ModuleGlobal,
   ModuleMemory,
   ModuleTable,
-  RefType,
 } from '@callstack/wasm-parser';
 import stripIndent from 'strip-indent';
 import { W2CImportedModule } from '../../context/index.js';
 import type { GeneratedFunctionImport, GeneratedImport } from '../../types.js';
 import {
   HEADER,
+  STRUCT_TYPE_PREFIX,
   TABLE_KIND_TO_CLASS_NAME,
   TABLE_KIND_TO_NATIVE_C_TYPE,
+  toJSINumber,
 } from '../common.js';
 
 export function buildImportBridgeHeader(importedModule: W2CImportedModule) {
@@ -100,25 +101,51 @@ export function buildImportBridgeSource(importedModule: W2CImportedModule) {
   );
 }
 
+function wrapJSIReturnIntoNative(
+  varName: string,
+  func: GeneratedFunctionImport
+) {
+  const { resultTypes } = func.target;
+
+  // Handle multiple value types (struct)
+  if (resultTypes.length > 1) {
+    const elements = resultTypes
+      .map((t, i) => toJSINumber(`${varName}.${STRUCT_TYPE_PREFIX[t]}${i}`))
+      .join(', ');
+
+    return `return { ${elements} }`;
+  }
+
+  if (resultTypes.length === 1) {
+    return `return coerceToNumber<${func.returnTypeName}>(res)`;
+  }
+
+  return 'return';
+}
+
 function makeImportFunc(
   func: GeneratedFunctionImport,
   withBody: boolean
 ): string {
+  const { resultTypes } = func.target;
+
   const declarationParams = func.parameterTypeNames
-    .map((name, i) => `, ${name} arg${i}`)
+    .map((name, i) => `${name} arg${i}`)
+    .map((e) => `, ${e}`)
     .join('');
 
   const args = func.parameterTypeNames
-    .map((_, i) => `, jsi::Value { (double)arg${i} }`)
+    .map((_, i) => toJSINumber(`arg${i}`))
+    .map((e) => `, ${e}`)
     .join('');
 
-  const returnKeyword = func.target.resultTypes.length > 0 ? 'return ' : '';
-  const castSuffix = func.target.resultTypes.length > 0 ? '.asNumber()' : '';
+  const hasReturn = resultTypes.length > 0;
 
   const prototype = `${func.returnTypeName} ${func.generatedFunctionName}(${func.moduleInfo.generatedContextTypeName}* ctx${declarationParams})`;
   const body = `{
     auto fn = ctx->importObj.getPropertyAsFunction(ctx->rt, "${func.name}");
-    ${returnKeyword}fn.call(ctx->rt${args})${castSuffix};
+    ${hasReturn ? 'auto res = ' : ''}fn.call(ctx->rt${args});
+    ${wrapJSIReturnIntoNative('res', func)};
   }
   `;
 

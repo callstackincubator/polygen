@@ -6,6 +6,7 @@
  */
 #pragma once
 #include <cinttypes>
+#include <type_traits>
 #include <jsi/jsi.h>
 
 #define INIT_IMPORT_CTX(field, importName) field{&rootCtx, rt, this->importObject.getPropertyAsObject(rt, importName)}

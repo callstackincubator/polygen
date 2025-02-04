@@ -6,7 +6,13 @@ import type {
 import stripIndent from 'strip-indent';
 import { W2CModuleContext } from '../../context/context.js';
 import type { GeneratedExport, GeneratedFunctionExport } from '../../types.js';
-import { HEADER, TABLE_KIND_TO_CLASS_NAME } from '../common.js';
+import {
+  HEADER,
+  STRUCT_TYPE_PREFIX,
+  TABLE_KIND_TO_CLASS_NAME,
+  fromJSINumber,
+  toJSINumber,
+} from '../common.js';
 
 export function buildExportBridgeHeader(module: W2CModuleContext) {
   const imports = module.codegen.importedModules;
@@ -40,46 +46,38 @@ export function buildExportBridgeHeader(module: W2CModuleContext) {
   );
 }
 
-// https://github.com/WebAssembly/wabt/blob/46648b09614b8c675e49a0fa5831e2dd8125b11d/src/c-writer.cc#L655
-const TYPE_MULTI_STRUCT_PREFIX: Record<ValueType, string> = {
-  i32: 'i',
-  i64: 'j',
-  f32: 'f',
-  f64: 'd',
-  v128: 'o',
-  funcref: 'r',
-  externref: 'e',
-  // exnref
-};
+function wrapNativeReturnIntoJSI(varName: string, types: ValueType[]) {
+  if (types.length > 1) {
+    const elements = types
+      .map((t, i) => toJSINumber(`${varName}.${STRUCT_TYPE_PREFIX[t]}${i}`))
+      .map((e) => `, ${e}`)
+      .join('');
+
+    return `return jsi::Array::createWithElements(rt${elements})`;
+  }
+
+  if (types.length === 1) {
+    return `return ${toJSINumber(varName)}`;
+  }
+
+  return 'return jsi::Value::undefined()';
+}
 
 export function buildExportBridgeSource(module: W2CModuleContext) {
   function makeExportFunc(func: GeneratedFunctionExport) {
-    const args = func.parameterTypeNames
-      .map((type, i) => `, coerceToNumber<${type}>(args[${i}])`)
-      .join('');
-    const res = func.target.resultTypes.length > 0 ? 'auto res = ' : '';
+    const { resultTypes } = func.target;
 
-    // TODO: Replace with C++ Template
-    let returnPart = '';
-    if (func.target.resultTypes.length > 1) {
-      const elements = func.target.resultTypes
-        .map(
-          (t, i) =>
-            `jsi::Value { (double)res.${TYPE_MULTI_STRUCT_PREFIX[t]}${i} }`
-        )
-        .join(', ');
-      returnPart = `return jsi::Array::createWithElements(rt, ${elements})`;
-    } else if (func.target.resultTypes.length === 1) {
-      returnPart = 'return jsi::Value { (double)res }';
-    } else {
-      returnPart = 'return jsi::Value::undefined()';
-    }
+    const args = func.parameterTypeNames
+      .map((type, i) => fromJSINumber(`args[${i}]`, type))
+      .map((e) => `, ${e}`)
+      .join('');
+    const res = resultTypes.length > 0 ? 'auto res = ' : '';
 
     return `
       /* export: '${func.name}' */
       exports.setProperty(rt, "${func.name}", HOSTFN("${func.name}", ${func.parameterTypeNames.length}) {
         ${res}${func.generatedFunctionName}(&inst->rootCtx${args});
-        ${returnPart};
+        ${wrapNativeReturnIntoJSI('res', resultTypes)};
       }));
     `;
   }
