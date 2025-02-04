@@ -4,6 +4,7 @@
   "exclude": ["node_modules"],
   "compilerOptions": {
     "rootDir": "./src",
+    "module": "nodenext",
     "outDir": "dist"
   }
 }

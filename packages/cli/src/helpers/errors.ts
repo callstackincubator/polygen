@@ -19,5 +19,17 @@ export class CLIError extends Error {
   }
 }
 
+export interface ErrnoError extends Error {
+  code: string;
+}
+
+export function isErrnoError(e: unknown): e is ErrnoError {
+  if (e instanceof Error && 'code' in e && typeof e.code === 'string') {
+    return true;
+  }
+
+  return false;
+}
+
 export const inlineString = (str: string = '') =>
   str.replace(/(\s{2,})/gm, ' ').trim();
