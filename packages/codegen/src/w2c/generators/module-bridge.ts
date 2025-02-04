@@ -19,7 +19,7 @@ export async function generateModuleExportsBridge(
     // TODO; remove generated files on dev (or always)
     await Promise.allSettled([
       generateCSource(generator, module, options),
-      generateJSIBridge(generator, module, options),
+      generateJSIBridge(generator, module),
       renderMetadata(generator, module),
     ]);
   } catch (e) {
@@ -42,14 +42,11 @@ async function generateCSource(
 
 async function generateJSIBridge(
   generator: OutputGenerator,
-  module: W2CModuleContext,
-  options: ModuleGeneratorOptions
+  module: W2CModuleContext
 ) {
   await generator.writeAllTo({
     'jsi-exports-bridge.h': templates.buildExportBridgeHeader(module),
-    'jsi-exports-bridge.cpp': templates.buildExportBridgeSource(module, {
-      hackAutoNumberCoerce: options.hackAutoNumberCoerce,
-    }),
+    'jsi-exports-bridge.cpp': templates.buildExportBridgeSource(module),
     'static-module.h': templates.buildStaticLibraryHeader(module),
     'static-module.cpp': templates.buildStaticLibrarySource(module),
   });

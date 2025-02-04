@@ -37,7 +37,6 @@ export function buildImportBridgeHeader(importedModule: W2CImportedModule) {
     HEADER +
     stripIndent(`
     #pragma once
-    #include <jsi/jsi.h>
     #include <wasm-rt.h>
     #include <ReactNativePolygen/gen-utils.h>
 

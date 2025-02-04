@@ -6,6 +6,7 @@
  */
 #pragma once
 #include <cinttypes>
+#include <jsi/jsi.h>
 
 #define INIT_IMPORT_CTX(field, importName) field{&rootCtx, rt, this->importObject.getPropertyAsObject(rt, importName)}
 
@@ -26,3 +27,20 @@ typedef uint64_t u64;
 typedef int64_t s64;
 typedef float f32;
 typedef double f64;
+
+namespace callstack::polygen {
+
+template <typename T>
+T coerceToNumber(const facebook::jsi::Value& value) {
+  if (value.isUndefined() || value.isNull()) {
+    return (T)0;
+  }
+  
+  if (value.isBool()) {
+    return (T)value.asBool();
+  }
+  
+  return (T)value.asNumber();
+}
+
+};

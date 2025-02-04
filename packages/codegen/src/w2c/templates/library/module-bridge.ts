@@ -52,29 +52,14 @@ const TYPE_MULTI_STRUCT_PREFIX: Record<ValueType, string> = {
   // exnref
 };
 
-export function buildExportBridgeSource(
-  module: W2CModuleContext,
-  { hackAutoNumberCoerce }: { hackAutoNumberCoerce?: boolean } = {}
-) {
-  hackAutoNumberCoerce ??= false;
-
-  const numberCoerceFunc = `
-    double getNumericVal(const facebook::jsi::Value& val) {
-      if (val.isBool()) {
-        return (double)val.asBool();
-      }
-      return val.asNumber();
-    }
-  `;
-
+export function buildExportBridgeSource(module: W2CModuleContext) {
   function makeExportFunc(func: GeneratedFunctionExport) {
     const args = func.parameterTypeNames
-      .map(
-        (_, i) =>
-          `, ${hackAutoNumberCoerce ? `getNumericVal(args[${i}])` : `args[${i}].asNumber()`}`
-      )
+      .map((type, i) => `, coerceToNumber<${type}>(args[${i}])`)
       .join('');
     const res = func.target.resultTypes.length > 0 ? 'auto res = ' : '';
+
+    // TODO: Replace with C++ Template
     let returnPart = '';
     if (func.target.resultTypes.length > 1) {
       const elements = func.target.resultTypes
@@ -93,9 +78,7 @@ export function buildExportBridgeSource(
     return `
       /* export: '${func.name}' */
       exports.setProperty(rt, "${func.name}", HOSTFN("${func.name}", ${func.parameterTypeNames.length}) {
-        auto nativeState = get${module.turboModule.contextClassName}Context(rt, thisValue);
-        assert(nativeState != nullptr);
-        ${res}${func.generatedFunctionName}(&nativeState->rootCtx${args});
+        ${res}${func.generatedFunctionName}(&inst->rootCtx${args});
         ${returnPart};
       }));
     `;
@@ -142,17 +125,7 @@ export function buildExportBridgeSource(
     using namespace facebook;
     using namespace callstack::polygen;
 
-    ${hackAutoNumberCoerce ? numberCoerceFunc : ''}
-
     namespace callstack::polygen::generated {
-      std::shared_ptr<${module.turboModule.contextClassName}> get${module.turboModule.contextClassName}Context(jsi::Runtime& rt, const jsi::Value& val) {
-        auto obj = val.asObject(rt);
-        assert(obj.hasNativeState(rt));
-        auto ctx = std::dynamic_pointer_cast<${module.turboModule.contextClassName}>(obj.getNativeState(rt));
-        assert(ctx != nullptr);
-        return ctx;
-      }
-
       void create${module.turboModule.generatedClassName}Exports(jsi::Runtime &rt, jsi::Object& target, jsi::Object&& importObject) {
         if (!wasm_rt_is_initialized()) {
           wasm_rt_init();
