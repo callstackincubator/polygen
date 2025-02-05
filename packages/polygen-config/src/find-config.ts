@@ -9,6 +9,20 @@ import findUp from 'find-up';
 export class UnknownProjectError extends Error {}
 
 /**
+ * Raised when we're load project's configuration
+ */
+export class InvalidProjectConfigurationError extends Error {
+  innerError?: Error;
+
+  constructor(message: string, inner: unknown) {
+    super(message);
+    if (inner instanceof Error) {
+      this.innerError = inner;
+    }
+  }
+}
+
+/**
  * Finds project root that contains a `package.json`.
  *
  * @see findProjectRootSync Synchronous version of this function

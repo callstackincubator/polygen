@@ -1,5 +1,10 @@
 #!/usr/bin/env node
+import {
+  InvalidProjectConfigurationError,
+  UnknownProjectError,
+} from '@callstack/polygen-config/project';
 import { Command } from 'commander';
+import consola from 'consola';
 import cleanCommand from './commands/clean.js';
 import generateCommand from './commands/generate.js';
 import initCommand from './commands/init.js';
@@ -24,4 +29,19 @@ program.action(() => {
   program.help();
 });
 
-program.parse();
+async function run() {
+  try {
+    await program.parseAsync();
+  } catch (e) {
+    if (e instanceof InvalidProjectConfigurationError) {
+      consola.error('Error loading configuration file: ', e.innerError);
+      // throw e;
+    } else if (e instanceof UnknownProjectError) {
+      consola.error('Could not find project');
+    } else {
+      throw e;
+    }
+  }
+}
+
+run();

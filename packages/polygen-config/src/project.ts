@@ -2,6 +2,7 @@ import path from 'path';
 import deepmerge from 'deepmerge';
 import { glob } from 'glob';
 import {
+  InvalidProjectConfigurationError,
   findConfigFile,
   findConfigFileSync,
   findProjectRoot,
@@ -9,12 +10,7 @@ import {
 } from './find-config';
 import { type ResolvedPolygenConfig } from './index';
 
-export {
-  findConfigFile,
-  findConfigFileSync,
-  findProjectRoot,
-  findProjectRootSync,
-} from './find-config';
+export * from './find-config';
 
 type DeepPartial<T> = T extends object
   ? {
@@ -52,8 +48,15 @@ export class Project {
   static async findClosest(from?: string): Promise<Project> {
     const projectRoot = await findProjectRoot(from);
     const configPath = await findConfigFile(projectRoot);
-    const config = configPath ? (await import(configPath)).default : {};
-    return new Project(projectRoot, config);
+    try {
+      const config = configPath ? (await import(configPath)).default : {};
+      return new Project(projectRoot, config);
+    } catch (e) {
+      throw new InvalidProjectConfigurationError(
+        `Failed to load config from ${configPath}`,
+        e
+      );
+    }
   }
 
   /**
@@ -67,8 +70,15 @@ export class Project {
   static findClosestSync(from?: string): Project {
     const projectRoot = findProjectRootSync(from);
     const configPath = findConfigFileSync(projectRoot);
-    const config = configPath ? require(configPath) : {};
-    return new Project(projectRoot, config);
+    try {
+      const config = configPath ? require(configPath) : {};
+      return new Project(projectRoot, config);
+    } catch (e) {
+      throw new InvalidProjectConfigurationError(
+        `Failed to load config from ${configPath}`,
+        e
+      );
+    }
   }
 
   public updateOptionsInMemory(options: DeepPartial<ResolvedPolygenConfig>) {
