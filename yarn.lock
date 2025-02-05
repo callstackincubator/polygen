@@ -1555,9 +1555,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@callstack/polygen-cli@workspace:^, @callstack/polygen-cli@workspace:packages/cli":
+"@callstack/polygen-cli@npm:0.1.0, @callstack/polygen-cli@workspace:^, @callstack/polygen-cli@workspace:packages/polygen-cli":
   version: 0.0.0-use.local
-  resolution: "@callstack/polygen-cli@workspace:packages/cli"
+  resolution: "@callstack/polygen-cli@workspace:packages/polygen-cli"
   dependencies:
     "@callstack/polygen-codegen": "workspace:0.1.0"
     "@callstack/polygen-config": "workspace:0.1.0"
@@ -1571,7 +1571,7 @@ __metadata:
     ora: "npm:^8.1.0"
     typescript: "npm:^5.7.2"
   bin:
-    polygen: bin/polygen.js
+    polygen-cli: bin/polygen.js
   languageName: unknown
   linkType: soft
 
@@ -1642,6 +1642,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@callstack/polygen@workspace:packages/polygen"
   dependencies:
+    "@callstack/polygen-cli": "npm:0.1.0"
     "@callstack/polygen-typescript-config": "workspace:^"
     "@types/react": "npm:^18.2.44"
     del-cli: "npm:^5.1.0"
@@ -1654,6 +1655,8 @@ __metadata:
   peerDependencies:
     react: "*"
     react-native: "*"
+  bin:
+    polygen: cli.js
   languageName: unknown
   linkType: soft
 

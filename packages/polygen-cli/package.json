@@ -3,9 +3,7 @@
   "version": "0.1.0",
   "description": "The Command Line Interface for @callstack/polygen",
   "main": "./dist/index.js",
-  "bin": {
-    "polygen": "bin/polygen.js"
-  },
+  "bin": "bin/polygen.js",
   "type": "module",
   "files": [
     "bin",

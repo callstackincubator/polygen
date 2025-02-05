@@ -7,6 +7,7 @@
   "module": "./lib/module/index.js",
   "types": "./lib/typescript/module/index.d.ts",
   "react-native": "",
+  "bin": "cli.js",
   "exports": {
     ".": {
       "import": {
@@ -84,6 +85,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "devDependencies": {
+    "@callstack/polygen-cli": "0.1.0",
     "@callstack/polygen-typescript-config": "workspace:^",
     "@types/react": "^18.2.44",
     "del-cli": "^5.1.0",

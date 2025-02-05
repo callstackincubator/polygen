@@ -73,7 +73,6 @@ command.action(async (options: Options) => {
       });
       await installDependencies({ silent: true });
     }, 'Installing Polygen');
-    consola.log(``);
   }
 
   const steps = [
