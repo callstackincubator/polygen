@@ -7,7 +7,8 @@ import {
 import chalk from 'chalk';
 import { Command } from 'commander';
 import consola from 'consola';
-import { detectPackageManager, ensureDependencyInstalled } from 'nypm';
+import { addDependency, detectPackageManager, installDependencies } from 'nypm';
+import { oraPromise } from 'ora';
 import pkg from '../../package.json' with { type: 'json' };
 import defaultConfig from '../templates/default-polygen-config.js';
 
@@ -66,8 +67,12 @@ command.action(async (options: Options) => {
       `You can install polygen later by running: ${chalk.bold(command)}`
     );
   } else {
-    await ensureDependencyInstalled('@callstack/polygen');
-    await ensureDependencyInstalled('@callstack/polygen-config');
+    await oraPromise(async () => {
+      await addDependency(['@callstack/polygen', '@callstack/polygen-config'], {
+        silent: true,
+      });
+      await installDependencies({ silent: true });
+    }, 'Installing Polygen');
     consola.log(``);
   }
 
