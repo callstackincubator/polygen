@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { Project } from '@callstack/polygen-core-build';
+import { Project } from '@callstack/polygen-config/project';
 import { type ConfigT } from 'metro-config';
 import type { CustomResolver } from 'metro-resolver';
 

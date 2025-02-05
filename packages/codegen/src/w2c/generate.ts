@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { Project } from '@callstack/polygen-core-build';
+import { Project } from '@callstack/polygen-config/project';
 import { W2CModuleContext } from './context/context.js';
 import { W2CImportedModule, W2CSharedContext } from './context/index.js';
 import { generateHostModuleBridge } from './generators/host.js';

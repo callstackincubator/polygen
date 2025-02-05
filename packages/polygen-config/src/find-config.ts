@@ -2,7 +2,11 @@ import fsClassic from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'path';
 import findUp from 'find-up';
-import { UnknownProjectError } from './errors.js';
+
+/**
+ * Raised when we're unable to find a package.json
+ */
+export class UnknownProjectError extends Error {}
 
 /**
  * Finds project root that contains a `package.json`.
@@ -43,9 +47,9 @@ export function findProjectRootSync(from: string = process.cwd()): string {
 }
 
 const CONFIG_FILE_NAMES = [
-  'polygen-config.ejs',
-  'polygen-config.js',
-  'polygen-config.cjs',
+  'polygen.config.js',
+  'polygen.config.ejs',
+  'polygen.config.cjs',
 ];
 
 /**

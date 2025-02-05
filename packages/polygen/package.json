@@ -28,6 +28,16 @@
         "default": "./lib/commonjs/polyfill.js"
       }
     },
+    "./config": {
+      "import": {
+        "types": "./lib/typescript/module/config.d.ts",
+        "default": "./lib/module/config.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/config.d.ts",
+        "default": "./lib/commonjs/config.js"
+      }
+    },
     "./package.json": "./package.json"
   },
   "files": [

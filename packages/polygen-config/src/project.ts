@@ -1,21 +1,26 @@
 import path from 'path';
+import deepmerge from 'deepmerge';
 import { glob } from 'glob';
 import {
   findConfigFile,
   findConfigFileSync,
   findProjectRoot,
   findProjectRootSync,
-} from './helpers.js';
+} from './find-config';
+import { type ResolvedPolygenConfig } from './index';
 
-/**
- * Options that can be defined
- */
-export interface ProjectOptions {
-  /**
-   * Output directory for generated files.
-   */
-  outputDirectory?: string;
-}
+export {
+  findConfigFile,
+  findConfigFileSync,
+  findProjectRoot,
+  findProjectRootSync,
+} from './find-config';
+
+type DeepPartial<T> = T extends object
+  ? {
+      [P in keyof T]?: DeepPartial<T[P]>;
+    }
+  : T;
 
 /**
  * Represents a local project
@@ -29,9 +34,9 @@ export class Project {
   /**
    * Project options specified by the user
    */
-  public readonly options: ProjectOptions;
+  public options: ResolvedPolygenConfig;
 
-  constructor(projectRoot: string, options: ProjectOptions) {
+  constructor(projectRoot: string, options: ResolvedPolygenConfig) {
     this.projectRoot = projectRoot;
     this.options = options;
   }
@@ -47,7 +52,7 @@ export class Project {
   static async findClosest(from?: string): Promise<Project> {
     const projectRoot = await findProjectRoot(from);
     const configPath = await findConfigFile(projectRoot);
-    const config = configPath ? await import(configPath) : {};
+    const config = configPath ? (await import(configPath)).default : {};
     return new Project(projectRoot, config);
   }
 
@@ -66,22 +71,43 @@ export class Project {
     return new Project(projectRoot, config);
   }
 
-  public updateOptionsInMemory(options: Partial<ProjectOptions>) {
-    Object.assign(this.options, options);
+  public updateOptionsInMemory(options: DeepPartial<ResolvedPolygenConfig>) {
+    this.options = deepmerge(this.options, options) as ResolvedPolygenConfig;
   }
 
+  /**
+   * Get full path to a file in the project
+   *
+   * @param components Path components
+   */
   public pathTo(...components: string[]): string {
     return path.join(this.projectRoot, ...components);
   }
 
+  /**
+   * Get full path to a file in the source directory
+   *
+   * @param components Path components
+   */
   public pathToSource(...components: string[]): string {
     return this.pathTo(this.localSourceDir, ...components);
   }
 
+  /**
+   * Get full path to a file in the output directory
+   *
+   * @param components Path components
+   */
   public pathToOutput(...components: string[]): string {
     return this.pathTo(this.localOutputDirectory, ...components);
   }
 
+  /**
+   * Convert a global path to a local path
+   *
+   * @param targetPath Global path
+   * @param directoryInProject Directory in the project to consider as root
+   */
   public globalPathToLocal(
     targetPath: string,
     directoryInProject: string = ''
@@ -106,7 +132,7 @@ export class Project {
    * Local output directory
    */
   public get localOutputDirectory() {
-    return this.options.outputDirectory ?? 'node_modules/.polygen-out';
+    return this.options.output.directory;
   }
 
   /**

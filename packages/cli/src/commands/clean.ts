@@ -1,6 +1,5 @@
-#!/usr/bin/env node
 import fs from 'node:fs/promises';
-import { Project } from '@callstack/polygen-core-build';
+import { Project } from '@callstack/polygen-config/project';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import consola from 'consola';
@@ -10,7 +9,11 @@ const command = new Command('clean')
   .description('Cleans all WASM generated output files')
   .option('-y, --yes', 'Remove files without confirmation');
 
-command.action(async (options) => {
+interface Options {
+  yes: boolean;
+}
+
+command.action(async (options: Options) => {
   const project = await Project.findClosest();
   const generatedPath = project.fullOutputDirectory;
   const displayPath = project.localOutputDirectory;

@@ -3,6 +3,7 @@ import { Command } from 'commander';
 import cleanCommand from './commands/clean.js';
 import generateCommand from './commands/generate.js';
 import initCommand from './commands/init.js';
+import scanCommand from './commands/scan.js';
 
 const program = new Command();
 
@@ -15,6 +16,7 @@ program
   .option('-v, --verbose', 'Output verbose');
 
 program.addCommand(initCommand);
+program.addCommand(scanCommand);
 program.addCommand(generateCommand);
 program.addCommand(cleanCommand);
 

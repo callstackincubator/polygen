@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 import {
   FileExternallyChangedError,
   FileOverwriteError,
@@ -6,7 +5,7 @@ import {
   type W2CGeneratorOptions,
   W2CSharedContext,
 } from '@callstack/polygen-codegen/w2c';
-import { Project } from '@callstack/polygen-core-build';
+import { Project } from '@callstack/polygen-config/project';
 import type { ModuleSymbol } from '@callstack/wasm-parser';
 import chalk from 'chalk';
 import { Command, Option } from 'commander';
@@ -36,7 +35,7 @@ command.action(async (options: Options) => {
   const project = await Project.findClosest();
   if (options.outputDir) {
     consola.info(`Using ${chalk.dim(options.outputDir)} as output directory`);
-    project.updateOptionsInMemory({ outputDirectory: options.outputDir });
+    project.updateOptionsInMemory({ output: { directory: options.outputDir } });
   }
 
   if (options.force) {
