@@ -17,18 +17,11 @@ const command = new Command('generate')
   .addOption(
     new Option('-o, --output-dir <outputDir>', 'Path to output directory')
   )
-  .addOption(new Option('-f, --force', 'Generate code even if not outdated'))
-  .addOption(
-    new Option(
-      '--force-number-coercion',
-      'Force number coercion in module exports'
-    )
-  );
+  .addOption(new Option('-f, --force', 'Generate code even if not outdated'));
 
 interface Options {
   outputDir?: string;
   force?: boolean;
-  forceNumberCoercion?: boolean;
 }
 
 command.action(async (options: Options) => {
@@ -47,21 +40,22 @@ command.action(async (options: Options) => {
     singleProject: true,
     generateMetadata: true,
     forceGenerate: options.force ?? false,
-    hackAutoNumberCoerce: options.forceNumberCoercion ?? false,
   };
   const generator = await W2CGenerator.create(project, generatorOptions);
-  const modules = await project.getWebAssemblyModules();
+  const modules = project.webAssemblyModules;
 
-  consola.info('Found', chalk.bold(modules.length), 'WebAssembly module(s)');
+  consola.info(
+    'Generating code for',
+    chalk.bold(modules.length),
+    'WebAssembly module(s)'
+  );
 
   try {
     for (const mod of modules) {
-      const modPath = project.pathToSource(mod);
-      const localModPath = project.globalPathToLocal(modPath);
-
+      const modPath = project.pathTo(mod.path);
       const generatedModule = await oraPromise(
         async () => generator.generateModule(modPath),
-        `Processing ${chalk.magenta(mod)} module ${chalk.dim(`(${localModPath})`)}`
+        `Processing ${mod.kind} module ${chalk.bold(mod.path)}`
       );
 
       const imports = generatedModule.codegen.imports;

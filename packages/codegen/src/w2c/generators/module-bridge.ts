@@ -7,7 +7,6 @@ import { generateCSources } from '../wasm2c.js';
 export interface ModuleGeneratorOptions {
   renderMetadata?: boolean;
   forceGenerate?: boolean;
-  hackAutoNumberCoerce?: boolean;
 }
 
 export async function generateModuleExportsBridge(

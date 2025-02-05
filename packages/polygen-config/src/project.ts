@@ -1,6 +1,5 @@
 import path from 'path';
 import deepmerge from 'deepmerge';
-import { glob } from 'glob';
 import {
   InvalidProjectConfigurationError,
   ProjectConfigurationNotFound,
@@ -10,6 +9,7 @@ import {
   findProjectRootSync,
 } from './find-config';
 import { type ResolvedPolygenConfig } from './index';
+import { PolygenModuleConfig } from './types/module-config';
 
 export * from './find-config';
 
@@ -156,9 +156,8 @@ export class Project {
   /**
    * Get all WebAssembly modules in the project
    */
-  public async getWebAssemblyModules(): Promise<string[]> {
-    // TODO: support static list from config
-    return glob('**/*.wasm', { cwd: this.fullSourceDir });
+  public get webAssemblyModules(): PolygenModuleConfig[] {
+    return this.options.modules;
   }
 
   /**

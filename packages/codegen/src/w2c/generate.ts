@@ -64,8 +64,6 @@ export interface W2CGeneratorOptions {
    * @defaultValue false
    */
   generateMetadata?: boolean;
-
-  hackAutoNumberCoerce?: boolean;
 }
 
 export class W2CGenerator {
@@ -137,7 +135,6 @@ export class W2CGenerator {
     await generateModuleExportsBridge(generator, module, {
       renderMetadata: this.options.generateMetadata,
       forceGenerate: this.options.forceGenerate,
-      hackAutoNumberCoerce: this.options.hackAutoNumberCoerce,
     });
 
     this.generatedModules.push(module);
