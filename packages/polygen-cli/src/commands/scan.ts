@@ -39,23 +39,25 @@ command.action(async (options: Options) => {
     return;
   }
 
-  consola.info(
-    `To add them to the project, add following lines to your ${chalk.bold(project.configFileName)}:`
-  );
-  consola.log(``);
+  if (added.size > 0) {
+    consola.info(
+      `To add them to the project, add following lines to your ${chalk.bold(project.configFileName)}:`
+    );
+    consola.log(``);
 
-  const indent = '    ';
-  const diff = Array.from(added.values())
-    .map((file) => `localModule('${file}')`)
-    .join(',\n' + indent);
+    const indent = '    ';
+    const diff = Array.from(added.values())
+      .map((file) => `localModule('${file}')`)
+      .join(',\n' + indent);
 
-  consola.log(chalk.gray('export default polygenConfig({'));
-  consola.log(chalk.gray('  modules: ['));
-  consola.log(chalk.gray('    // ...'));
-  consola.log(chalk.green.bold('    ' + diff));
-  consola.log(chalk.gray('    // ...'));
-  consola.log(chalk.gray('  ]'));
-  consola.log(chalk.gray('});'));
+    consola.log(chalk.gray('export default polygenConfig({'));
+    consola.log(chalk.gray('  modules: ['));
+    consola.log(chalk.gray('    // ...'));
+    consola.log(chalk.green.bold('    ' + diff));
+    consola.log(chalk.gray('    // ...'));
+    consola.log(chalk.gray('  ]'));
+    consola.log(chalk.gray('});'));
+  }
 });
 
 export default command;

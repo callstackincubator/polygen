@@ -37,6 +37,7 @@ export default polygenConfig({
    */
   modules: [
     localModule('src/example.wasm'),
+    localModule('src/table_test.wasm'),
     // localModule('src/wasm/module.wasm')
   ],
 });
