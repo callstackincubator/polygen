@@ -9,7 +9,7 @@ import 'core-js/proposals/set-methods-v2.js';
 const command = new Command('scan')
   .description('Searches for WebAssembly modules in the project')
   .addOption(
-    new Option('-u, --update', 'Automatically update polygen.config.js file')
+    new Option('-u, --update', 'Automatically update polygen config file')
   );
 
 interface Options {
@@ -40,7 +40,7 @@ command.action(async (options: Options) => {
   }
 
   consola.info(
-    `To add them to the project, add following lines to ${chalk.bold('polygen.config.js')}:`
+    `To add them to the project, add following lines to your ${chalk.bold(project.configFileName)}:`
   );
   consola.log(``);
 

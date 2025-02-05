@@ -18,6 +18,8 @@ const command = new Command('init').description(
 
 interface Options {}
 
+const CONFIG_NAME = 'poylgen.config.mjs';
+
 command.action(async (options: Options) => {
   consola.info(`Using ${chalk.bold.magenta(`Polygen ${pkg.version}`)}`);
   const projectRoot = await findProjectRoot();
@@ -28,11 +30,8 @@ command.action(async (options: Options) => {
     consola.info('Configuration file already exists');
   } else {
     try {
-      consola.info(`Creating ${chalk.dim('polygen.config.js')}...`);
-      await fs.writeFile(
-        path.join(projectRoot, 'polygen.config.js'),
-        defaultConfig
-      );
+      consola.info(`Creating ${chalk.dim(CONFIG_NAME)}...`);
+      await fs.writeFile(path.join(projectRoot, CONFIG_NAME), defaultConfig);
     } catch (err) {
       consola.error(err);
       return;

@@ -7,7 +7,7 @@
   "module": "./lib/module/index.js",
   "types": "./lib/typescript/module/index.d.ts",
   "react-native": "",
-  "bin": "cli.js",
+  "bin": "cli.mjs",
   "exports": {
     ".": {
       "import": {

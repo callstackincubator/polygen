@@ -3,6 +3,7 @@ import deepmerge from 'deepmerge';
 import { glob } from 'glob';
 import {
   InvalidProjectConfigurationError,
+  ProjectConfigurationNotFound,
   findConfigFile,
   findConfigFileSync,
   findProjectRoot,
@@ -28,12 +29,22 @@ export class Project {
   public readonly projectRoot: string;
 
   /**
+   * Path to determined configuration file
+   */
+  public readonly configPath: string;
+
+  /**
    * Project options specified by the user
    */
   public options: ResolvedPolygenConfig;
 
-  constructor(projectRoot: string, options: ResolvedPolygenConfig) {
+  constructor(
+    projectRoot: string,
+    configPath: string,
+    options: ResolvedPolygenConfig
+  ) {
     this.projectRoot = projectRoot;
+    this.configPath = configPath;
     this.options = options;
   }
 
@@ -48,9 +59,13 @@ export class Project {
   static async findClosest(from?: string): Promise<Project> {
     const projectRoot = await findProjectRoot(from);
     const configPath = await findConfigFile(projectRoot);
+    if (!configPath) {
+      throw new ProjectConfigurationNotFound();
+    }
+
     try {
       const config = configPath ? (await import(configPath)).default : {};
-      return new Project(projectRoot, config);
+      return new Project(projectRoot, configPath, config);
     } catch (e) {
       throw new InvalidProjectConfigurationError(
         `Failed to load config from ${configPath}`,
@@ -70,15 +85,23 @@ export class Project {
   static findClosestSync(from?: string): Project {
     const projectRoot = findProjectRootSync(from);
     const configPath = findConfigFileSync(projectRoot);
+    if (!configPath) {
+      throw new ProjectConfigurationNotFound();
+    }
+
     try {
       const config = configPath ? require(configPath) : {};
-      return new Project(projectRoot, config);
+      return new Project(projectRoot, configPath, config);
     } catch (e) {
       throw new InvalidProjectConfigurationError(
         `Failed to load config from ${configPath}`,
         e
       );
     }
+  }
+
+  public get configFileName(): string {
+    return path.basename(this.configPath);
   }
 
   public updateOptionsInMemory(options: DeepPartial<ResolvedPolygenConfig>) {

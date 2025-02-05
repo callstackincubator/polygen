@@ -3,6 +3,11 @@ import {
   InvalidProjectConfigurationError,
   UnknownProjectError,
 } from '@callstack/polygen-config/project';
+import {
+  CONFIG_FILE_NAMES,
+  ProjectConfigurationNotFound,
+} from '@callstack/polygen-config/project';
+import chalk from 'chalk';
 import { Command } from 'commander';
 import consola from 'consola';
 import cleanCommand from './commands/clean.js';
@@ -35,9 +40,13 @@ async function run() {
   } catch (e) {
     if (e instanceof InvalidProjectConfigurationError) {
       consola.error('Error loading configuration file: ', e.innerError);
-      // throw e;
     } else if (e instanceof UnknownProjectError) {
       consola.error('Could not find project');
+    } else if (e instanceof ProjectConfigurationNotFound) {
+      consola.error(
+        `Could not find project configuration file. Accepted file names are: ` +
+          CONFIG_FILE_NAMES.map((e) => chalk.bold(e)).join(', ')
+      );
     } else {
       throw e;
     }

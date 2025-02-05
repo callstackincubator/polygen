@@ -9,6 +9,11 @@ import findUp from 'find-up';
 export class UnknownProjectError extends Error {}
 
 /**
+ * Raised when we're unable to find project's configuration
+ */
+export class ProjectConfigurationNotFound extends Error {}
+
+/**
  * Raised when we're load project's configuration
  */
 export class InvalidProjectConfigurationError extends Error {
@@ -60,9 +65,9 @@ export function findProjectRootSync(from: string = process.cwd()): string {
   return path.dirname(packageJsonPath);
 }
 
-const CONFIG_FILE_NAMES = [
+export const CONFIG_FILE_NAMES = [
   'polygen.config.js',
-  'polygen.config.ejs',
+  'polygen.config.mjs',
   'polygen.config.cjs',
 ];
 
