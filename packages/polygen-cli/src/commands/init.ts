@@ -77,7 +77,7 @@ command.action(async (options: Options) => {
   const steps = [
     ' - Add your WebAssembly modules to your project',
     ` - Run ${chalk.bold('polygen scan')} to update modules index`,
-    ` - Run ${chalk.bold('polygen build')} to generate bindings`,
+    ` - Run ${chalk.bold('polygen generate')} to generate bindings`,
   ].join('\n');
   consola.box(`Next steps:\n${steps}`);
 
