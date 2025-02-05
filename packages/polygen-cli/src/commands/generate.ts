@@ -96,6 +96,10 @@ command.action(async (options: Options) => {
 
     await Promise.allSettled(generateImportsPromises);
     await generator.finalize();
+
+    consola.info(
+      `Run ${chalk.bold('pod install')} to regenerate XCode project and make sure new source files are included`
+    );
   } catch (error: unknown) {
     if (error instanceof FileExternallyChangedError) {
       consola.error(
