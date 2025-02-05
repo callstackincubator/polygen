@@ -36,6 +36,7 @@ export default polygenConfig({
    * argument (or 3rd, for external modules).
    */
   modules: [
+    localModule('src/example.wasm'),
     // localModule('src/wasm/module.wasm')
   ],
 });

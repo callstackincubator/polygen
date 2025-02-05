@@ -4,7 +4,7 @@ import { Command, Option } from 'commander';
 import consola from 'consola';
 import { globby } from 'globby';
 import { oraPromise } from 'ora';
-import 'core-js/proposals/set-methods-v2';
+import 'core-js/proposals/set-methods-v2.js';
 
 const command = new Command('scan')
   .description('Searches for WebAssembly modules in the project')
@@ -25,9 +25,16 @@ command.action(async (options: Options) => {
     'Scanning for WebAssembly modules'
   );
 
-  consola.info(`Found ${chalk.bold(files.length)} WebAssembly module(s)`);
-  const currentModules = new Set();
-  const foundModules = new Set();
+  const currentModules = new Set(project.options.modules.map((m) => m.path));
+  const foundModules = new Set(files);
+  const added = foundModules.difference(currentModules);
+  const removed = currentModules.difference(foundModules);
+
+  consola.info(
+    `Found ${chalk.bold(files.length)} WebAssembly module(s)`,
+    chalk.green(`${chalk.bold(added.size)} new`) + `,`,
+    chalk.red.bold(`${chalk.bold(removed.size)} removed`)
+  );
   if (files.length === 0) {
     return;
   }
@@ -38,7 +45,7 @@ command.action(async (options: Options) => {
   consola.log(``);
 
   const indent = '    ';
-  const diff = files
+  const diff = Array.from(added.values())
     .map((file) => `localModule('${file}')`)
     .join(',\n' + indent);
 
