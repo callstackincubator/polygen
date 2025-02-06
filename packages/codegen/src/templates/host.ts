@@ -119,7 +119,7 @@ export function buildPodspec() {
       end
 
       s.platforms    = { :ios => min_ios_version_supported }
-      s.source_files = "*.{h,hpp,c,cpp}", "*/*.{h,hpp,c,cpp}"
+      s.source_files = "*.{h,hpp,c,cpp}", "**/*.{h,hpp,c,cpp}"
       s.pod_target_xcconfig = {
           "HEADER_SEARCH_PATHS" => "\\"$(PODS_ROOT)/boost\\"",
           "OTHER_CPLUSPLUSFLAGS" => "-DFOLLY_NO_CONFIG -DFOLLY_MOBILE=1 -DFOLLY_USE_LIBCPP=1",
