@@ -43,10 +43,16 @@ export const STRUCT_TYPE_PREFIX: Record<ValueType, string> = {
   // exnref
 };
 
-export function toJSINumber(expr: string): string {
-  return `jsi::Value { (double)(${expr}) }`;
+export function toJSINumber(expr: string, type: ValueType): string {
+  const cType = type.replace('i', 's'); // i32 -> s32
+  return `jsi::Value { (double)std::bit_cast<${cType}>(${expr}) }`;
 }
 
-export function fromJSINumber(expr: string, type: string): string {
-  return `coerceToNumber<${type}>(${expr})`;
+export function fromJSINumber(
+  expr: string,
+  type: ValueType,
+  w2cType: string
+): string {
+  const cType = type.replace('i', 's'); // i32 -> s32
+  return `std::bit_cast<${w2cType}>(coerceToNumber<${cType}>(${expr}))`;
 }
