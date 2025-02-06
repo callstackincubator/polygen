@@ -11,6 +11,15 @@ interface PolygenConfig {
 
 const OUTPUT_INFO = 'polygen-output.json';
 
+function splitExternalPackages(name: string): [string, string] {
+  const parts = name.split('/');
+  if (name.startsWith('@')) {
+    return [parts.slice(0, 2).join('/'), parts.slice(2).join('/')];
+  }
+
+  return [parts[0]!, parts.slice(1).join('/')];
+}
+
 export function withPolygenConfig(
   defaultConfig: ConfigT,
   _polygenConfig: PolygenConfig = {}
@@ -28,18 +37,17 @@ export function withPolygenConfig(
       fs.readFileSync(project.pathToOutput(OUTPUT_INFO), 'utf-8')
     ).externalPackages as Record<string, string>;
 
+    let packageName = '';
     // Path to directory where the mock modules are located
     let mockModuleSubtreePath = project.pathToOutput('modules');
     // Path in target module
-    let pathInModule = '';
+    let pathInModule;
     // Resolved absolute path to WASM file
     let absoluteWasmPath = '';
 
     // External dependency
     if (!moduleName.startsWith('.')) {
-      const parts = moduleName.split('/');
-      const packageName = parts[0]!;
-      pathInModule = parts.slice(1).join('/');
+      [packageName, pathInModule] = splitExternalPackages(moduleName);
       const resolvedPath = polygenModuleMapping[packageName];
       if (!resolvedPath) {
         throw new Error(
