@@ -11,6 +11,7 @@ import {
   STRUCT_TYPE_PREFIX,
   TABLE_KIND_TO_CLASS_NAME,
   TABLE_KIND_TO_NATIVE_C_TYPE,
+  fromJSINumber,
   toJSINumber,
 } from '../common.js';
 
@@ -110,14 +111,14 @@ function wrapJSIReturnIntoNative(
   // Handle multiple value types (struct)
   if (resultTypes.length > 1) {
     const elements = resultTypes
-      .map((t, i) => toJSINumber(`${varName}.${STRUCT_TYPE_PREFIX[t]}${i}`))
+      .map((t, i) => toJSINumber(`${varName}.${STRUCT_TYPE_PREFIX[t]}${i}`, t))
       .join(', ');
 
     return `return { ${elements} }`;
   }
 
   if (resultTypes.length === 1) {
-    return `return coerceToNumber<${func.returnTypeName}>(res)`;
+    return fromJSINumber('res', resultTypes[0]!, func.returnTypeName);
   }
 
   return 'return';
@@ -134,8 +135,8 @@ function makeImportFunc(
     .map((e) => `, ${e}`)
     .join('');
 
-  const args = func.parameterTypeNames
-    .map((_, i) => toJSINumber(`arg${i}`))
+  const args = func.target.parametersTypes
+    .map((t, i) => toJSINumber(`arg${i}`, t))
     .map((e) => `, ${e}`)
     .join('');
 
