@@ -1767,7 +1767,7 @@ DEPENDENCIES:
   - ReactCodegen (from `build/generated/ios`)
   - ReactCommon/turbomodule/core (from `../../../node_modules/react-native/ReactCommon`)
   - "ReactNativeHost (from `../../../node_modules/@rnx-kit/react-native-host`)"
-  - ReactNativePolygen (from `../../../packages/polygen`)
+  - "ReactNativePolygen (from `../../../node_modules/@callstack/polygen`)"
   - "ReactNativeWebAssemblyHost (from `../node_modules/.polygen-out/@host`)"
   - ReactTestApp-DevSupport (from `../../../node_modules/react-native-test-app`)
   - ReactTestApp-Resources (from `..`)
@@ -1908,7 +1908,7 @@ EXTERNAL SOURCES:
   ReactNativeHost:
     :path: "../../../node_modules/@rnx-kit/react-native-host"
   ReactNativePolygen:
-    :path: "../../../packages/polygen"
+    :path: "../../../node_modules/@callstack/polygen"
   ReactNativeWebAssemblyHost:
     :path: "../node_modules/.polygen-out/@host"
   ReactTestApp-DevSupport:
