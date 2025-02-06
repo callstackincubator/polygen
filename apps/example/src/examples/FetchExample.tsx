@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { Button, Text, View } from 'react-native';
+import { Button, StyleSheet, Text, View } from 'react-native';
 
 export default function FetchModuleExample() {
   const [module, setModule] = useState<WebAssembly.Module>();
@@ -12,7 +12,7 @@ export default function FetchModuleExample() {
   }, []);
 
   return (
-    <View>
+    <View style={styles.container}>
       <Text>
         Before loading, make sure you have a server running at
         http://localhost:8000 that serves src/directory
@@ -31,3 +31,12 @@ export default function FetchModuleExample() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 5,
+  },
+});

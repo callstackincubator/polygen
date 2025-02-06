@@ -1,4 +1,3 @@
-import * as console from 'node:console';
 /// <reference path="./wasm-loader.d.ts" preserve="true" />
 import fs from 'node:fs';
 import path from 'node:path';

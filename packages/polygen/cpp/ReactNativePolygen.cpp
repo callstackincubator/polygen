@@ -24,7 +24,7 @@ ReactNativePolygen::~ReactNativePolygen() {
   wasm_rt_free();
 }
 
-bool ReactNativePolygen::copyNativeHandle(jsi::Runtime &rt, jsi::Object holderr, jsi::Object source) {
+bool ReactNativePolygen::copyNativeHandle(jsi::Runtime &rt, jsi::Object holder, jsi::Object source) {
   auto hasNativeState = source.hasNativeState(rt);
 
   if (hasNativeState) {
