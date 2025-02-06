@@ -14,7 +14,7 @@ export interface GlobalDescriptor {
   /**
    * Type of the GlobalVariable.
    */
-  type: WebAssemblyType;
+  value: WebAssemblyType;
 
   /**
    * Whenever the variable can be changed. By default, this is false.
@@ -28,7 +28,7 @@ export interface GlobalDescriptor {
  * @param descriptor Object to check
  */
 function isGlobalDescriptor(descriptor: any): descriptor is GlobalDescriptor {
-  return 'type' in descriptor;
+  return 'value' in descriptor;
 }
 
 const TypeMapping: Record<WebAssemblyType, NativeType> = {
@@ -52,13 +52,17 @@ export class Global {
       NativeWASM.createGlobal(
         this,
         {
-          type: TypeMapping[instance.type],
+          type: TypeMapping[instance.value],
           isMutable: instance.mutable ?? false,
         },
         initialValue ?? 0
       );
     } else {
-      NativeWASM.copyNativeHandle(this, instance);
+      if (!NativeWASM.copyNativeHandle(this, instance)) {
+        throw new Error(
+          'Invalid object passed to WebAssembly.Global() constructor'
+        );
+      }
     }
   }
 

@@ -57,7 +57,11 @@ export class Table {
         value
       );
     } else {
-      NativeWASM.copyNativeHandle(this, instance);
+      if (!NativeWASM.copyNativeHandle(this, instance)) {
+        throw new Error(
+          'Invalid object passed to WebAssembly.Table() constructor'
+        );
+      }
     }
   }
 

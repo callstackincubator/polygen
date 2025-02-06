@@ -1,3 +1,4 @@
+/// <reference path="./wasm-loader.d.ts" preserve="true" />
 import fs from 'node:fs';
 import path from 'node:path';
 import { Project } from '@callstack/polygen-config/project';

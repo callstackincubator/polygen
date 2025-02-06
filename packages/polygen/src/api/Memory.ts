@@ -35,7 +35,11 @@ export class Memory {
     if (isMemoryDescriptor(instance)) {
       NativeWASM.createMemory(this, instance.initial, instance.maximum);
     } else {
-      NativeWASM.copyNativeHandle(this, instance);
+      if (!NativeWASM.copyNativeHandle(this, instance)) {
+        throw new Error(
+          'Invalid object passed to WebAssembly.Memory() constructor'
+        );
+      }
     }
   }
 

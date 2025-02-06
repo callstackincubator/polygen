@@ -35,7 +35,7 @@ export default function TableExample() {
   }, []);
 
   const compute = useCallback(() => {
-    setResult(instance.exports.fib(number));
+    setResult(instance.exports.fibonacci(number));
   }, [number, instance]);
 
   return (
@@ -49,7 +49,7 @@ export default function TableExample() {
       />
       <Text>Instance created: {instance != null ? 'yes' : 'no'}</Text>
       {instance != null && (
-        <Text>Exports: {JSON.stringify(instance.exports)}</Text>
+        <Text>Exports: {JSON.stringify(Object.keys(instance.exports))}</Text>
       )}
       <TextInput
         style={styles.input}

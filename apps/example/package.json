@@ -42,7 +42,8 @@
     "@react-native/typescript-config": "0.75.4",
     "@rnx-kit/metro-config": "^2.0.0",
     "react-native-builder-bob": "^0.30.2",
-    "react-native-test-app": "^3.10.22"
+    "react-native-test-app": "^3.10.22",
+    "typescript": "5.7.3"
   },
   "engines": {
     "node": ">=18"

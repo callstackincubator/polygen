@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "Provides Polygen support for metro bundler",
   "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "type": "commonjs",
   "files": [
     "dist"

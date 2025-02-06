@@ -3,47 +3,29 @@
   "version": "0.1.0",
   "description": "React Native Module for running WebAssembly modules, with native performance.",
   "source": "./src/index.ts",
-  "main": "./lib/commonjs/index.js",
-  "module": "./lib/module/index.js",
-  "types": "./lib/typescript/module/index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "react-native": "",
   "bin": "cli.mjs",
   "exports": {
     ".": {
-      "import": {
-        "types": "./lib/typescript/module/index.d.ts",
-        "default": "./lib/module/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/index.d.ts",
-        "default": "./lib/commonjs/index.js"
-      }
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js"
     },
     "./polyfill": {
-      "import": {
-        "types": "./lib/typescript/module/polyfill.d.ts",
-        "default": "./lib/module/polyfill.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/polyfill.d.ts",
-        "default": "./lib/commonjs/polyfill.js"
-      }
+      "types": "./dist/polyfill.d.ts",
+      "require": "./dist/polyfill.js"
     },
     "./config": {
-      "import": {
-        "types": "./lib/typescript/module/config.d.ts",
-        "default": "./lib/module/config.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/config.d.ts",
-        "default": "./lib/commonjs/config.js"
-      }
+      "types": "./dist/config.d.ts",
+      "require": "./dist/config.js"
     },
     "./package.json": "./package.json"
   },
   "files": [
     "src",
-    "lib",
+    "dist",
+    "types",
     "android",
     "ios",
     "cpp",
@@ -64,7 +46,7 @@
     "dev": "tsc -p tsconfig.json --watch",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
-    "build": "bob build",
+    "build": "tsc -p tsconfig.json",
     "release": "release-it"
   },
   "keywords": [
@@ -102,31 +84,6 @@
   "peerDependencies": {
     "react": "*",
     "react-native": "*"
-  },
-  "react-native-builder-bob": {
-    "source": "src",
-    "output": "lib",
-    "targets": [
-      [
-        "commonjs",
-        {
-          "esm": true
-        }
-      ],
-      [
-        "module",
-        {
-          "esm": true
-        }
-      ],
-      [
-        "typescript",
-        {
-          "project": "tsconfig.build.json",
-          "esm": true
-        }
-      ]
-    ]
   },
   "codegenConfig": {
     "name": "RNPolygenSpec",

@@ -1,10 +1,11 @@
 {
   "extends": "@callstack/polygen-typescript-config",
-  "include": ["src"],
+  "include": ["src", "types"],
   "exclude": ["node_modules"],
   "compilerOptions": {
     "rootDir": "./src",
     "outDir": "dist",
-    "jsx": "preserve"
+    "jsx": "preserve",
+    "types": ["@callstack/polygen-metro-config", "@callstack/polygen"]
   }
 }

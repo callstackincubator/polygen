@@ -1,8 +1,8 @@
-/// <reference path="./wasm-loader.d.ts" />
 import { Global } from './api/Global';
 import { Instance } from './api/Instance';
 import { Memory } from './api/Memory';
 import { Module } from './api/Module';
+import { Table } from './api/Table';
 import {
   compile,
   compileStreaming,
@@ -22,6 +22,7 @@ const impl = {
   Instance,
   Memory,
   Global,
+  Table,
   CompileError,
   LinkError,
 } as const;
@@ -30,4 +31,5 @@ export type Schema = typeof impl;
 
 export const WebAssembly = impl;
 
-export * from './WebAssembly-global';
+// Taken from https://github.com/microsoft/TypeScript/blob/main/src/lib/dom.generated.d.ts#L27309
+type BufferSource = ArrayBufferView | ArrayBuffer;
