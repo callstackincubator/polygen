@@ -174,7 +174,7 @@ function makeImportGlobal(
 
       auto obj = target.asObject(ctx->rt);
       auto global = NativeStateHelper::tryGet<Global>(ctx->rt, obj);
-      return (${cType}*)global->getUnsafePayloadPtr();
+      return (${cType})global->getUnsafePayloadPtr();
     }
   `;
 
