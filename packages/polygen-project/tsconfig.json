@@ -1,0 +1,11 @@
+{
+  "extends": "@callstack/polygen-typescript-config",
+  "include": ["src"],
+  "exclude": ["node_modules"],
+  "compilerOptions": {
+    "rootDir": "./src",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "outDir": "dist"
+  }
+}

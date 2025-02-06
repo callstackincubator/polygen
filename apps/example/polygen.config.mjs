@@ -1,4 +1,8 @@
-import { localModule, polygenConfig } from '@callstack/polygen-config';
+import {
+  externalModule,
+  localModule,
+  polygenConfig,
+} from '@callstack/polygen-config';
 
 /**
  * @type {import('@callstack/polygen/config').PolygenConfig}
@@ -38,6 +42,7 @@ export default polygenConfig({
   modules: [
     localModule('src/example.wasm'),
     localModule('src/table_test.wasm'),
+    externalModule('simple-sha256-wasm', 'simple_sha256_wasm_bg.wasm'),
     // localModule('src/wasm/module.wasm')
   ],
 });

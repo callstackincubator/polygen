@@ -1,5 +1,10 @@
 import path from 'path';
-import deepmerge from 'deepmerge';
+import type {
+  PolygenExternalModuleConfig,
+  PolygenLocalModuleConfig,
+  PolygenModuleConfig,
+  ResolvedPolygenConfig,
+} from '@callstack/polygen-config';
 import {
   InvalidProjectConfigurationError,
   ProjectConfigurationNotFound,
@@ -7,11 +12,8 @@ import {
   findConfigFileSync,
   findProjectRoot,
   findProjectRootSync,
-} from './find-config';
-import { type ResolvedPolygenConfig } from './index';
-import { PolygenModuleConfig } from './types/module-config';
-
-export * from './find-config';
+} from '@callstack/polygen-config/find';
+import deepmerge from 'deepmerge';
 
 type DeepPartial<T> = T extends object
   ? {
@@ -186,5 +188,28 @@ export class Project {
    */
   public get fullSourceDir(): string {
     return this.pathToSource();
+  }
+
+  /**
+   * Local modules
+   */
+  public get localModules(): PolygenLocalModuleConfig[] {
+    return this.options.modules.filter((m) => m.kind === 'local');
+  }
+
+  /**
+   * External modules
+   */
+  public get externalModules(): PolygenExternalModuleConfig[] {
+    return this.options.modules.filter((m) => m.kind === 'external');
+  }
+
+  /**
+   * External modules
+   */
+  public getModulesOfExternalDependency(
+    packageName: string
+  ): PolygenExternalModuleConfig[] {
+    return this.externalModules.filter((m) => m.packageName === packageName);
   }
 }

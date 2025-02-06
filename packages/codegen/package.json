@@ -12,10 +12,6 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
-    },
-    "./w2c": {
-      "types": "./dist/w2c/index.d.ts",
-      "import": "./dist/w2c/index.js"
     }
   },
   "scripts": {
@@ -26,6 +22,7 @@
   },
   "dependencies": {
     "@callstack/polygen-binary-utils": "0.1.0",
+    "@callstack/polygen-project": "0.1.0",
     "@callstack/wasm-parser": "0.1.0",
     "execa": "^9.4.1",
     "indent-string": "^5.0.0",

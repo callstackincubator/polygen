@@ -1,7 +1,8 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { Project } from '@callstack/polygen-config/project';
+import { PolygenModuleConfig } from '@callstack/polygen-config';
+import { Project, resolvePathToModule } from '@callstack/polygen-project';
 import { W2CModuleContext } from './context/context.js';
 import { W2CImportedModule, W2CSharedContext } from './context/index.js';
 import { generateHostModuleBridge } from './generators/host.js';
@@ -22,7 +23,7 @@ const UMBRELLA_PROJECT_NAME = '@host';
 
 const ASSETS_DIR = path.join(
   path.dirname(fileURLToPath(import.meta.url)),
-  '../../assets'
+  '../assets'
 );
 
 /**
@@ -66,12 +67,42 @@ export interface W2CGeneratorOptions {
   generateMetadata?: boolean;
 }
 
+/**
+ * Main generator class for WebAssembly to C code generation.
+ *
+ * This class is responsible for generating C code from WebAssembly modules, and
+ * contains all state and configuration necessary for the generation process.
+ *
+ * The generator is not reenterant, and should be used only once.
+ */
 export class W2CGenerator {
+  /**
+   * The project configuration to generate code for.
+   */
   public readonly project: Project;
+
+  /**
+   * Configuration options for the generation process.
+   */
   public readonly options: W2CGeneratorOptions;
+
+  /**
+   * Output generator instance used to write generated files to disk.
+   */
   public readonly generator: OutputGenerator;
+
+  /**
+   * List of generated modules.
+   */
   public readonly generatedModules: W2CModuleContext[] = [];
 
+  private readonly resolvedPackages = new Map<string, string>();
+
+  /**
+   * Creates a new W2CGenerator instance for the specified project and options.
+   *
+   * @see create
+   */
   private constructor(
     project: Project,
     options: W2CGeneratorOptions = {},
@@ -91,6 +122,9 @@ export class W2CGenerator {
 
   /**
    * Creates a new W2CGenerator instance for the specified project and options.
+   *
+   * @param project The project configuration to generate code for.
+   * @param options Optional configuration for the generation process.
    */
   public static async create(
     project: Project,
@@ -122,45 +156,74 @@ export class W2CGenerator {
 
   /**
    * Generates all code for specified WebAssembly module.
+   *
+   * This includes generating the module exports bridge and the JavaScript
+   *
+   * @param module The module configuration to generate code for.
    */
-  async generateModule(modulePath: string): Promise<W2CModuleContext> {
-    const moduleContents = await fs.readFile(modulePath, { encoding: null });
-    const module = new W2CModuleContext(
+  async generateModule(module: PolygenModuleConfig): Promise<W2CModuleContext> {
+    // Resolve path to module
+    const resolvedPathToModule = await resolvePathToModule(
+      this.project,
+      module
+    );
+
+    if (module.kind === 'external') {
+      const packagePath = resolvedPathToModule.replace(module.path, '');
+      const packagePathRelativeToProject = path.relative(
+        this.project.projectRoot,
+        packagePath
+      );
+      this.resolvedPackages.set(
+        module.packageName,
+        packagePathRelativeToProject
+      );
+    }
+
+    const moduleContents = await fs.readFile(resolvedPathToModule, {
+      encoding: null,
+    });
+
+    const moduleContext = new W2CModuleContext(
       moduleContents.buffer as ArrayBuffer,
-      modulePath
+      resolvedPathToModule
     );
     const generator = this.generator.forPath(
-      this.outputPathForModule(module.name)
+      this.outputPathForModule(module, moduleContext.name)
     );
-    await generateModuleExportsBridge(generator, module, {
+    await generateModuleExportsBridge(generator, moduleContext, {
       renderMetadata: this.options.generateMetadata,
       forceGenerate: this.options.forceGenerate,
     });
 
-    this.generatedModules.push(module);
-    await this.generateWasmJSModule(modulePath);
+    this.generatedModules.push(moduleContext);
+    await this.generateWasmJSModule(module, resolvedPathToModule);
 
-    return module;
+    return moduleContext;
   }
 
   /**
    * Generates a JavaScript module file for a given WebAssembly (.wasm) module.
    * The generated module will be placed under the project's output directory.
    *
-   * @param pathToModule - The file path to the WebAssembly (.wasm) module that needs to be processed.
+   * @param module - The WebAssembly (.wasm) module that needs to be processed.
+   * @param resolvedPath - The resolved path to the WebAssembly module file.
    * @return A promise that resolves when the JavaScript module file is successfully created.
    */
-  async generateWasmJSModule(pathToModule: string) {
-    const cleanName = path.basename(pathToModule, '.wasm');
-    const pathInModule = this.project.globalPathToLocal(
-      pathToModule,
-      this.project.localSourceDir
+  async generateWasmJSModule(
+    module: PolygenModuleConfig,
+    resolvedPath: string
+  ) {
+    const cleanFileName = path.basename(module.path, '.wasm');
+    const dirnameInModule = path.dirname(module.path);
+    const generatedModulePath = path.join(
+      module.kind === 'external' ? `${module.packageName}` : '#local',
+      dirnameInModule,
+      `${cleanFileName}.js`
     );
-    const dirnameInModule = path.dirname(pathInModule);
-    const generatedModulePath = path.join(dirnameInModule, `${cleanName}.js`);
+    const source = await generateWasmJSModuleSource(resolvedPath);
 
     const generator = this.generator.forPath('modules');
-    const source = await generateWasmJSModuleSource(pathToModule);
     await generator.writeTo(generatedModulePath, source);
   }
 
@@ -193,6 +256,7 @@ export class W2CGenerator {
     const generatedMapPath = this.generator.outputPathTo('polygen-output.json');
     const contents = {
       files: this.generator.writtenFiles,
+      externalPackages: Object.fromEntries(this.resolvedPackages.entries()),
     };
 
     await fs.writeFile(
@@ -201,11 +265,13 @@ export class W2CGenerator {
     );
   }
 
-  private outputPathForModule(moduleName: string) {
+  private outputPathForModule(module: PolygenModuleConfig, name: string) {
+    let dirName =
+      module.kind === 'external' ? `${module.packageName}#${name}` : name;
     if (this.options.singleProject) {
-      return path.join(UMBRELLA_PROJECT_NAME, moduleName);
+      return path.join(UMBRELLA_PROJECT_NAME, dirName);
     }
 
-    return moduleName;
+    return dirName;
   }
 }

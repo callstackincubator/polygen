@@ -43,7 +43,7 @@ export interface PolygenExternalModuleConfig extends PolygenModuleCommonConfig {
   /**
    * Name of the module.
    */
-  module: string;
+  packageName: string;
 
   /**
    * Path to the WebAssembly module.

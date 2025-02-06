@@ -1453,6 +1453,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@bacons/text-decoder@npm:^0.0.0":
+  version: 0.0.0
+  resolution: "@bacons/text-decoder@npm:0.0.0"
+  peerDependencies:
+    react-native: "*"
+  checksum: 10c0/4c6695aee2726756c8874adf38f9266bf3fa109f0bc6caa235d1691e7817acfc3057f309eb5be5ab4c71af88f539ac8b519ef86b816bcd09aa2246afdfb0e7da
+  languageName: node
+  linkType: hard
+
 "@biomejs/biome@npm:1.9.4":
   version: 1.9.4
   resolution: "@biomejs/biome@npm:1.9.4"
@@ -1560,7 +1569,7 @@ __metadata:
   resolution: "@callstack/polygen-cli@workspace:packages/polygen-cli"
   dependencies:
     "@callstack/polygen-codegen": "npm:0.1.0"
-    "@callstack/polygen-config": "npm:0.1.0"
+    "@callstack/polygen-project": "npm:0.1.0"
     "@callstack/polygen-typescript-config": "workspace:^"
     chalk: "npm:^5.3.0"
     commander: "npm:^12.1.0"
@@ -1580,6 +1589,7 @@ __metadata:
   resolution: "@callstack/polygen-codegen@workspace:packages/codegen"
   dependencies:
     "@callstack/polygen-binary-utils": "npm:0.1.0"
+    "@callstack/polygen-project": "npm:0.1.0"
     "@callstack/polygen-typescript-config": "workspace:^"
     "@callstack/wasm-parser": "npm:0.1.0"
     "@types/node": "npm:^22.10.0"
@@ -1594,12 +1604,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@callstack/polygen-config@workspace:packages/polygen-config"
   dependencies:
-    "@callstack/polygen-codegen": "npm:0.1.0"
     "@callstack/polygen-typescript-config": "workspace:^"
-    chalk: "npm:^5.3.0"
-    deepmerge: "npm:^4.3.1"
-    find-up: "npm:^5.0.0"
-    glob: "npm:^11.0.0"
     typescript: "npm:^5.7.2"
   languageName: unknown
   linkType: soft
@@ -1608,8 +1613,21 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@callstack/polygen-metro-config@workspace:packages/metro-config"
   dependencies:
+    "@callstack/polygen-project": "npm:0.1.0"
+    "@callstack/polygen-typescript-config": "workspace:^"
+    typescript: "npm:^5.7.2"
+  languageName: unknown
+  linkType: soft
+
+"@callstack/polygen-project@npm:0.1.0, @callstack/polygen-project@workspace:packages/polygen-project":
+  version: 0.0.0-use.local
+  resolution: "@callstack/polygen-project@workspace:packages/polygen-project"
+  dependencies:
     "@callstack/polygen-config": "npm:0.1.0"
     "@callstack/polygen-typescript-config": "workspace:^"
+    deepmerge: "npm:^4.3.1"
+    find-up: "npm:^5.0.0"
+    glob: "npm:^11.0.0"
     typescript: "npm:^5.7.2"
   languageName: unknown
   linkType: soft
@@ -10802,6 +10820,7 @@ __metadata:
     "@babel/core": "npm:^7.20.0"
     "@babel/preset-env": "npm:^7.20.0"
     "@babel/runtime": "npm:^7.20.0"
+    "@bacons/text-decoder": "npm:^0.0.0"
     "@callstack/polygen": "workspace:^"
     "@callstack/polygen-cli": "workspace:^"
     "@callstack/polygen-config": "workspace:^"
@@ -10820,6 +10839,7 @@ __metadata:
     react-native-safe-area-context: "npm:^5.0.0"
     react-native-screens: "npm:^4.3.0"
     react-native-test-app: "npm:^3.10.22"
+    simple-sha256-wasm: "npm:^0.1.2"
   languageName: unknown
   linkType: soft
 
@@ -12224,6 +12244,13 @@ __metadata:
   version: 4.1.0
   resolution: "signal-exit@npm:4.1.0"
   checksum: 10c0/41602dce540e46d599edba9d9860193398d135f7ff72cab629db5171516cfae628d21e7bfccde1bbfdf11c48726bc2a6d1a8fb8701125852fbfda7cf19c6aa83
+  languageName: node
+  linkType: hard
+
+"simple-sha256-wasm@npm:^0.1.2":
+  version: 0.1.2
+  resolution: "simple-sha256-wasm@npm:0.1.2"
+  checksum: 10c0/7740936d4e8b3d2889e5ca1d33d62062f5171f30849f112cafb87378099d31f9a5cbad7b8de2fb78bce1cf2dc1b74c1f8b05974128982cec9d16380295016717
   languageName: node
   linkType: hard
 

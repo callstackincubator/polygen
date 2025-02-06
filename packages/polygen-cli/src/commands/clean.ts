@@ -1,5 +1,5 @@
 import fs from 'node:fs/promises';
-import { Project } from '@callstack/polygen-config/project';
+import { Project } from '@callstack/polygen-project';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import consola from 'consola';

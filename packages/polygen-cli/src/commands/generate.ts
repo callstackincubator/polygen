@@ -4,8 +4,8 @@ import {
   W2CGenerator,
   type W2CGeneratorOptions,
   W2CSharedContext,
-} from '@callstack/polygen-codegen/w2c';
-import { Project } from '@callstack/polygen-config/project';
+} from '@callstack/polygen-codegen';
+import { Project } from '@callstack/polygen-project';
 import type { ModuleSymbol } from '@callstack/wasm-parser';
 import chalk from 'chalk';
 import { Command, Option } from 'commander';
@@ -42,19 +42,18 @@ command.action(async (options: Options) => {
     forceGenerate: options.force ?? false,
   };
   const generator = await W2CGenerator.create(project, generatorOptions);
-  const modules = project.webAssemblyModules;
+  const allModules = project.webAssemblyModules;
 
   consola.info(
     'Generating code for',
-    chalk.bold(modules.length),
+    chalk.bold(allModules.length),
     'WebAssembly module(s)'
   );
 
   try {
-    for (const mod of modules) {
-      const modPath = project.pathTo(mod.path);
+    for (const mod of allModules) {
       const generatedModule = await oraPromise(
-        async () => generator.generateModule(modPath),
+        async () => generator.generateModule(mod),
         `Processing ${mod.kind} module ${chalk.bold(mod.path)}`
       );
 

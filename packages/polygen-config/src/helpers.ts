@@ -24,14 +24,14 @@ export function localModule(
   };
 }
 
-function externalModule(
-  module: string,
+export function externalModule(
+  packageName: string,
   path: string,
   options: PolygenModuleCommonConfig = {}
 ): PolygenExternalModuleConfig {
   return {
     kind: 'external',
-    module,
+    packageName,
     path,
     ...options,
   };

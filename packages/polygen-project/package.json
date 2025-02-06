@@ -1,11 +1,15 @@
 {
-  "name": "@callstack/polygen-metro-config",
+  "name": "@callstack/polygen-project",
   "version": "0.1.0",
-  "description": "Provides Polygen support for metro bundler",
+  "description": "Helper package for working with Polygen projects",
   "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "type": "commonjs",
+  "exports": {
+    ".": "./dist/index.js"
+  },
   "files": [
-    "dist"
+    "dist",
+    "src"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
@@ -13,12 +17,15 @@
     "postinstall": "tsc -p tsconfig.json || true",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
+  "license": "MIT",
   "dependencies": {
-    "@callstack/polygen-project": "0.1.0"
+    "@callstack/polygen-config": "0.1.0",
+    "deepmerge": "^4.3.1",
+    "find-up": "^5.0.0",
+    "glob": "^11.0.0"
   },
   "devDependencies": {
     "@callstack/polygen-typescript-config": "workspace:^",
     "typescript": "^5.7.2"
-  },
-  "license": "MIT"
+  }
 }

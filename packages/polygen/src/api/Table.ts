@@ -78,6 +78,10 @@ export class Table {
   }
 
   public set(index: number, value: any) {
+    if (typeof value !== 'object') {
+      return;
+    }
+
     NativeWASM.setTableElement(this, index, value);
   }
 }

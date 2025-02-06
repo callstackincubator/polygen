@@ -3,7 +3,7 @@ import path from 'node:path';
 import {
   findConfigFile,
   findProjectRoot,
-} from '@callstack/polygen-config/project';
+} from '@callstack/polygen-config/find';
 import chalk from 'chalk';
 import { Command, Option } from 'commander';
 import consola from 'consola';

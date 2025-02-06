@@ -1,12 +1,10 @@
 #!/usr/bin/env node
 import {
-  InvalidProjectConfigurationError,
-  UnknownProjectError,
-} from '@callstack/polygen-config/project';
-import {
   CONFIG_FILE_NAMES,
+  InvalidProjectConfigurationError,
   ProjectConfigurationNotFound,
-} from '@callstack/polygen-config/project';
+  UnknownProjectError,
+} from '@callstack/polygen-config/find';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import consola from 'consola';
