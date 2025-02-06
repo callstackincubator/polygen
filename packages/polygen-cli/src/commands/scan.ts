@@ -56,7 +56,7 @@ async function scanLocal(project: Project): Promise<void> {
 
     const indent = '    ';
     const diff = Array.from(added.values())
-      .map((file) => `localModule('${file}')`)
+      .map((file) => `localModule('${file}'),`)
       .join(',\n' + indent);
 
     consola.log(chalk.gray('export default polygenConfig({'));
@@ -123,7 +123,7 @@ async function scanExternal(
 
     const indent = '    ';
     const diff = Array.from(added.values())
-      .map((file) => `externalModule('${packageName}', '${file}')`)
+      .map((file) => `externalModule('${packageName}', '${file}'),`)
       .join(',\n' + indent);
 
     consola.log(chalk.gray('export default polygenConfig({'));

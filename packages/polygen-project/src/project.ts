@@ -205,7 +205,9 @@ export class Project {
   }
 
   /**
-   * External modules
+   * Gets external webassembly modules from specified package
+   *
+   * @param packageName Name of the package
    */
   public getModulesOfExternalDependency(
     packageName: string
