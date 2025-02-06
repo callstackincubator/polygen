@@ -162,9 +162,19 @@ function makeImportGlobal(
   const cType = global.target.type.replace('i', 'u') + '*';
   const prototype = `${cType} ${global.generatedFunctionName}(${global.moduleInfo.generatedContextTypeName}* ctx)`;
   const body = `{
-      auto obj = ctx->importObj.getPropertyAsObject(ctx->rt, "${global.name}");
+      auto target = ctx->importObj.getProperty(ctx->rt, "${global.name}");
+
+      if (target.isUndefined()) [[unlikely]] {
+        throw jsi::JSError(ctx->rt, "Provided imported variable '${global.name}' is not provided");
+      }
+
+      if (!target.isObject()) [[unlikely]] {
+        throw jsi::JSError(ctx->rt, "Provided imported variable '${global.name}' is not an instance of WebAssembly.Global");
+      }
+
+      auto obj = target.asObject(ctx->rt);
       auto global = NativeStateHelper::tryGet<Global>(ctx->rt, obj);
-      return (${cType})global->getUnsafePayloadPtr();
+      return (${cType}*)global->getUnsafePayloadPtr();
     }
   `;
 

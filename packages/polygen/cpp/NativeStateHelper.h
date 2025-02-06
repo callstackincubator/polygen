@@ -32,9 +32,13 @@ struct NativeStateHelper {
 
   template <typename T>
   static std::shared_ptr<T> tryGet(facebook::jsi::Runtime& rt, const facebook::jsi::Object& holder) {
+    if (!holder.hasNativeState(rt)) {
+      throw facebook::jsi::JSError(rt, "Argument passed is missing native state");
+    }
+
     auto value = std::dynamic_pointer_cast<T>(holder.getNativeState(rt));
     if (value == nullptr) {
-      throw new facebook::jsi::JSError(rt, "Argument passed is missing native state or is of invalid type");
+      throw facebook::jsi::JSError(rt, "Argument passed has native state of invalid type");
     }
 
     return value;

@@ -81,7 +81,7 @@ public:
 
   void setValue(facebook::jsi::Runtime& rt, facebook::jsi::Value newValue) {
     if (!isMutable_) {
-      throw new facebook::jsi::JSError(rt, "Cannot change immutable WebAssembly.Global value");
+      throw facebook::jsi::JSError(rt, "Cannot change immutable WebAssembly.Global value");
     }
 
     setValueUnsafe(std::move(newValue));
