@@ -87,44 +87,61 @@ This gives us the ability to run WebAssembly modules in a statically compiled wa
 ## Prerequisites
 
 Because Polygen Codegen depends on [`wasm2c`](https://github.com/WebAssembly/wabt) tool, you need to have it installed on your machine.
-You can install it by either:
+You can install it using your package manager:
 
-1. Install using package manager:
+ ```sh
+ # macOS
+ brew install wabt
 
-   ```sh
-   # macOS
-   brew install wabt
+ # linux
+ sudo apt install wabt
+ ```
 
-   # linux
-   sudo apt install wabt
-   ```
+<details>
+<summary>Other installation options</summary>
 
-2. Downloading precompiled binaries from the [releases page](https://github.com/WebAssembly/wabt/releases) of wabt project.
-3. Building it from the source:
+If for some reason:
 
-   ```sh
-   $ git clone --recursive https://github.com/WebAssembly/wabt
-   $ cd wabt
-   $ git submodule update --init
-   $ cmake -B build -S .
-   $ cmake --build build
-   ```
+ - you cannot use the package manager method,
+ - you are on Windows,
+ - or the version there is outdated,
 
-Then, you need to make binaries visible to polygen tool. You can do this in two ways:
+you can still install `wabt` in a few other ways:
 
-- Set the `WABT_PATH` environment variable to the directory with binaries (`wabt/build` if you built it from source):
+**Option 1: Downloading prebuild binaries**
 
-  ```sh
-  # assumes build from source path
-  $ export WABT_PATH=$(pwd)/build
-  ```
+Download precompiled binaries from the [releases page](https://github.com/WebAssembly/wabt/releases) of `wabt` project.
+Select correct version for your platform and extract it to the directory of your choice.
 
-- Append the `PATH` environment variable to the directory with binaries (`wabt/build` if you built it from source):
+**Option 2: Building from source**
 
-  ```sh
-  # assumes build from source path
-  $ export PATH="$PATH:$(pwd)/build"
-  ```
+You can also build `wabt` from source. To do this, you need to have `cmake` and `git` installed on your machine.
+
+```sh
+$ git clone --recursive https://github.com/WebAssembly/wabt
+$ cd wabt
+$ git submodule update --init
+$ cmake -B build -S .
+$ cmake --build build
+```
+
+**Install binaries**
+
+You need to make binaries visible to Polygen. You can do this by adding the directory with the binaries to your system environment:
+
+```sh
+# Using WABT_PATH variable:
+$ export WABT_PATH=/path/to/wabt/binaries
+
+# or adding to PATH:
+$ export PATH="$PATH:/path/to/wabt/binaries"
+```
+
+> If you built WABT from source, the path should point to the `build` directory.
+
+To make those changes persistent, add them to your `.bashrc`/`.zshrc`/`.profile` file.
+
+</details>
 
 ## Installation
 
