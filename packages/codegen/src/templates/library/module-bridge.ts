@@ -49,7 +49,7 @@ export function buildExportBridgeHeader(module: W2CModuleContext) {
 function wrapNativeReturnIntoJSI(varName: string, types: ValueType[]) {
   if (types.length > 1) {
     const elements = types
-      .map((t, i) => toJSINumber(`${varName}.${STRUCT_TYPE_PREFIX[t]}${i}`))
+      .map((t, i) => toJSINumber(`${varName}.${STRUCT_TYPE_PREFIX[t]}${i}`, t))
       .map((e) => `, ${e}`)
       .join('');
 
@@ -57,7 +57,7 @@ function wrapNativeReturnIntoJSI(varName: string, types: ValueType[]) {
   }
 
   if (types.length === 1) {
-    return `return ${toJSINumber(varName)}`;
+    return `return ${toJSINumber(varName, types[0]!)}`;
   }
 
   return 'return jsi::Value::undefined()';
@@ -67,8 +67,10 @@ export function buildExportBridgeSource(module: W2CModuleContext) {
   function makeExportFunc(func: GeneratedFunctionExport) {
     const { resultTypes } = func.target;
 
-    const args = func.parameterTypeNames
-      .map((type, i) => fromJSINumber(`args[${i}]`, type))
+    const args = func.target.parametersTypes
+      .map((type, i) =>
+        fromJSINumber(`args[${i}]`, type, func.parameterTypeNames[i]!)
+      )
       .map((e) => `, ${e}`)
       .join('');
     const res = resultTypes.length > 0 ? 'auto res = ' : '';
