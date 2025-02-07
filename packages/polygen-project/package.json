@@ -1,6 +1,6 @@
 {
   "name": "@callstack/polygen-project",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Helper package for working with Polygen projects",
   "main": "./dist/index.js",
   "type": "commonjs",
@@ -19,7 +19,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@callstack/polygen-config": "0.1.0",
+    "@callstack/polygen-config": "0.2.0",
     "deepmerge": "^4.3.1",
     "find-up": "^5.0.0",
     "glob": "^11.0.0"

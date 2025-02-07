@@ -1,6 +1,6 @@
 {
   "name": "@callstack/polygen",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "React Native Module for running WebAssembly modules, with native performance.",
   "source": "./src/index.ts",
   "main": "./dist/index.js",
@@ -67,7 +67,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "devDependencies": {
-    "@callstack/polygen-cli": "0.1.0",
+    "@callstack/polygen-cli": "0.2.0",
     "@callstack/polygen-typescript-config": "workspace:^",
     "@types/react": "^18.2.44",
     "del-cli": "^5.1.0",

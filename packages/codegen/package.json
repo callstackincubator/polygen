@@ -1,6 +1,6 @@
 {
   "name": "@callstack/polygen-codegen",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "The code generator for @callstack/polygen",
   "license": "MIT",
   "type": "module",
@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@callstack/polygen-binary-utils": "0.1.0",
-    "@callstack/polygen-project": "0.1.0",
+    "@callstack/polygen-project": "0.2.0",
     "@callstack/wasm-parser": "0.1.0",
     "execa": "^9.4.1",
     "indent-string": "^5.0.0",
