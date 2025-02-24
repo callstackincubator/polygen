@@ -1,0 +1,22 @@
+{
+  "root": true,
+  "title": "Polygen",
+  "description": "Polygen User Documentation",
+  "icon": "Library",
+  "pages": [
+    "index",
+    "---Getting Started---",
+    "(guide)/intro",
+    "(guide)/comparison",
+    "(guide)/install",
+    "---Using WebAssembly---",
+    "adding-modules",
+    "loading-modules",
+    "wasi",
+    "---Advanced---",
+    "integrations",
+    "---Reference---",
+    "[Configuration Reference](/docs/config/index)",
+    "[WebAssembly API](https://developer.mozilla.org/en-US/docs/WebAssembly)"
+  ]
+}

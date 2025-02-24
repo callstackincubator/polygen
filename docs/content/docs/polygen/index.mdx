@@ -1,0 +1,125 @@
+---
+title: Polygen
+description: Documentation for the Polygen project
+---
+import {ArrowRightLeftIcon, BookIcon, GithubIcon, HammerIcon} from "lucide-react";
+import {PrettyCard} from "@/components/PrettyCard";
+import {Cards} from "fumadocs-ui/components/card";
+
+## Overview
+
+### Getting started
+
+<p className="mb-8 text-fd-muted-foreground">Learn how to setup your environment.</p>
+
+<Cards>
+  <PrettyCard
+    title="How it works?"
+    description="Learn how Polygen works"
+    href="polygen/intro"
+    icon={<BookIcon/>}
+    external={false}
+  />
+  <PrettyCard
+    title="Install Polygen"
+    description="Learn how to install Polygen"
+    href="polygen/install"
+    icon={<BookIcon/>}
+    external={false}
+  />
+  <PrettyCard
+    title="When to use?"
+    description="Learn how Polygen compares to alternatives"
+    href="polygen/install"
+    icon={<ArrowRightLeftIcon />}
+    external={false}
+  />
+</Cards>
+
+### Using WebAssembly
+
+<p className="mb-8 text-fd-muted-foreground">How to add WebAssembly modules to your React Native project.</p>
+
+<Cards>
+  <PrettyCard
+    title="Adding Modules"
+    description="Adding first WebAssembly module"
+    href="polygen/first-module"
+    icon={<BookIcon/>}
+    external={false}
+  />
+  <PrettyCard
+    title="Loading Modules"
+    description="Learn how to load WebAssembly Modules"
+    href="polygen/install"
+    icon={<BookIcon/>}
+    external={false}
+  />
+</Cards>
+
+### Reference
+
+<p className="mb-8 text-fd-muted-foreground">Easily accessible documentation for your tailoring needs.</p>
+
+<Cards>
+  <PrettyCard
+    title="Configuration"
+    description="polygen.config.js reference"
+    href="config"
+    icon={<HammerIcon/>}
+    external={false}
+  />
+</Cards>
+
+### Integrations
+
+<p className="mb-8 text-fd-muted-foreground">Adding support for external tools for better experience</p>
+
+<Cards>
+  <PrettyCard
+    title="Metro Bundler"
+    description="Using Polygen with Metro"
+    href="polygen/integrations/metro"
+    image="/metro.svg"
+    external={false}
+  />
+</Cards>
+
+
+## External
+
+<p className="mb-8 text-fd-muted-foreground">Documentation from external sources that may come in handy</p>
+
+<Cards>
+  <PrettyCard
+    title="WebAssembly WebAPI"
+    description="Reference for WebAssembly WebAPI"
+    href="https://developer.mozilla.org/en-US/docs/WebAssembly"
+    image="/mdn-icon.png"
+    external
+  />
+</Cards>
+
+
+## Community & Support
+
+<p className="mb-8 text-fd-muted-foreground">Documentation from external sources that may come in handy</p>
+
+<Cards>
+  <PrettyCard
+    title="Repository"
+    description="Polygen GitHub repository"
+    href="https://github.com/callstackincubator/polygen"
+    image="/github-mark.svg"
+    external
+  />
+  <PrettyCard
+    title="Discord"
+    description="Join us on our Discord channel!"
+    href="https://discord.gg/Q4yr2rTWYF"
+    image="/discord-mark-blue.svg"
+    external
+  />
+
+
+</Cards>

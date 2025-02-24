@@ -1,0 +1,7 @@
+{
+  "title": "Integrations",
+  "description": "Configuring Polygen with other tools",
+  "icon": "Component",
+  "defaultOpen": true,
+  "pages": ["metro"]
+}

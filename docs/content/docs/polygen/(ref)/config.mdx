@@ -1,0 +1,31 @@
+---
+title: Configuration Reference
+description: Reference for `polygen.config` file
+icon: Hammer
+---
+
+## modules
+
+- __Type_-: `Array<PolygenModuleCommonConfig>`
+- __Default__: `[]`
+
+List of modules to be generated.
+
+### Local modules
+
+```ts title="polygen.config.mjs"
+import {
+  localModule,
+  polygenConfig,
+} from '@callstack/polygen-config';
+
+export default polygenConfig({
+  modules: [
+    localModule('path/to/my-module.wasm')
+  ],
+});
+```
+
+__LocalModuleOptions__
+
+<AutoTypeTable path="../packages/polygen-config/src/index.ts" name="PolygenModuleCommonConfig" />

@@ -1,0 +1,30 @@
+---
+title: Modules options
+description: Module configrations
+icon: Hammer
+---
+
+import { TypeTable } from "fumadocs-ui/components/type-table";
+import { DocTable } from "@/components/DocTable";
+
+## modules
+
+- __Type__: `PolygenModuleCommonConfig[]`
+- __Default__: `[]`
+
+List of modules to be generated.
+
+```ts title="polygen.config.mjs"
+import {
+  localModule,
+  polygenConfig,
+} from '@callstack/polygen-config';
+
+export default polygenConfig({
+  modules: [
+    localModule('path/to/my-module.wasm') // [!code highlight]
+  ],
+});
+```
+
+<DocTable path="../packages/polygen-config/src/helpers.ts" name="localModule" />

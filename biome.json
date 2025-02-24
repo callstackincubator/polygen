@@ -4,12 +4,15 @@
   "files": {
     "ignoreUnknown": false,
     "ignore": [
+      "!docs/lib",
       "**/package.json",
       "**/ios",
       "**/android",
       "**/dist",
       "**/lib",
       "**/.turbo",
+      "docs/out",
+      "**/.next",
       ".changeset/config.json",
       ".yarn"
     ]

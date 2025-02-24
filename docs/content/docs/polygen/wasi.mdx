@@ -1,0 +1,32 @@
+---
+title: Modules using WASI
+description: Supporting WebAssembly System Interface
+icon: Book
+---
+
+import { File, Folder, Files } from 'fumadocs-ui/components/files';
+
+## What is WASI?
+
+Since WebAssembly modules are strictly isolated from the host environment, they cannot access the file system, network, or any other system resources directly.
+This greatly limits the capabilities of the modules, as everything needs to be provided by the embedder/host.
+While great for security, it also makes it hard to use WebAssembly modules for many use cases.
+
+Each programming language has its own standard library that allows the programmer to communicate with the system,
+for example to open a file or perform a network request.
+
+However, when compiling to WebAssembly, these programming languages and standard libraries need the knowledge on how to
+communicate with the system beforehand, so that the original code can be seamlessly compiled to WebAssembly.
+
+This is where WebAssembly System Interface (WASI) comes in. It is an abstract interface (or a contract if you will)
+that specifies how to communicate with the system. You can think of it as a standard library for WebAssembly.
+
+## WASI support in Polygen
+
+Polygen does not come with WebAssembly System Interface implementation yet.
+
+However, since it is just an interface, you can implement the required methods yourself.
+
+<Callout type="info">
+  Polygen will provide support for WASI in the future releases.
+</Callout>

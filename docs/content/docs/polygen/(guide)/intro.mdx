@@ -1,0 +1,76 @@
+---
+title: Introduction
+description: Understanding how Polygen works
+icon: Book
+---
+
+## Introduction
+
+Polygen is a toolkit that allows you to run WebAssembly modules directly in your React Native application, with near native performance.
+
+You can use WebAssembly just like you do in Web applications - using widely supported and standard WebAPI, but with the added benefit of running it natively on your device.
+This approach provides a way to share codebase between Web and Native applications, when using WebAssembly.
+
+## Why?
+
+WebAssembly <span className='text-fd-muted-foreground text-sm'>(WASM)</span> allows us to create highly-reusable, high performance modules that can be written in multiple languages.
+
+At it's core, it is a virtual machine with a set of low-level instructions, which is designed to be fast and efficient. Modules are platform independent,
+therefore a single module can be run on different CPU architectures without a need to distrubute precompiled modules for all platforms.
+
+It specifies no standard library nor runtime, making it ideal for embedding in other environments, such as React Native.
+
+Each module is sandboxed, and has no access to the system or other modules, unless the Embedder (you) allows it to. This provides
+a very high level of security and isolation.
+
+## How it works?
+
+Before going in-detail on how Polygen works, let's first understand how WebAssembly works in a browser environment.
+
+### WebAssembly in Browser
+Browsers come with a dedicated Runtime for WebAssembly, which is separate from JavaScript runtime.
+Usually, when working with WebAssembly in browser environment, you need to perform some steps to execute the module:
+
+ 1. Load WebAssembly module (e.g. using `fetch` API)
+ 2. Compile the module (this steps essentialy decodes binary module into executable code)
+ 3. Create an instance of the module (this step creates an instance of the module, which can be used to call exported functions)*
+
+The browser can either interpret the WebAssembly module, or compile it using Just-in-Time compilation (during second step).
+
+<Callout type='info'>
+Last two instructions can be streamlined using `WebAssembly.instantiateStreaming` API, which combines compilation and instantiation into a single step.
+</Callout>
+
+So, for example the following code will load and run a WebAssembly module:
+
+```ts
+const binaryModule = fetch(`path/to/module.wasm`);
+const instance = await WebAssembly.instantiateStreaming(binaryModule);
+
+console.log('Result:', instance.exports.add(1, 2));
+```
+
+### WebAssembly in React Native
+
+While we could do exactly the same in React Native, such approach would make it slow and too taxing on mobile devices.
+
+Instead of interpreting or performing Just-in-Time compilation, Polygen instead performs Ahead-of-time compilation
+of WebAssembly modules into C/C++ code using the wonderful [`wasm2c`](https://github.com/WebAssembly/wabt/blob/main/wasm2c/README.md) tool.
+After that, Polygen generates additional glue code so that the compiled WebAssembly module can be used from JavaScript code.
+
+Generated C/C++ code becomes part of your application binary, just like other native libraries.
+
+Because there's no Just-in-time compilation, applications using Polygen can be released in the Apple ecosystem,
+where JIT compilation is prohibited.
+
+## Limitations
+
+Polygen approach provides the highest performance, but also comes with a set of tradeoffs you must be aware of:
+
+ - You cannot load WebAssembly modules dynamically at runtime
+ - You need to compile the module ahead of time
+ - You need to maintain an allowlist/whitelist of WebAssembly modules
+
+<Callout type='info'>
+In the future Polygen may support various strategies of WASM execution, including JIT compilation, making above limitations less strict.
+</Callout>

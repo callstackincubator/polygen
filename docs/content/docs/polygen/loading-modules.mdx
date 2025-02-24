@@ -1,0 +1,76 @@
+---
+title: Loading Modules
+description: Load WebAssembly modules in Polygen
+icon: Book
+---
+
+## Loading a module
+
+Now that we have added a module in the project, we can load it in the JavaScript code.
+
+There are two ways to load a module in Polygen:
+
+ - **Fetch** - load the module using `fetch` API, compatible with WebAPI
+ - **Bundler integration** - load the module using the bundler, e.g. Metro
+
+## Fetch
+
+<Callout type="warn">
+  This approach is supported only for migration and compatibility reasons, it is sub-optimal and should not be used in production.
+</Callout>
+
+Polygen provides support for loading WebAssembly modules using the [`fetch` API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API),
+which is a part of widely supported WebAPI.
+
+As you may remember from the [Introduction](/docs/polygen/intro), Polygen does not allow loading arbitrary modules at runtime,
+so how does this work?
+
+Rather than loading the module from the network and running it, Polygen instead loads the module only to compute its unique fingerprint (hash),
+and then uses this fingerprint to find the correct module in the project.
+
+If the module with matching hash was not added, an error is thrown.
+
+<Callout type="info">
+Fetching a module only to compute its hash is wasteful and can be a source of issues. We suggest you to use bundler integration instead.
+</Callout>
+
+This approach still requires [Adding the module](/docs/polygen/first-module) to the project, but allows you to use code that works on the Web platform
+without changes.
+
+Let's consider an example:
+
+```ts title="example.ts"
+// Assuming localhost:8000 server is running and serving the `example.wasm`
+await WebAssembly.compileStreaming(
+  fetch('http://localhost:8000/example.wasm')
+)
+```
+
+The code above only compiles when the same module was added to the project, and the application was compiled with it.
+
+## Bundler integration
+
+Polygen provides a way to load WebAssembly modules using the bundler, e.g. Metro.
+
+This approach is the recommended way to load modules in Polygen, as it is more efficient and does not perform any additional network requests,
+and instead refers to WebAssembly module statically.
+
+When using bundler integration, you can import the module just as you would do with any other module. The imported JavaScript value is
+a special reference to the module, which can be passed to `WebAssembly.Module` constructor.
+
+```ts title="example.ts"
+import myWASMModule from './modules/example.wasm';
+
+const module = new WebAssembly.Module(myWASMModule);
+```
+
+To setup up bundler integration, follow the documentation specific to the bundler:
+
+<Cards>
+  <PrettyCard
+    title="Metro"
+    description="Setting up Metro bundler integration"
+    image="/metro.svg"
+    href="/docs/polygen/metro"
+  />
+</Cards>

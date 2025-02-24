@@ -1,0 +1,84 @@
+---
+title: Metro
+description: How to set up Polygen Metro integration
+icon: metro.svg
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { File, Folder, Files } from 'fumadocs-ui/components/files';
+import { twMerge as cn } from 'tailwind-merge';
+
+## Metro integration
+
+Polygen provides a way to load WebAssembly modules using the Metro bundler.
+
+<Steps>
+  <Step>
+    Install the `@callstack/polygen-metro-config` package:
+
+    ```package-install
+    @callstack/polygen-metro-config -D
+    ```
+  </Step>
+
+  <Step>
+    In `metro.config.js` wrap the returned metro config with `withPolygenConfig`:
+
+    ```js title="metro.config.js"
+    const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
+    const { withPolygenConfig } = require('@callstack/polygen-metro-config'); // [!code ++]
+
+    /**
+     * Metro configuration
+     * https://facebook.github.io/metro/docs/configuration
+     *
+     * @type {import('metro-config').MetroConfig}
+     */
+    const config = {
+      resolver: {
+        // unstable_enablePackageExports: true,
+      },
+
+      // ...
+      // ...
+    };
+
+    module.exports = withPolygenConfig( // [!code ++]
+      mergeConfig(getDefaultConfig(__dirname), config)  // [!code ++]
+    );  // [!code ++]
+    ```
+  </Step>
+
+  <Step>
+    Regenerate the glue code:
+
+    ```bash
+    polygen generate
+    ```
+  </Step>
+</Steps>
+
+
+## How it works?
+
+Because Metro does not support virtual modules, Polygen generates dummy JavaScript modules that export
+the module metadata during `polygen generate` command.
+
+Generated modules are placed in `${polygen.output.directory}/modules`.
+
+For example, assuming default `polygen.output.directory` pointing to `node_modules/.polygen-out`:
+
+<Files>
+  <Folder name="node_modules" defaultOpen>
+    <Folder name=".polygen-out" defaultOpen>
+      <Folder name="@host" />
+      <Folder name="modules" className={cn("text-green-600")} />
+      <File name="polygen-output.json" />
+    </Folder>
+  </Folder>
+</Files>
+
+Then, metro resolver config is instrumented with additional logic when imported modules with `.wasm` extension:
+
+ - Module is checked for existence
+ - Import is redirected to corresponding generated module under `polygen-out/modules` directory

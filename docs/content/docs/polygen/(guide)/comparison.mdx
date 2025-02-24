@@ -1,0 +1,42 @@
+---
+title: Comparison
+description: Comparing Polygen to different approaches
+icon: ArrowRightLeft
+---
+
+import { ProsConsOverview } from '@/components/ProsConsOverview';
+
+This article compares Polygen to other approaches for running WebAssembly modules in React Native applications.
+
+## React Native WebAssembly
+
+This allows you to run WebAssembly modules in React Native applications, using the same approach as in Web applications.
+
+Instead of precompiling the modules, React Native WebAssembly uses `wasm3` runtime, which interprets the modules during execution.
+
+The approach does not impose any additional limitations on module execution, but it is slower than precompiled modules.
+With this approach you can use WebAssembly modules that are not supported by Polygen, but you will lose the performance benefits.
+
+<ProsConsOverview
+  pros={[
+    'No limitations on module execution',
+  ]}
+  cons={[
+    'Performance overhead',
+  ]}
+/>
+
+## TurboModules
+
+This approach does not really run WebAssembly modules, but instead requires you to write a native module in C++ and use them in React Native applications.
+
+<ProsConsOverview
+  pros={[
+    'Possibly the highest performance',
+    'Not limited by WebAssembly limitations (e.g. threading)',
+  ]}
+  cons={[
+    'Requires writing a TurboModule adapter',
+    'Requires long-term maintenance of the native code',
+  ]}
+/>

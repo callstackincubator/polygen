@@ -84,3 +84,5 @@ ios/generated
 android/generated
 
 packages/*/dist
+
+!docs/lib

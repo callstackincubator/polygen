@@ -1,0 +1,155 @@
+---
+title: Installation
+description: Getting started using Polygen
+icon: Book
+---
+
+import {Callout} from "fumadocs-ui/components/callout";
+import {Step, Steps} from 'fumadocs-ui/components/steps';
+import {Tab, Tabs} from "fumadocs-ui/components/tabs";
+
+## Installing WABT
+
+As already mentioned in the previous chapter, Polygen uses `wasm2c` tool to compile WebAssembly modules into C/C++ code.
+Therefore, you need to have `wasm2c` tool, which is a part of WebAssembly Binary Toolkit (WABT) installed on your system.
+
+### Binary installation
+
+The easiest way to install `wabt` toolkit is to use a system's package manager to download
+the prebuild binary.
+
+You can do this using the following command(s):
+
+<Tabs groupId="system" persist items={['Mac', 'Linux', 'Windows']}>
+
+  <Tab value="Mac">
+
+    WABT is available in homebrew registry. You can install it using `brew`:
+
+    ```bash
+    $ brew install wabt
+    ```
+  </Tab>
+
+  <Tab value="Linux">
+
+    If you are on a APT based distro (e.g. Debian, Ubuntu), you can download the `wabt` package:
+
+    ```bash
+    apt install wabt
+    ```
+
+    If using any other distro, see Building from source.
+
+  </Tab>
+  <Tab value="Windows">
+    You must build it from source.
+  </Tab>
+</Tabs>
+
+
+### Building from source
+
+If you system does not provide prebuilt binary for WABT, it is outdated, or you want to make some modifications in it, you must build it from source manually.
+
+For information on how to do that, visit [official README](https://github.com/WebAssembly/wabt).
+
+## Installing Polygen
+
+### Using `polygen init`
+
+The simplest way to get started is to run the following command in your project's directory:
+
+<Tabs groupId="packageManager" persist items={['yarn', 'npm']}>
+  <Tab value="yarn">
+    ```bash
+    yarn dlx polygen@latest init
+    ```
+  </Tab>
+
+  <Tab value="npm">
+    ```bash
+    npx polygen@latest init
+    ```
+  </Tab>
+</Tabs>
+
+This will guide you through installation progress.
+
+### Manual installation
+
+If the `polygen init` does not work for you, or you want to install it manually:
+
+
+<Steps>
+
+  <Step>
+    In your project's main directory:
+
+    ```package-install
+    polygen @polygen/cli @polygen/metro-config @polygen/config
+    ```
+  </Step>
+
+  <Step>
+    Edit `package.json` of the project using `polygen`
+
+    ```json title="package.json"
+    "scripts": {
+    "polygen": "polygen" // [!code ++]
+  }
+    ```
+  </Step>
+
+  <Step>
+    Create `polygen.config.mjs` file.
+
+    <Callout type="info">
+      Configuration file can have one of the following extensions: `mjs, cjs, js`
+    </Callout>
+
+    ```js title="polygen.config.js"
+    import { externalModule, localModule, polygenConfig } from '@callstack/polygen-config';
+
+    /**
+     * @type {import('@callstack/polygen/config').PolygenConfig}
+     */
+    export default polygenConfig({
+      /**
+       * Output configuration
+       */
+      output: {
+        /**
+         * Directory where the output files will be stored.
+         */
+        // directory: 'node_modules/.polygen-out'
+      },
+
+      /**
+       * Configuration for the `scan` command.
+       */
+      scan: {
+        /**
+         * List of paths to scan for modules.
+         *
+         * Each item is a glob pattern that can use wildcards, or be used
+         * to ignore specific element by prefixing it by `!`.
+         */
+        // paths: [
+        //     "src/**/*.wasm",
+        // ]
+      },
+
+      /**
+       * List of modules to be used in the project.
+       *
+       * Each module can be individually configured, by passing options object as a second
+       * argument (or 3rd, for external modules).
+       */
+      modules: [
+        // localModule('src/wasm/module.wasm')
+      ],
+    });
+    ```
+  </Step>
+</Steps>

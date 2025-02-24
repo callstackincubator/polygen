@@ -7,7 +7,7 @@
  */
 const getReleaseLine = async (changeset, _type) => {
   let lines = changeset.summary
-    .split("\n")
+    .split('\n')
     .map((l) => l.trim().replace(/^\-\s*/, ''))
     .map((l) => `- ${l}`);
 
@@ -15,7 +15,7 @@ const getReleaseLine = async (changeset, _type) => {
     lines = lines.map((l) => `${l} [${changeset.commit.slice(0, 7)}]`);
   }
 
-  return lines.join("\n");
+  return lines.join('\n');
 };
 
 /**
@@ -25,12 +25,14 @@ const getReleaseLine = async (changeset, _type) => {
  * @returns {Promise<string>}
  */
 const getDependencyReleaseLine = async (changesets, dependenciesUpdated) => {
-  if (dependenciesUpdated.length === 0) return "";
+  if (dependenciesUpdated.length === 0) {
+    return '';
+  }
 
   const changesetLinks = changesets.map(
     (changeset) =>
       `- Updated dependencies${
-        changeset.commit ? ` [${changeset.commit.slice(0, 7)}]` : ""
+        changeset.commit ? ` [${changeset.commit.slice(0, 7)}]` : ''
       }`
   );
 
@@ -38,7 +40,7 @@ const getDependencyReleaseLine = async (changesets, dependenciesUpdated) => {
     (dependency) => `  - ${dependency.name}@${dependency.newVersion}`
   );
 
-  return [...changesetLinks, ...updatedDependenciesList].join("\n");
+  return [...changesetLinks, ...updatedDependenciesList].join('\n');
 };
 
 /**

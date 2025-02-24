@@ -2,7 +2,7 @@
 
 <!-- PROJECT LOGO -->
 <p align="center">
-  <img src="docs/polygen-logo.png" width="150" alt="" />
+  <img src="docs/public/polygen-logo.png" width="150" alt="" />
 </p>
 <h1 align="center">Polygen: WebAssembly Toolkit for React Native</h1>
 

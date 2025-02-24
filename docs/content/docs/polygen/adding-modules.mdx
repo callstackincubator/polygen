@@ -1,0 +1,143 @@
+---
+title: Adding Modules
+description: Adding new WebAssembly module
+icon: Book
+---
+
+import { File, Folder, Files } from 'fumadocs-ui/components/files';
+
+
+Contrary to the traditional WebAssembly workflow, where you can load WebAssembly modules from arbitrary sources,
+Polygen requires you to add the WebAssembly modules to your project beforehand.
+
+## Adding the module
+
+
+Adding the WebAssembly modules is as simple as adding it to your source tree, that is anywhere in source directory within your project.
+
+<Callout type="info">
+While not mandatory, it is recommended to keep all your modules in a separate directory, e.g. `modules` to keep the project structure clean.
+</Callout>
+
+<Files>
+  <Folder name="src" defaultOpen>
+    <Folder name="modules" defaultOpen>
+      <File name="my-module.wasm" style={{ color: 'green' }} />
+    </Folder>
+    <File name="index.tsx" />
+  </Folder>
+  <File name="package.json" />
+  <File name="polygen.config.mjs" />
+</Files>
+
+## Module registry
+
+After adding the module file, you need to inform Polygen that you want to use the added module within your project.
+
+Polygen needs to be informed about the module, so that it can generate the necessary glue code to use the module from JavaScript.
+Instead of accepting all modules in the project, Polygen requires you to explicitly register the module.
+
+While this can look cumbersome, it is a necessary step to ensure that only the modules you want to use are included in the final build.
+
+Polygen splits modules into two categories:
+
+ - **Local modules** - are part of your source tree
+
+ - **External modules** - provided by third-party libraries, and are usually located in `node_modules` directory.
+
+This way, Polygen does not need to scan `node_modules` directory every time and can inform you about the changes.
+
+## Registering the module
+
+Registering the module is as simple as adding the module to the `modules` array in the `polygen.config.mjs` file.
+
+### Local module
+
+```js title="polygen.config.mjs"
+import {
+  localModule,
+  polygenConfig,
+} from '@callstack/polygen-config';
+
+/**
+ * @type {import('@callstack/polygen/config').PolygenConfig}
+ */
+export default polygenConfig({
+  // ...
+  // ...
+  // ...
+  modules: [
+    localModule('src/modules/my-module.wasm'), // [!code ++]
+  ]
+});
+```
+
+You can also use `polygen scan` command to automatically scan the project for WebAssembly modules and shows you suggested edits
+to `polygen.config` file.
+
+```bash
+$ polygen scan
+```
+
+This command will output something similar to following output (depending on your project):
+
+```js
+✔ Scanning for WebAssembly modules
+ℹ Found 1 WebAssembly module(s) 1 new, 0 removed                                                                                                                              9:15:24 AM
+ℹ To add them to the project, add following lines to your polygen.config.mjs:                                                                                                 9:15:24 AM
+                                                                                                                                                                               9:15:24 AM
+export default polygenConfig({                                                                                                                                                 9:15:24 AM
+  modules: [                                                                                                                                                                   9:15:24 AM
+    // ...                                                                                                                                                                     9:15:24 AM
+    localModule('src/example.wasm'), // [!code ++]
+    // ...                                                                                                                                                                     9:15:24 AM
+  ]                                                                                                                                                                            9:15:24 AM
+});
+```
+
+### External module
+
+For external modules, you need to provide the name of the module, and the path to the module file within its folder.
+
+```js title="polygen.config.mjs"
+import {
+  externalModule, // [!code ++]
+  localModule,
+  polygenConfig,
+} from '@callstack/polygen-config';
+
+/**
+ * @type {import('@callstack/polygen/config').PolygenConfig}
+ */
+export default polygenConfig({
+  // ...
+  // ...
+  // ...
+  modules: [
+    localModule('src/modules/my-module.wasm'),
+    externalModule('module-name', 'path/to/module.wasm'), // [!code ++]
+  ]
+});
+```
+You can also use `polygen scan` command for external modules, however you must specify the name of the package to scan
+as a first argument:
+
+```bash
+$ polygen scan name-of-npm-package-with-wasm
+```
+
+This command will output something similar to following output (depending on your project):
+
+```js
+✔ Scanning for WebAssembly modules
+ℹ Found 1 WebAssembly module(s) 1 new, 0 removed                                                                                                                              9:15:24 AM
+ℹ To add them to the project, add following lines to your polygen.config.mjs:                                                                                                 9:15:24 AM
+                                                                                                                                                                               9:15:24 AM
+export default polygenConfig({                                                                                                                                                 9:15:24 AM
+  modules: [                                                                                                                                                                   9:15:24 AM
+    // ...                                                                                                                                                                     9:15:24 AM
+    exernalModule('name-of-npm-package-with-wasm', 'path/to/module.wasm'), // [!code ++]
+    // ...                                                                                                                                                                     9:15:24 AM
+  ]                                                                                                                                                                            9:15:24 AM
+});
+```

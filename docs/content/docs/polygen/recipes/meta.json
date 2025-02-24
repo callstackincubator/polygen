@@ -1,0 +1,7 @@
+{
+  "title": "Recipes",
+  "description": "Recipes for creating WebAssembly modules",
+  "icon": "Library",
+  "defaultOpen": true,
+  "pages": ["assembly-script", "rust"]
+}
