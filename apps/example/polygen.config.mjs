@@ -40,9 +40,9 @@ export default polygenConfig({
    * argument (or 3rd, for external modules).
    */
   modules: [
-    // localModule('src/example.wasm'),
-    // localModule('src/table_test.wasm'),
-    // externalModule('simple-sha256-wasm', 'simple_sha256_wasm_bg.wasm'),
+    localModule('src/example.wasm'),
+    localModule('src/table_test.wasm'),
+    externalModule('simple-sha256-wasm', 'simple_sha256_wasm_bg.wasm'),
     // localModule('src/wasm/module.wasm')
   ],
 });
