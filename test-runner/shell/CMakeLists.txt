@@ -1,0 +1,3 @@
+add_executable(polygen_test_runner_shell main.cpp)
+target_link_libraries(polygen_test_runner_shell PUBLIC Hermes::Hermes fakern)
+target_link_libraries(polygen_test_runner_shell PUBLIC polygen polygen-generated)

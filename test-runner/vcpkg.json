@@ -1,0 +1,20 @@
+{
+  "name": "polygen-test-runner",
+  "version": "0.0.1",
+  "license": "MIT",
+  "dependencies": [
+    {
+      "name": "fmt",
+      "version>=": "11.0.2#1"
+    },
+    {
+      "name": "folly",
+      "version>=": "2025.01.27.00"
+    },
+    {
+      "name": "gtest",
+      "version>=": "1.15.2"
+    },
+    "hermes"
+  ]
+}
