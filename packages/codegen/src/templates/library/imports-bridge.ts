@@ -118,7 +118,7 @@ function wrapJSIReturnIntoNative(
   }
 
   if (resultTypes.length === 1) {
-    return fromJSINumber('res', resultTypes[0]!, func.returnTypeName);
+    return `return ${fromJSINumber('res', resultTypes[0]!, func.returnTypeName)}`;
   }
 
   return 'return';
