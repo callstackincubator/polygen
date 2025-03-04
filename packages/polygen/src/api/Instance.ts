@@ -1,4 +1,4 @@
-import NativeWASM, { InternalModuleMetadata } from '../NativePolygen';
+import NativeWASM, { type InternalModuleMetadata } from '../NativePolygen';
 import { Global } from './Global';
 import { Memory } from './Memory';
 import { Module } from './Module';

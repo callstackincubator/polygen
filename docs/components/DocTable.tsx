@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import {
-  FunctionSymbolDocumentation,
+  type FunctionSymbolDocumentation,
   generateDocumentation,
 } from '@/lib/ts-documentation';
 import { cva } from 'class-variance-authority';

@@ -4,8 +4,17 @@ import type {
   ModuleTable,
 } from '@callstack/wasm-parser';
 import stripIndent from 'strip-indent';
-import { W2CImportedModule } from '../../context/index.js';
-import type { GeneratedFunctionImport, GeneratedImport } from '../../types.js';
+import type { W2CExternModule } from '../../codegen/modules.js';
+import type {
+  GeneratedModuleFunction,
+  GeneratedSymbol,
+  ResolvedModuleImport,
+} from '../../codegen/types.js';
+import { matchSymbol } from '../../codegen/utils.js';
+import {
+  toArgumentList,
+  toInitializerList,
+} from '../../helpers/source-builder.js';
 import {
   HEADER,
   STRUCT_TYPE_PREFIX,
@@ -15,25 +24,24 @@ import {
   toJSINumber,
 } from '../common.js';
 
-export function buildImportBridgeHeader(importedModule: W2CImportedModule) {
-  function makeDeclaration(symbol: GeneratedImport): string {
-    switch (symbol.target.kind) {
-      case 'function':
-        return makeImportFunc(symbol as GeneratedFunctionImport, false);
-      case 'global':
-        return makeImportGlobal(symbol as GeneratedImport<ModuleGlobal>, false);
-      case 'memory':
-        return makeImportMemory(symbol as GeneratedImport<ModuleMemory>, false);
-      case 'table':
-        return makeImportTable(symbol as GeneratedImport<ModuleTable>, false);
-      default:
-        // @ts-ignore
-        console.warn('Unknown import type', symbol.target.kind);
-        return '';
+export function buildImportBridgeHeader(importedModule: W2CExternModule) {
+  function makeDeclaration(symbol: ResolvedModuleImport): string {
+    try {
+      return matchSymbol<string>(symbol, {
+        func: (f) => makeImportFunc(f, false),
+        global: (g) => makeImportGlobal(g, false),
+        table: (t) => makeImportTable(t, false),
+        memory: (m) => makeImportMemory(m, false),
+      });
+    } catch (e) {
+      console.error('Failed to build import', symbol, e);
+      return '';
     }
   }
 
-  const decls = importedModule.imports.map(makeDeclaration).join('\n');
+  const decls = [...importedModule.exports.values().map(makeDeclaration)].join(
+    '\n'
+  );
 
   return (
     HEADER +
@@ -61,21 +69,18 @@ export function buildImportBridgeHeader(importedModule: W2CImportedModule) {
   );
 }
 
-export function buildImportBridgeSource(importedModule: W2CImportedModule) {
-  function makeImport(imp: GeneratedImport): string {
-    switch (imp.target.kind) {
-      case 'function':
-        return makeImportFunc(imp as GeneratedFunctionImport, true);
-      case 'global':
-        return makeImportGlobal(imp as GeneratedImport<ModuleGlobal>, true);
-      case 'memory':
-        return makeImportMemory(imp as GeneratedImport<ModuleMemory>, true);
-      case 'table':
-        return makeImportTable(imp as GeneratedImport<ModuleTable>, true);
-      default:
-        // @ts-ignore
-        console.warn('Unknown import type', imp.target.kind);
-        return '';
+export function buildImportBridgeSource(importedModule: W2CExternModule) {
+  function makeImport(imp: ResolvedModuleImport): string {
+    try {
+      return matchSymbol<string>(imp, {
+        func: (f) => makeImportFunc(f, true),
+        global: (g) => makeImportGlobal(g, true),
+        table: (t) => makeImportTable(t, true),
+        memory: (m) => makeImportMemory(m, true),
+      });
+    } catch (e) {
+      console.error('Failed to build import', imp, e);
+      return '';
     }
   }
 
@@ -93,7 +98,7 @@ export function buildImportBridgeSource(importedModule: W2CImportedModule) {
     extern "C" {
     #endif
 
-    ${importedModule.imports.map((i) => makeImport(i)).join('\n')}
+    ${[...importedModule.exports.values().map((i) => makeImport(i))].join('\n')}
 
     #ifdef __cplusplus
     }
@@ -104,73 +109,74 @@ export function buildImportBridgeSource(importedModule: W2CImportedModule) {
 
 function wrapJSIReturnIntoNative(
   varName: string,
-  func: GeneratedFunctionImport
+  func: ResolvedModuleImport<GeneratedModuleFunction>
 ) {
-  const { resultTypes } = func.target;
+  const { resultTypes, returnTypeName } = func.target;
 
   // Handle multiple value types (struct)
   if (resultTypes.length > 1) {
-    const elements = resultTypes
-      .map((t, i) => toJSINumber(`${varName}.${STRUCT_TYPE_PREFIX[t]}${i}`, t))
-      .join(', ');
+    const elements = resultTypes.map((t, i) =>
+      toJSINumber(`${varName}.${STRUCT_TYPE_PREFIX[t]}${i}`, t)
+    );
 
-    return `return { ${elements} }`;
+    return `return ${toInitializerList(elements)}`;
   }
 
   if (resultTypes.length === 1) {
-    return `return ${fromJSINumber('res', resultTypes[0]!, func.returnTypeName)}`;
+    return `return ${fromJSINumber('res', resultTypes[0]!, returnTypeName)}`;
   }
 
   return 'return';
 }
 
 function makeImportFunc(
-  func: GeneratedFunctionImport,
+  func: GeneratedSymbol<GeneratedModuleFunction>,
   withBody: boolean
 ): string {
-  const { resultTypes } = func.target;
+  const { resultTypes, returnTypeName, parametersTypes, parameterTypeNames } =
+    func.target;
 
-  const declarationParams = func.parameterTypeNames
+  const declarationParams = parameterTypeNames
     .map((name, i) => `${name} arg${i}`)
     .map((e) => `, ${e}`)
     .join('');
 
-  const args = func.target.parametersTypes
+  const args = parametersTypes
     .map((t, i) => toJSINumber(`arg${i}`, t))
     .map((e) => `, ${e}`)
     .join('');
 
   const hasReturn = resultTypes.length > 0;
 
-  const prototype = `${func.returnTypeName} ${func.generatedFunctionName}(${func.moduleInfo.generatedContextTypeName}* ctx${declarationParams})`;
+  const prototype = `${returnTypeName} ${func.functionSymbolAccessorName}(${func.module.generatedContextTypeName}* ctx${declarationParams})`;
   const body = `{
-    auto fn = ctx->importObj.getPropertyAsFunction(ctx->rt, "${func.name}");
+    auto fn = ctx->importObj.getPropertyAsFunction(ctx->rt, "${func.localName}");
     ${hasReturn ? 'auto res = ' : ''}fn.call(ctx->rt${args});
     ${wrapJSIReturnIntoNative('res', func)};
   }
   `;
 
   return `
-    /* import: '${func.module}' '${func.name}' */
+    /* import: '${func.module}' '${func.localName}' */
     ${prototype}${withBody ? body : ';'}
   `;
 }
 
 function makeImportGlobal(
-  global: GeneratedImport<ModuleGlobal>,
+  global: ResolvedModuleImport<ModuleGlobal>,
   withBody: boolean
 ): string {
   const cType = global.target.type.replace('i', 'u') + '*';
-  const prototype = `${cType} ${global.generatedFunctionName}(${global.moduleInfo.generatedContextTypeName}* ctx)`;
+  const prototype = `${cType} ${global.functionSymbolAccessorName}(${global.module.generatedContextTypeName}* ctx)`;
   const body = `{
-      auto target = ctx->importObj.getProperty(ctx->rt, "${global.name}");
+      auto target = ctx->importObj.getProperty(ctx->rt, "${global.localName}");
 
       if (target.isUndefined()) [[unlikely]] {
-        throw jsi::JSError(ctx->rt, "Provided imported variable '${global.name}' is not provided");
+        throw jsi::JSError(ctx->rt, "Provided imported variable '${global.localName}' is not provided");
       }
 
       if (!target.isObject()) [[unlikely]] {
-        throw jsi::JSError(ctx->rt, "Provided imported variable '${global.name}' is not an instance of WebAssembly.Global");
+        throw jsi::JSError(ctx->rt, "Provided imported variable '${global.localName}' is not an instance of WebAssembly.Global");
       }
 
       auto obj = target.asObject(ctx->rt);
@@ -180,42 +186,42 @@ function makeImportGlobal(
   `;
 
   return `
-    /* import: '${global.module}' '${global.name}' */
+    /* import: '${global.module}' '${global.localName}' */
     ${prototype}${withBody ? body : ';'}
   `;
 }
 
 function makeImportMemory(
-  memory: GeneratedImport<ModuleMemory>,
+  memory: ResolvedModuleImport<ModuleMemory>,
   withBody: boolean
 ): string {
-  const prototype = `wasm_rt_memory_t* ${memory.generatedFunctionName}(${memory.moduleInfo.generatedContextTypeName}* ctx)`;
+  const prototype = `wasm_rt_memory_t* ${memory.functionSymbolAccessorName}(${memory.module.generatedContextTypeName}* ctx)`;
   const body = `{
-    auto memoryHolder = ctx->importObj.getPropertyAsObject(ctx->rt, "${memory.name}");
+    auto memoryHolder = ctx->importObj.getPropertyAsObject(ctx->rt, "${memory.localName}");
     auto memoryState = NativeStateHelper::tryGet<Memory>(ctx->rt, memoryHolder);
     return memoryState->getMemory();
   }`;
 
   return `
-    /* import: '${memory.module}' '${memory.name}' */
+    /* import: '${memory.module}' '${memory.localName}' */
     ${prototype}${withBody ? body : ';'}
   `;
 }
 
 function makeImportTable(
-  table: GeneratedImport<ModuleTable>,
+  table: ResolvedModuleImport<ModuleTable>,
   withBody: boolean
 ): string {
-  const prototype = `${TABLE_KIND_TO_NATIVE_C_TYPE[table.target.elementType]}* ${table.generatedFunctionName}(${table.moduleInfo.generatedContextTypeName}* ctx)`;
+  const prototype = `${TABLE_KIND_TO_NATIVE_C_TYPE[table.target.elementType]}* ${table.functionSymbolAccessorName}(${table.module.generatedContextTypeName}* ctx)`;
   const body = `{
-    auto tableHolder = ctx->importObj.getPropertyAsObject(ctx->rt, "${table.name}");
+    auto tableHolder = ctx->importObj.getPropertyAsObject(ctx->rt, "${table.localName}");
     auto table = NativeStateHelper::tryGet<${TABLE_KIND_TO_CLASS_NAME[table.target.elementType]}>(ctx->rt, tableHolder);
     assert(table != nullptr);
     return table->getTableData();
   }`;
 
   return `
-    /* import: '${table.module}' '${table.name}' */
+    /* import: '${table.module}' '${table.localName}' */
     ${prototype}${withBody ? body : ';'}
   `;
 }

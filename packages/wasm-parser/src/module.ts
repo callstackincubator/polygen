@@ -19,12 +19,12 @@ import type {
   TypeSection,
 } from './reader/types.js';
 import type {
+  ModuleEntity,
   ModuleExport,
   ModuleFunction,
   ModuleGlobal,
   ModuleImport,
   ModuleMemory,
-  ModuleSymbol,
   ModuleTable,
 } from './types.js';
 
@@ -32,7 +32,7 @@ import type {
  * Class representing a WebAssembly Module.
  */
 export class Module {
-  private importsByType: Record<ModuleSymbol['kind'], ModuleSymbol[]> = {
+  private importsByType: Record<ModuleEntity['kind'], ModuleEntity[]> = {
     function: [],
     global: [],
     memory: [],
@@ -167,7 +167,7 @@ export class Module {
    */
   resolveExportDescriptor(
     descriptor: ExportDescriptor
-  ): ModuleSymbol | undefined {
+  ): ModuleEntity | undefined {
     const importsOfType = this.importsByType[descriptor.type];
     if (descriptor.index < importsOfType.length) {
       return importsOfType[descriptor.index];
@@ -233,7 +233,7 @@ function mapTable(table: TableType): ModuleTable {
 function resolveImportDescriptor(
   descriptor: ImportDescriptor,
   types: FunctionType[]
-): ModuleSymbol | undefined {
+): ModuleEntity | undefined {
   switch (descriptor.type) {
     case 'function':
       const targetType = types[descriptor.index];

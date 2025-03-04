@@ -4,8 +4,11 @@ import type {
   ValueType,
 } from '@callstack/wasm-parser';
 import stripIndent from 'strip-indent';
-import { W2CModuleContext } from '../../context/context.js';
-import type { GeneratedExport, GeneratedFunctionExport } from '../../types.js';
+import type { W2CGeneratedModule } from '../../codegen/modules.js';
+import type {
+  GeneratedModuleFunction,
+  GeneratedSymbol,
+} from '../../codegen/types.js';
 import {
   HEADER,
   STRUCT_TYPE_PREFIX,
@@ -14,8 +17,8 @@ import {
   toJSINumber,
 } from '../common.js';
 
-export function buildExportBridgeHeader(module: W2CModuleContext) {
-  const imports = module.codegen.importedModules;
+export function buildExportBridgeHeader(module: W2CGeneratedModule) {
+  const imports = module.importedModules;
   const includes = imports.map((i) => `#include "${i.name}-imports.h"`);
 
   return (
@@ -27,19 +30,19 @@ export function buildExportBridgeHeader(module: W2CModuleContext) {
 
       namespace callstack::polygen::generated {
 
-      class ${module.turboModule.generatedClassName}ModuleContext: public facebook::jsi::NativeState {
+      class ${module.generatedClassName}ModuleContext: public facebook::jsi::NativeState {
       public:
-        ${module.turboModule.generatedClassName}ModuleContext(facebook::jsi::Runtime& rt, facebook::jsi::Object&& importObject)
+        ${module.generatedClassName}ModuleContext(facebook::jsi::Runtime& rt, facebook::jsi::Object&& importObject)
           : importObject(std::move(importObject))
           ${imports.map((i) => `, INIT_IMPORT_CTX(${i.generatedRootContextFieldName}, "${i.name}")`).join('\n        ')}
         {}
 
         facebook::jsi::Object importObject;
-        ${module.codegen.generatedContextTypeName} rootCtx;
+        ${module.generatedContextTypeName} rootCtx;
         ${imports.map((i) => `${i.generatedContextTypeName} ${i.generatedRootContextFieldName};`).join('\n      ')}
       };
 
-      void create${module.turboModule.generatedClassName}Exports(facebook::jsi::Runtime &rt, facebook::jsi::Object& target, facebook::jsi::Object&& importObject);
+      void create${module.generatedClassName}Exports(facebook::jsi::Runtime &rt, facebook::jsi::Object& target, facebook::jsi::Object&& importObject);
 
       }
 `)
@@ -63,53 +66,53 @@ function wrapNativeReturnIntoJSI(varName: string, types: ValueType[]) {
   return 'return jsi::Value::undefined()';
 }
 
-export function buildExportBridgeSource(module: W2CModuleContext) {
-  function makeExportFunc(func: GeneratedFunctionExport) {
-    const { resultTypes } = func.target;
+export function buildExportBridgeSource(module: W2CGeneratedModule) {
+  function makeExportFunc(func: GeneratedSymbol<GeneratedModuleFunction>) {
+    const { resultTypes, parameterTypeNames, parametersTypes } = func.target;
 
-    const args = func.target.parametersTypes
+    const args = parametersTypes
       .map((type, i) =>
-        fromJSINumber(`args[${i}]`, type, func.parameterTypeNames[i]!)
+        fromJSINumber(`args[${i}]`, type, parameterTypeNames[i]!)
       )
       .map((e) => `, ${e}`)
       .join('');
     const res = resultTypes.length > 0 ? 'auto res = ' : '';
 
     return `
-      /* export: '${func.name}' */
-      exports.setProperty(rt, "${func.name}", HOSTFN("${func.name}", ${func.parameterTypeNames.length}) {
-        ${res}${func.generatedFunctionName}(&inst->rootCtx${args});
+      /* export: '${func.localName}' */
+      exports.setProperty(rt, "${func.localName}", HOSTFN("${func.localName}", ${parameterTypeNames.length}) {
+        ${res}${func.functionSymbolAccessorName}(&inst->rootCtx${args});
         ${wrapNativeReturnIntoJSI('res', resultTypes)};
       }));
     `;
   }
 
-  function makeExportMemory(mem: GeneratedExport<ModuleMemory>) {
+  function makeExportMemory(mem: GeneratedSymbol<ModuleMemory>) {
     return `
-      /* exported memory: '${mem.name}' */
+      /* exported memory: '${mem.localName}' */
       {
         jsi::Object holder {rt};
-        auto memory = std::make_shared<Memory>(${mem.generatedFunctionName}(&inst->rootCtx));
+        auto memory = std::make_shared<Memory>(${mem.functionSymbolAccessorName}(&inst->rootCtx));
         holder.setNativeState(rt, std::move(memory));
-        memories.setProperty(rt, "${mem.name}", std::move(holder));
+        memories.setProperty(rt, "${mem.localName}", std::move(holder));
       }
     `;
   }
 
-  function makeExportTable(table: GeneratedExport<ModuleTable>) {
+  function makeExportTable(table: GeneratedSymbol<ModuleTable>) {
     const className = TABLE_KIND_TO_CLASS_NAME[table.target.elementType];
     return `
-      /* exported table: '${table.name}' */
+      /* exported table: '${table.localName}' */
       {
         jsi::Object holder {rt};
-        auto table = std::make_shared<${className}>(${table.generatedFunctionName}(&inst->rootCtx));
+        auto table = std::make_shared<${className}>(${table.functionSymbolAccessorName}(&inst->rootCtx));
         holder.setNativeState(rt, std::move(table));
-        tables.setProperty(rt, "${table.name}", std::move(holder));
+        tables.setProperty(rt, "${table.localName}", std::move(holder));
       }
     `;
   }
 
-  const initArgs = module.codegen.importedModules
+  const initArgs = module.importedModules
     .map((mod) => `, &inst->${mod.generatedRootContextFieldName}`)
     .join('');
 
@@ -126,29 +129,29 @@ export function buildExportBridgeSource(module: W2CModuleContext) {
     using namespace callstack::polygen;
 
     namespace callstack::polygen::generated {
-      void create${module.turboModule.generatedClassName}Exports(jsi::Runtime &rt, jsi::Object& target, jsi::Object&& importObject) {
+      void create${module.generatedClassName}Exports(jsi::Runtime &rt, jsi::Object& target, jsi::Object&& importObject) {
         if (!wasm_rt_is_initialized()) {
           wasm_rt_init();
         }
 
-        auto inst = std::make_shared<${module.turboModule.contextClassName}>(rt, std::move(importObject));
-        wasm2c_${module.codegen.mangledName}_instantiate(&inst->rootCtx${initArgs});
+        auto inst = std::make_shared<${module.contextClassName}>(rt, std::move(importObject));
+        wasm2c_${module.mangledName}_instantiate(&inst->rootCtx${initArgs});
 
         target.setNativeState(rt, inst);
 
         // Memories
         jsi::Object memories {rt};
-        ${module.codegen.exportedMemories.map(makeExportMemory).join('\n        ')}
+        ${module.exportedMemories.map(makeExportMemory).join('\n        ')}
         target.setProperty(rt, "memories", std::move(memories));
 
         // Tables
         jsi::Object tables {rt};
-        ${module.codegen.exportedTables.map(makeExportTable).join('\n        ')}
+        ${module.exportedTables.map(makeExportTable).join('\n        ')}
         target.setProperty(rt, "tables", std::move(tables));
 
         // Exported functions
         jsi::Object exports {rt};
-        ${module.codegen.exportedFunctions.map(makeExportFunc).join('\n        ')}
+        ${module.exportedFunctions.map(makeExportFunc).join('\n        ')}
         exports.setNativeState(rt, inst);
         target.setProperty(rt, "exports", std::move(exports));
       }

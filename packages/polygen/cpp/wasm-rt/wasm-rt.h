@@ -32,8 +32,13 @@ extern "C" {
 #endif
 
 #if __has_builtin(__builtin_expect)
+#ifndef UNLIKELY
 #define UNLIKELY(x) __builtin_expect(!!(x), 0)
+#endif
+
+#ifndef LIKELY
 #define LIKELY(x) __builtin_expect(!!(x), 1)
+#endif
 #else
 #define UNLIKELY(x) (x)
 #define LIKELY(x) (x)

@@ -1,5 +1,5 @@
 import { ThumbsDown, ThumbsUp } from 'lucide-react';
-import { HTMLAttributes } from 'react';
+import type { HTMLAttributes } from 'react';
 import { twMerge as cn } from 'tailwind-merge';
 
 export type ProsConsOverviewProps = HTMLAttributes<HTMLElement> & {

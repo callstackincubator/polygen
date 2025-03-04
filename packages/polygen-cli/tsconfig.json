@@ -5,6 +5,7 @@
   "compilerOptions": {
     "rootDir": "./src",
     "module": "nodenext",
+    "resolveJsonModule": true,
     "outDir": "dist"
   }
 }

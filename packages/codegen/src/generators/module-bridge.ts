@@ -1,17 +1,16 @@
 import consola from 'consola';
-import type { W2CModuleContext } from '../context/context.js';
-import { OutputGenerator } from '../helpers/output-generator.js';
+import type { W2CGeneratedModule } from '../codegen/modules.js';
+import type { OutputGenerator } from '../helpers/output-generator.js';
 import * as templates from '../templates/library/index.js';
-import { generateCSources } from '../wasm2c.js';
+import { generateCSources, getOutputFilesFor } from '../wasm2c/wasm2c.js';
 
 export interface ModuleGeneratorOptions {
-  renderMetadata?: boolean;
   forceGenerate?: boolean;
 }
 
 export async function generateModuleExportsBridge(
   generator: OutputGenerator,
-  module: W2CModuleContext,
+  module: W2CGeneratedModule,
   options: ModuleGeneratorOptions
 ) {
   try {
@@ -19,7 +18,6 @@ export async function generateModuleExportsBridge(
     await Promise.allSettled([
       generateCSource(generator, module, options),
       generateJSIBridge(generator, module),
-      renderMetadata(generator, module),
     ]);
   } catch (e) {
     consola.error(e);
@@ -28,11 +26,11 @@ export async function generateModuleExportsBridge(
 
 async function generateCSource(
   generator: OutputGenerator,
-  module: W2CModuleContext,
+  module: W2CGeneratedModule,
   options: ModuleGeneratorOptions
 ) {
   const outputPath = generator.outputPathTo(module.name);
-  const generatedFiles = [`${outputPath}.c`, `${outputPath}.h`];
+  const generatedFiles = getOutputFilesFor(module.sourceModulePath, outputPath);
 
   return generatingFromModule(generator, module, options, generatedFiles, () =>
     generateCSources(module.sourceModulePath, outputPath)
@@ -41,7 +39,7 @@ async function generateCSource(
 
 async function generateJSIBridge(
   generator: OutputGenerator,
-  module: W2CModuleContext
+  module: W2CGeneratedModule
 ) {
   await generator.writeAllTo({
     'jsi-exports-bridge.h': templates.buildExportBridgeHeader(module),
@@ -51,24 +49,9 @@ async function generateJSIBridge(
   });
 }
 
-async function renderMetadata(
-  generator: OutputGenerator,
-  module: W2CModuleContext
-) {
-  await generator.writeTo(
-    `${module.name}.exports.json`,
-    JSON.stringify(module.codegen.exports, null, 2)
-  );
-
-  await generator.writeTo(
-    `${module.name}.imports.json`,
-    JSON.stringify(module.codegen.imports, null, 2)
-  );
-}
-
 async function generatingFromModule<R>(
   generator: OutputGenerator,
-  module: W2CModuleContext,
+  module: W2CGeneratedModule,
   options: ModuleGeneratorOptions,
   targets: string[],
   cb: () => R
