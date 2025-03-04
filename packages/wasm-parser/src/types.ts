@@ -38,18 +38,20 @@ export interface ModuleTable {
 }
 
 /**
- * Union type representing any symbol in a WebAssembly module.
+ * Union type representing any entity in a WebAssembly module.
  */
-export type ModuleSymbol =
+export type ModuleEntity =
   | ModuleFunction
   | ModuleGlobal
   | ModuleMemory
   | ModuleTable;
 
+export type ModuleEntityKind = ModuleEntity['kind'];
+
 /**
  * Represents an import in a WebAssembly module.
  */
-export interface ModuleImport<T = ModuleSymbol> {
+export interface ModuleImport<T = ModuleEntity> {
   kind: 'import';
   module: string;
   name: string;
@@ -59,7 +61,7 @@ export interface ModuleImport<T = ModuleSymbol> {
 /**
  * Represents an export in a WebAssembly module.
  */
-export interface ModuleExport<T = ModuleSymbol> {
+export interface ModuleExport<T = ModuleEntity> {
   kind: 'export';
   name: string;
   target: T;

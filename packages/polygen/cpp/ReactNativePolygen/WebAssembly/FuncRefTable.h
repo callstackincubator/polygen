@@ -6,30 +6,31 @@
  */
 #pragma once
 
+#include <optional>
 #include <jsi/jsi.h>
-#include <ReactNativePolygen/wasm-rt.h>
+#include <wasm-rt/wasm-rt.h>
 #include "Table.h"
 
 namespace callstack::polygen {
 
-class ExternRefTable: public Table {
+class FuncRefTable: public Table {
 public:
   class Element: public TableElement {
   public:
-    explicit Element(wasm_rt_externref_t ref): externRef(ref) {}
+    explicit Element(wasm_rt_funcref_t ref): funcRef(ref) {}
     
-    wasm_rt_externref_t externRef;
+    wasm_rt_funcref_t funcRef;
   };
   
-  explicit ExternRefTable(wasm_rt_externref_table_t* table): table_(table) {}
-  explicit ExternRefTable(size_t initialSize, std::optional<size_t> maxSize = std::nullopt): maxSize_(maxSize) {
+  explicit FuncRefTable(wasm_rt_funcref_table_t* table): table_(table) {}
+  explicit FuncRefTable(size_t initialSize, std::optional<size_t> maxSize = std::nullopt): maxSize_(maxSize) {
     this->table_ = &this->ownedTable_;
-    wasm_rt_allocate_externref_table(this->table_, initialSize, maxSize.value_or(Table::DEFAULT_MAX_SIZE));
+    wasm_rt_allocate_funcref_table(this->table_, initialSize, maxSize.value_or(Table::DEFAULT_MAX_SIZE));
   }
   
-  ~ExternRefTable() {
+  ~FuncRefTable() {
     if (this->isOwned()) {
-      wasm_rt_free_externref_table(this->table_);
+      wasm_rt_free_funcref_table(this->table_);
     }
   }
   
@@ -38,7 +39,7 @@ public:
   }
   
   Kind getKind() const override {
-    return Kind::ExternRef;
+    return Kind::FuncRef;
   }
   
   size_t getSize() const override {
@@ -50,7 +51,7 @@ public:
   }
   
   void grow(ptrdiff_t delta) override {
-    wasm_rt_grow_externref_table(table_, delta, nullptr);
+    wasm_rt_grow_funcref_table(this->table_, delta, { nullptr, nullptr, nullptr, nullptr });
   }
   
   std::shared_ptr<TableElement> getElement(size_t index) const override {
@@ -58,22 +59,23 @@ public:
   }
   
   void setElement(size_t index, std::shared_ptr<TableElement> element) override {
-    if (auto externElement = std::dynamic_pointer_cast<Element>(element); externElement) {
-      this->table_->data[index] = externElement->externRef;
+    if (auto funcElement = std::dynamic_pointer_cast<Element>(element); funcElement) {
+      this->table_->data[index] = funcElement->funcRef;
       return;
     }
     
-    throw TableElementTypeError {"Passed invalid element type to Table of 'externref' elementtype."};
+    throw TableElementTypeError {"Passed invalid element type to Table of 'anyfunc' elementtype."};
   }
   
-  wasm_rt_externref_table_t* getTableData() {
+  wasm_rt_funcref_table_t* getTableData() {
     return table_;
   }
   
+  
 protected:
   std::optional<size_t> maxSize_;
-  wasm_rt_externref_table_t ownedTable_;
-  wasm_rt_externref_table_t* table_;
+  wasm_rt_funcref_table_t ownedTable_;
+  wasm_rt_funcref_table_t* table_;
 };
 
 }

@@ -69,6 +69,7 @@
   "devDependencies": {
     "@callstack/polygen-cli": "0.2.0",
     "@callstack/polygen-typescript-config": "workspace:^",
+    "@react-native-community/cli": "^15.1.3",
     "@types/react": "^18.2.44",
     "del-cli": "^5.1.0",
     "react": "17.0.2",

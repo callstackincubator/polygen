@@ -1,3 +1,4 @@
+import fs from 'node:fs/promises';
 import path from 'node:path';
 import { execa } from 'execa';
 
@@ -7,7 +8,7 @@ let finalWasm2cPath: string | undefined;
 /**
  * Error class for wasm2c validation errors.
  */
-class Wasm2cError extends Error {
+export class Wasm2cError extends Error {
   constructor(message: string) {
     super(message);
     this.name = 'Wasm2cError';
@@ -41,13 +42,15 @@ async function findBinary(): Promise<string> {
 }
 
 /**
- * Validates the presence of the `WABT_PATH` environment variable.
- * If the `WABT_PATH` environment variable is not set, an error message is logged indicating the missing configuration,
+ * Validates the presence of the `wasm2c` binary.
+ *
+ * Binary is searched in `PATH` and in `WABT_PATH` environment variable.
+ * If not found, an error message is logged indicating the missing configuration,
  * and the process exits with a failure code.
  *
  * @return No value is returned from this function.
  */
-export async function validate() {
+export async function ensureBinaryAvailable() {
   if (finalWasm2cPath) {
     return;
   }
@@ -72,26 +75,63 @@ export interface Wasm2cGenerateOptions {
 }
 
 /**
+ * Returns the output files for a given configuration.
+ *
+ * @param inputFile Path to the input WASM module
+ * @param outputPath Path to the output C source file
+ * @param options Optional configuration for the generation process
+ */
+export function getOutputFilesFor(
+  inputFile: string,
+  outputPath: string,
+  options?: Wasm2cGenerateOptions
+): string[] {
+  const outputDirectory = path.dirname(outputPath);
+  const moduleBasename = path.basename(inputFile, '.wasm');
+  return [
+    `${outputDirectory}/${moduleBasename}.c`,
+    `${outputDirectory}/${moduleBasename}.h`,
+  ];
+}
+
+/**
  * Generates C source files from a given WebAssembly input file.
  *
- * @param inputFile The path to the WebAssembly (.wasm) input file.
- * @param outputSourceFile The path where the generated C source file will be saved.
+ * @param inputPath The path to the WebAssembly (.wasm) input file.
+ * @param outputSourcePath The path where the generated C source file will be saved.
  * @param options Optional configuration for the generation process, including the module name.
  * @return A promise that resolves once the C source file generation is complete.
  */
 export async function generateCSources(
-  inputFile: string,
-  outputSourceFile: string,
+  inputPath: string,
+  outputSourcePath: string,
   options?: Wasm2cGenerateOptions
-) {
-  await validate();
+): Promise<string[]> {
+  await ensureBinaryAvailable();
+  const generatedFiles = getOutputFilesFor(
+    inputPath,
+    outputSourcePath,
+    options
+  );
 
-  const args = [inputFile, '-o', `${outputSourceFile}.c`];
-  const defaultModuleName = path.basename(inputFile, '.wasm');
+  const args = [inputPath, '-o', outputSourcePath];
+  const defaultModuleName = path.basename(inputPath, '.wasm');
   const moduleName = options?.moduleName ?? defaultModuleName;
 
   args.push('--module-name');
   args.push(moduleName);
 
   await execa(finalWasm2cPath!, args);
+
+  // Check generated files exist
+  const statPromises = generatedFiles.map((file) => fs.stat(file));
+  const fileStats = await Promise.all(statPromises);
+
+  for (const stat of fileStats) {
+    if (!stat.isFile()) {
+      throw new Wasm2cError(`Failed to generate file ${stat}`);
+    }
+  }
+
+  return generatedFiles;
 }

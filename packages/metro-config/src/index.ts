@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { Project } from '@callstack/polygen-project';
-import { type ConfigT } from 'metro-config';
+import type { ConfigT } from 'metro-config';
 import type { CustomResolver } from 'metro-resolver';
 
 interface PolygenConfig {
@@ -34,12 +34,12 @@ export function withPolygenConfig(
 
     // Load polygen-output.json to get the mapping of resolved external packages
     const polygenModuleMapping = JSON.parse(
-      fs.readFileSync(project.pathToOutput(OUTPUT_INFO), 'utf-8')
+      fs.readFileSync(project.paths.pathToOutput(OUTPUT_INFO), 'utf-8')
     ).externalPackages as Record<string, string>;
 
     let packageName = '';
     // Path to directory where the mock modules are located
-    let mockModuleSubtreePath = project.pathToOutput('modules');
+    let mockModuleSubtreePath = project.paths.pathToOutput('modules');
     // Path in target module
     let pathInModule;
     // Resolved absolute path to WASM file
@@ -54,15 +54,18 @@ export function withPolygenConfig(
           `Attempting to import unknown external package '${packageName}'`
         );
       }
-      mockModuleSubtreePath = project.pathToOutput('modules', packageName);
-      absoluteWasmPath = project.pathTo(resolvedPath, pathInModule);
+      mockModuleSubtreePath = project.paths.pathToOutput(
+        'modules',
+        packageName
+      );
+      absoluteWasmPath = project.paths.pathTo(resolvedPath, pathInModule);
     }
     // local dependency
     else {
-      mockModuleSubtreePath = project.pathToOutput('modules/#local');
+      mockModuleSubtreePath = project.paths.pathToOutput('modules/#local');
 
       const requestingDirectory = path.dirname(context.originModulePath);
-      pathInModule = project.globalPathToLocal(
+      pathInModule = project.paths.globalPathToLocal(
         path.join(requestingDirectory, moduleName)
       );
       absoluteWasmPath = path.join(project.projectRoot, pathInModule);

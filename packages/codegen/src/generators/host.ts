@@ -1,5 +1,5 @@
-import { W2CModuleContext } from '../context/index.js';
-import { OutputGenerator } from '../helpers/output-generator.js';
+import type { W2CGeneratedModule } from '../codegen/modules.js';
+import type { OutputGenerator } from '../helpers/output-generator.js';
 import * as templates from '../templates/host.js';
 
 /**
@@ -12,13 +12,12 @@ import * as templates from '../templates/host.js';
  */
 export async function generateHostModuleBridge(
   generator: OutputGenerator,
-  modules: W2CModuleContext[]
+  modules: W2CGeneratedModule[]
 ) {
   await Promise.all([
     generator.copyAsset('wasm-rt'),
     generator.writeAllTo({
       'loader.cpp': templates.buildHostSource(modules),
-      'ReactNativeWebAssemblyHost.podspec': templates.buildPodspec(),
     }),
   ]);
 }

@@ -23,7 +23,7 @@ export function computeFileChecksumBuffer(path: string): Promise<Buffer> {
  * @param data - The data for which the checksum is to be computed, provided as an ArrayBuffer.
  * @return A Buffer containing the SHA-256 checksum of the input data.
  */
-export function computeChecksumBuffer(data: ArrayBuffer): Buffer {
+export function computeChecksumBuffer(data: ArrayBufferLike): Buffer {
   const hash = crypto.createHash('sha256');
   hash.update(Buffer.from(data));
   return hash.digest();

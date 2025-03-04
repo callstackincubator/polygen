@@ -7,11 +7,10 @@
 #pragma once
 
 #include <span>
-#include <memory>
 #include <string>
 #include <vector>
-#include <wasm-rt.h>
-#include "Module.h"
+#include <wasm-rt/wasm-rt.h>
+#include <ReactNativePolygen/WebAssembly/Module.h>
 
 namespace callstack::polygen {
 

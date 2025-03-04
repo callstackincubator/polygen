@@ -1,6 +1,6 @@
 import './globals.css';
 import { RootProvider } from 'fumadocs-ui/provider';
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import type { ReactNode } from 'react';
 

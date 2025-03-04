@@ -1,4 +1,4 @@
-import { PolygenModuleConfig } from './module-config';
+import type { PolygenModuleConfig } from './module-config';
 
 export interface PolygenOutputConfig {
   /**

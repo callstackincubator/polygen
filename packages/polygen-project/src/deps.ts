@@ -1,8 +1,6 @@
 import fs from 'node:fs/promises';
-import path from 'node:path';
-import { PolygenModuleConfig } from '@callstack/polygen-config';
 import findUp from 'find-up';
-import { Project } from './project.js';
+import type { Project } from './project.js';
 
 /**
  * Error thrown when specified package is not a dependency of the project.
@@ -35,7 +33,9 @@ export class DependencyNotFoundError extends Error {
 export async function getPackageJson(
   project: Project
 ): Promise<Record<string, any>> {
-  return JSON.parse(await fs.readFile(project.pathTo('package.json'), 'utf-8'));
+  return JSON.parse(
+    await fs.readFile(project.paths.pathTo('package.json'), 'utf-8')
+  );
 }
 
 /**
@@ -69,27 +69,4 @@ export async function resolveProjectDependency(
   }
 
   return resolved;
-}
-
-/**
- * Resolves path to the specified module.
- *
- * @param project Project to resolve module for
- * @param module Module to resolve path for
- */
-export async function resolvePathToModule(
-  project: Project,
-  module: PolygenModuleConfig
-): Promise<string> {
-  switch (module.kind) {
-    case 'local':
-      return project.pathTo(module.path);
-    case 'external':
-      const modulePath = module.path;
-      const packagePath = await resolveProjectDependency(
-        project,
-        module.packageName
-      );
-      return path.join(packagePath, modulePath);
-  }
 }

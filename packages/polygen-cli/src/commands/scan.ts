@@ -1,4 +1,3 @@
-import fs from 'node:fs/promises';
 import {
   DependencyNotFoundError,
   PackageNotADependencyError,
@@ -33,7 +32,9 @@ async function scanLocal(project: Project): Promise<void> {
     'Scanning for WebAssembly modules'
   );
 
-  const currentModules = new Set(project.localModules.map((m) => m.path));
+  const currentModules = new Set(
+    project.modules.declaredLocalModules.map((m) => m.path)
+  );
   const foundModules = new Set(files);
   const added = foundModules.difference(currentModules);
   const removed = currentModules.difference(foundModules);
@@ -50,7 +51,7 @@ async function scanLocal(project: Project): Promise<void> {
 
   if (added.size > 0) {
     consola.info(
-      `To add them to the project, add following lines to your ${chalk.bold(project.configFileName)}:`
+      `To add them to the project, add following lines to your ${chalk.bold(project.paths.configFileName)}:`
     );
     consola.log(``);
 
@@ -99,7 +100,9 @@ async function scanExternal(
   );
 
   const currentModules = new Set(
-    project.getModulesOfExternalDependency(packageName).map((m) => m.path)
+    project.modules
+      .getModulesOfExternalDependency(packageName)
+      .map((m) => m.path)
   );
   const foundModules = new Set(files);
   const added = foundModules.difference(currentModules);
@@ -117,7 +120,7 @@ async function scanExternal(
 
   if (added.size > 0) {
     consola.info(
-      `To add them to the project, add following lines to your ${chalk.bold(project.configFileName)}:`
+      `To add them to the project, add following lines to your ${chalk.bold(project.paths.configFileName)}:`
     );
     consola.log(``);
 

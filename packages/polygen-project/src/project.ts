@@ -1,10 +1,4 @@
-import path from 'path';
-import type {
-  PolygenExternalModuleConfig,
-  PolygenLocalModuleConfig,
-  PolygenModuleConfig,
-  ResolvedPolygenConfig,
-} from '@callstack/polygen-config';
+import type { ResolvedPolygenConfig } from '@callstack/polygen-config';
 import {
   InvalidProjectConfigurationError,
   ProjectConfigurationNotFound,
@@ -14,6 +8,8 @@ import {
   findProjectRootSync,
 } from '@callstack/polygen-config/find';
 import deepmerge from 'deepmerge';
+import { ProjectModules } from './project.modules';
+import { ProjectPaths } from './project.paths';
 
 type DeepPartial<T> = T extends object
   ? {
@@ -40,7 +36,14 @@ export class Project {
    */
   public options: ResolvedPolygenConfig;
 
-  constructor(
+  /**
+   * Helper object for accessing project paths
+   */
+  public readonly paths: ProjectPaths = new ProjectPaths(this);
+
+  public readonly modules: ProjectModules = new ProjectModules(this);
+
+  private constructor(
     projectRoot: string,
     configPath: string,
     options: ResolvedPolygenConfig
@@ -51,7 +54,7 @@ export class Project {
   }
 
   /**
-   * Creates a project from closes package.json
+   * Creates a project from nearest package.json.
    *
    * @param from Directory to start looking from, defaults to current directory.
    * @returns Promise with Project instance
@@ -60,6 +63,31 @@ export class Project {
    */
   static async findClosest(from?: string): Promise<Project> {
     const projectRoot = await findProjectRoot(from);
+    return Project.fromPath(projectRoot);
+  }
+
+  /**
+   * Creates a project from nearest package.json, synchronously.
+   *
+   * @param from Directory to start looking from, defaults to current directory.
+   * @returns Promise with Project instance
+   *
+   * @see findClosest Asynchronous version
+   */
+  static findClosestSync(from?: string): Project {
+    const projectRoot = findProjectRootSync(from);
+    return Project.fromPathSync(projectRoot);
+  }
+
+  /**
+   * Creates a project from specified project root path.
+   *
+   * @param projectRoot Path to the project
+   * @returns Promise with Project instance
+   *
+   * @see fromPathSync Synchronous version
+   */
+  static async fromPath(projectRoot: string): Promise<Project> {
     const configPath = await findConfigFile(projectRoot);
     if (!configPath) {
       throw new ProjectConfigurationNotFound();
@@ -77,15 +105,14 @@ export class Project {
   }
 
   /**
-   * Creates a project from closes package.json, synchronously
+   * Creates a project from specified project root path, synchronously.
    *
-   * @param from Directory to start looking from, defaults to current directory.
-   * @returns Promise with Project instance
+   * @param projectRoot Path to the project
+   * @returns Project instance
    *
-   * @see findClosest Asynchronous version
+   * @see fromPath Asynchronous version
    */
-  static findClosestSync(from?: string): Project {
-    const projectRoot = findProjectRootSync(from);
+  static fromPathSync(projectRoot: string): Project {
     const configPath = findConfigFileSync(projectRoot);
     if (!configPath) {
       throw new ProjectConfigurationNotFound();
@@ -102,116 +129,7 @@ export class Project {
     }
   }
 
-  public get configFileName(): string {
-    return path.basename(this.configPath);
-  }
-
   public updateOptionsInMemory(options: DeepPartial<ResolvedPolygenConfig>) {
     this.options = deepmerge(this.options, options) as ResolvedPolygenConfig;
-  }
-
-  /**
-   * Get full path to a file in the project
-   *
-   * @param components Path components
-   */
-  public pathTo(...components: string[]): string {
-    return path.join(this.projectRoot, ...components);
-  }
-
-  /**
-   * Get full path to a file in the source directory
-   *
-   * @param components Path components
-   */
-  public pathToSource(...components: string[]): string {
-    return this.pathTo(this.localSourceDir, ...components);
-  }
-
-  /**
-   * Get full path to a file in the output directory
-   *
-   * @param components Path components
-   */
-  public pathToOutput(...components: string[]): string {
-    return this.pathTo(this.localOutputDirectory, ...components);
-  }
-
-  /**
-   * Convert a global path to a local path
-   *
-   * @param targetPath Global path
-   * @param directoryInProject Directory in the project to consider as root
-   */
-  public globalPathToLocal(
-    targetPath: string,
-    directoryInProject: string = ''
-  ): string {
-    const fullProjectPath = path.join(this.projectRoot, directoryInProject);
-    if (targetPath.startsWith(fullProjectPath)) {
-      return targetPath.slice(fullProjectPath.length).replace(/^\/+/, '');
-    }
-
-    return targetPath;
-  }
-
-  /**
-   * Get all WebAssembly modules in the project
-   */
-  public get webAssemblyModules(): PolygenModuleConfig[] {
-    return this.options.modules;
-  }
-
-  /**
-   * Local output directory
-   */
-  public get localOutputDirectory() {
-    return this.options.output.directory;
-  }
-
-  /**
-   * Full path to the output directory
-   */
-  public get fullOutputDirectory() {
-    return this.pathTo(this.localOutputDirectory);
-  }
-
-  /**
-   * Local source directory
-   */
-  public get localSourceDir(): string {
-    return 'src';
-  }
-
-  /**
-   * Full path to the source directory
-   */
-  public get fullSourceDir(): string {
-    return this.pathToSource();
-  }
-
-  /**
-   * Local modules
-   */
-  public get localModules(): PolygenLocalModuleConfig[] {
-    return this.options.modules.filter((m) => m.kind === 'local');
-  }
-
-  /**
-   * External modules
-   */
-  public get externalModules(): PolygenExternalModuleConfig[] {
-    return this.options.modules.filter((m) => m.kind === 'external');
-  }
-
-  /**
-   * Gets external webassembly modules from specified package
-   *
-   * @param packageName Name of the package
-   */
-  public getModulesOfExternalDependency(
-    packageName: string
-  ): PolygenExternalModuleConfig[] {
-    return this.externalModules.filter((m) => m.packageName === packageName);
   }
 }

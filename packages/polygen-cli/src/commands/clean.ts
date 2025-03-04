@@ -15,8 +15,8 @@ interface Options {
 
 command.action(async (options: Options) => {
   const project = await Project.findClosest();
-  const generatedPath = project.fullOutputDirectory;
-  const displayPath = project.localOutputDirectory;
+  const generatedPath = project.paths.fullOutputDirectory;
+  const displayPath = project.paths.localOutputDirectory;
 
   let confirmed = options.yes;
 

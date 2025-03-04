@@ -1,18 +1,26 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { PolygenModuleConfig } from '@callstack/polygen-config';
-import { Project, resolvePathToModule } from '@callstack/polygen-project';
-import { W2CModuleContext } from './context/context.js';
-import { W2CImportedModule, W2CSharedContext } from './context/index.js';
+import type { PolygenModuleConfig } from '@callstack/polygen-config';
+import type { Project, ResolvedModule } from '@callstack/polygen-project';
+import { CodegenContext } from './codegen/context.js';
+import type { W2CExternModule, W2CGeneratedModule } from './codegen/modules.js';
 import { generateHostModuleBridge } from './generators/host.js';
 import { generateImportedModuleBridge } from './generators/import-bridge.js';
 import { generateModuleExportsBridge } from './generators/module-bridge.js';
-import { generateWasmJSModuleSource } from './generators/wasm-module.js';
 import {
   OutputGenerator,
-  WrittenFilesMap,
+  type WrittenFilesMap,
 } from './helpers/output-generator.js';
+import { cocoapods } from './pipeline/react-native/cocoapods.js';
+import { metroResolver } from './pipeline/react-native/metro.js';
+import type {
+  AllModulesGeneratedContext,
+  ModuleGeneratedContext,
+  Plugin,
+} from './plugin.js';
+
+const DEFAULT_PLUGINS: Plugin[] = [cocoapods(), metroResolver()];
 
 export {
   FileExternallyChangedError,
@@ -29,7 +37,7 @@ const ASSETS_DIR = path.join(
 /**
  * Options used to change W2CGenerator behavior.
  */
-export interface W2CGeneratorOptions {
+export interface CodegenOptions {
   /**
    * Path to output directory where generated files will be created.
    *
@@ -73,9 +81,9 @@ export interface W2CGeneratorOptions {
  * This class is responsible for generating C code from WebAssembly modules, and
  * contains all state and configuration necessary for the generation process.
  *
- * The generator is not reenterant, and should be used only once.
+ * The generator is not reentrant, and should be used only once.
  */
-export class W2CGenerator {
+export class Codegen {
   /**
    * The project configuration to generate code for.
    */
@@ -84,7 +92,7 @@ export class W2CGenerator {
   /**
    * Configuration options for the generation process.
    */
-  public readonly options: W2CGeneratorOptions;
+  public readonly options: CodegenOptions;
 
   /**
    * Output generator instance used to write generated files to disk.
@@ -92,11 +100,16 @@ export class W2CGenerator {
   public readonly generator: OutputGenerator;
 
   /**
-   * List of generated modules.
+   * Shared context for all modules.
+   *
+   * Holds codegen state and module information.
    */
-  public readonly generatedModules: W2CModuleContext[] = [];
+  public readonly context: CodegenContext;
 
-  private readonly resolvedPackages = new Map<string, string>();
+  /**
+   * Collection of plugins to dispatch.
+   */
+  public plugins: Plugin[];
 
   /**
    * Creates a new W2CGenerator instance for the specified project and options.
@@ -105,11 +118,14 @@ export class W2CGenerator {
    */
   private constructor(
     project: Project,
-    options: W2CGeneratorOptions = {},
-    previousWrittenFiles?: WrittenFilesMap
+    options: CodegenOptions = {},
+    previousWrittenFiles?: WrittenFilesMap,
+    plugins?: Plugin[]
   ) {
     this.project = project;
     this.options = options;
+    this.context = new CodegenContext();
+    this.plugins = plugins ?? DEFAULT_PLUGINS;
     this.generator = new OutputGenerator(
       {
         outputDirectory: this.outputDirectory,
@@ -128,11 +144,12 @@ export class W2CGenerator {
    */
   public static async create(
     project: Project,
-    options: W2CGeneratorOptions = {}
-  ): Promise<W2CGenerator> {
+    options: CodegenOptions = {}
+  ): Promise<Codegen> {
     let previouslyWrittenFiles: WrittenFilesMap | undefined;
     try {
-      const outputDir = options.outputDirectory ?? project.fullOutputDirectory;
+      const outputDir =
+        options.outputDirectory ?? project.paths.fullOutputDirectory;
       const previousMap = await fs.readFile(
         path.join(outputDir, 'polygen-output.json'),
         { encoding: 'utf-8' }
@@ -144,14 +161,16 @@ export class W2CGenerator {
       }
     }
 
-    return new W2CGenerator(project, options, previouslyWrittenFiles);
+    return new Codegen(project, options, previouslyWrittenFiles);
   }
 
   /**
    * Path to output directory where generated files will be created.
    */
   public get outputDirectory(): string {
-    return this.options.outputDirectory ?? this.project.fullOutputDirectory;
+    return (
+      this.options.outputDirectory ?? this.project.paths.fullOutputDirectory
+    );
   }
 
   /**
@@ -161,70 +180,29 @@ export class W2CGenerator {
    *
    * @param module The module configuration to generate code for.
    */
-  async generateModule(module: PolygenModuleConfig): Promise<W2CModuleContext> {
-    // Resolve path to module
-    const resolvedPathToModule = await resolvePathToModule(
-      this.project,
-      module
-    );
-
-    if (module.kind === 'external') {
-      const packagePath = resolvedPathToModule.replace(module.path, '');
-      const packagePathRelativeToProject = path.relative(
-        this.project.projectRoot,
-        packagePath
-      );
-      this.resolvedPackages.set(
-        module.packageName,
-        packagePathRelativeToProject
-      );
-    }
-
-    const moduleContents = await fs.readFile(resolvedPathToModule, {
-      encoding: null,
-    });
-
-    const moduleContext = new W2CModuleContext(
-      moduleContents.buffer as ArrayBuffer,
-      resolvedPathToModule
-    );
+  async generateModule(
+    module: ResolvedModule
+  ): Promise<[W2CGeneratedModule, W2CExternModule[]]> {
+    const [moduleContext, imports] = await this.context.addModule(module);
     const generator = this.generator.forPath(
       this.outputPathForModule(module, moduleContext.name)
     );
     await generateModuleExportsBridge(generator, moduleContext, {
-      renderMetadata: this.options.generateMetadata,
       forceGenerate: this.options.forceGenerate,
     });
 
-    this.generatedModules.push(moduleContext);
-    await this.generateWasmJSModule(module, resolvedPathToModule);
+    const pluginContext: ModuleGeneratedContext = {
+      codegen: this,
+      output: generator,
+      context: moduleContext,
+      module,
+    };
 
-    return moduleContext;
-  }
+    for (const plugin of this.plugins) {
+      await plugin.moduleGenerated?.(pluginContext);
+    }
 
-  /**
-   * Generates a JavaScript module file for a given WebAssembly (.wasm) module.
-   * The generated module will be placed under the project's output directory.
-   *
-   * @param module - The WebAssembly (.wasm) module that needs to be processed.
-   * @param resolvedPath - The resolved path to the WebAssembly module file.
-   * @return A promise that resolves when the JavaScript module file is successfully created.
-   */
-  async generateWasmJSModule(
-    module: PolygenModuleConfig,
-    resolvedPath: string
-  ) {
-    const cleanFileName = path.basename(module.path, '.wasm');
-    const dirnameInModule = path.dirname(module.path);
-    const generatedModulePath = path.join(
-      module.kind === 'external' ? `${module.packageName}` : '#local',
-      dirnameInModule,
-      `${cleanFileName}.js`
-    );
-    const source = await generateWasmJSModuleSource(resolvedPath);
-
-    const generator = this.generator.forPath('modules');
-    await generator.writeTo(generatedModulePath, source);
+    return [moduleContext, imports];
   }
 
   /**
@@ -233,9 +211,9 @@ export class W2CGenerator {
    * @param context The shared context containing module information and configurations.
    * @return A promise that resolves with the results of generating bridges for imported modules. Each promise result contains the status of the operation (fulfilled or rejected).
    */
-  async generateHostModule(context: W2CSharedContext) {
+  async generateHostModule() {
     const generator = this.generator.forPath(UMBRELLA_PROJECT_NAME);
-    await generateHostModuleBridge(generator, context.modules);
+    await generateHostModuleBridge(generator, this.context.modules);
   }
 
   /**
@@ -244,7 +222,7 @@ export class W2CGenerator {
    * @param module The imported module data that needs to be processed and generated.
    * @return A promise that resolves when the module generation process is completed.
    */
-  async generateImportedModule(module: W2CImportedModule) {
+  async generateImportedModule(module: W2CExternModule) {
     const generator = this.generator.forPath(UMBRELLA_PROJECT_NAME);
     await generateImportedModuleBridge(generator.forPath(`imports`), module);
   }
@@ -253,10 +231,18 @@ export class W2CGenerator {
    * Finalizes the generation process by writing the generated files to the output directory.
    */
   async finalize() {
+    const pluginContext: AllModulesGeneratedContext = {
+      codegen: this,
+      output: this.generator,
+    };
+
+    for (const plugin of this.plugins) {
+      await plugin.finalizeCodegen?.(pluginContext);
+    }
+
     const generatedMapPath = this.generator.outputPathTo('polygen-output.json');
     const contents = {
       files: this.generator.writtenFiles,
-      externalPackages: Object.fromEntries(this.resolvedPackages.entries()),
     };
 
     await fs.writeFile(

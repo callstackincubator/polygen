@@ -8,7 +8,7 @@
 
 #include <memory>
 #include <jsi/jsi.h>
-#include <ReactNativePolygen/wasm-rt.h>
+#include <wasm-rt/wasm-rt.h>
 
 namespace callstack::polygen {
 
