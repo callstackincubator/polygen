@@ -11,6 +11,7 @@ const MAGIC_NUMBER = new TextEncoder().encode('CKWASM');
 export function metroResolver(): Plugin {
   return {
     name: 'core/metro-resolver',
+    title: 'Metro Integration',
 
     /**
      * Generates a JavaScript module file for a given WebAssembly (.wasm) module.

@@ -2,30 +2,26 @@ import {
   FileExternallyChangedError,
   FileOverwriteError,
 } from '@callstack/polygen-codegen';
-import { Project } from '@callstack/polygen-project';
 import chalk from 'chalk';
-import { Command, Option } from 'commander';
+import { Option } from 'commander';
 import consola from 'consola';
+import { cleanGeneratedFiles } from '../actions/clean.js';
 import { type GenerateOptions, generate } from '../actions/codegen.js';
+import { ProjectCommand } from '../helpers/with-project-options.js';
 
-const command = new Command('generate')
+interface CommandOptions extends GenerateOptions {
+  clean?: boolean;
+}
+
+const command = new ProjectCommand<CommandOptions>('generate')
   .description('Generates React Native Modules from Wasm')
-  .addOption(
-    new Option('-p, --project <projectDir>', 'Path to Polygen project')
-  )
+  .addOption(new Option('--clean', 'Clean output before generating'))
   .addOption(
     new Option('-o, --output-dir <outputDir>', 'Path to output directory')
   )
   .addOption(new Option('-f, --force', 'Generate code even if not outdated'));
 
-interface CommandOptions extends GenerateOptions {
-  project?: string;
-}
-
-command.action(async (options: CommandOptions) => {
-  const project = await (options.project
-    ? Project.fromPath(options.project)
-    : Project.findClosest());
+command.action(async (project, options) => {
   if (options.outputDir) {
     consola.info(`Using ${chalk.dim(options.outputDir)} as output directory`);
     project.updateOptionsInMemory({ output: { directory: options.outputDir } });
@@ -33,6 +29,11 @@ command.action(async (options: CommandOptions) => {
 
   if (options.force) {
     consola.warn('Using force overwrite flag, all files will be overwritten');
+  }
+
+  if (options.clean) {
+    await cleanGeneratedFiles(project);
+    consola.info('Cleaned generated files');
   }
 
   try {

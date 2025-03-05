@@ -20,6 +20,7 @@ export interface AllModulesGeneratedContext {
  */
 export interface Plugin {
   name: string;
+  title: string;
 
   moduleGenerated?(callContext: ModuleGeneratedContext): Promise<void>;
   finalizeCodegen?(callContext: AllModulesGeneratedContext): Promise<void>;

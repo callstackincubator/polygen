@@ -1,24 +1,19 @@
-import fs from 'node:fs/promises';
-import { Project } from '@callstack/polygen-project';
 import chalk from 'chalk';
-import { Command } from 'commander';
 import consola from 'consola';
-import { oraPromise } from 'ora';
-
-const command = new Command('clean')
-  .description('Cleans all WASM generated output files')
-  .option('-y, --yes', 'Remove files without confirmation');
+import { cleanGeneratedFiles } from '../actions/clean.js';
+import { ProjectCommand } from '../helpers/with-project-options.js';
 
 interface Options {
   yes: boolean;
 }
 
-command.action(async (options: Options) => {
-  const project = await Project.findClosest();
-  const generatedPath = project.paths.fullOutputDirectory;
-  const displayPath = project.paths.localOutputDirectory;
+const command = new ProjectCommand<Options>('clean')
+  .description('Cleans all WASM generated output files')
+  .option('-y, --yes', 'Remove files without confirmation');
 
+command.action(async (project, options) => {
   let confirmed = options.yes;
+  const displayPath = project.paths.localOutputDirectory;
 
   if (!confirmed) {
     confirmed = await consola.prompt(
@@ -34,10 +29,7 @@ command.action(async (options: Options) => {
     return;
   }
 
-  await oraPromise(
-    fs.rm(generatedPath, { recursive: true, force: true }),
-    `Removing ${chalk.bold(displayPath)}`
-  );
+  await cleanGeneratedFiles(project);
 
   consola.success('Generated files removed!');
 });

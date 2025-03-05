@@ -2,6 +2,7 @@ import {
   Codegen,
   type CodegenOptions,
   type GeneratedSymbol,
+  type PluginDispatchOptions,
   type W2CGeneratedModule,
 } from '@callstack/polygen-codegen';
 import type { GeneratedEntityKind } from '@callstack/polygen-codegen';
@@ -48,8 +49,14 @@ export async function generateModule(
   generator: Codegen,
   moduleMeta: ResolvedModule
 ): Promise<W2CGeneratedModule> {
+  const pluginOptions: PluginDispatchOptions = {
+    beforePluginDispatch: (plugin) => {
+      consola.debug(`Executing plugin ${chalk.bold(plugin.title)}`);
+    },
+    afterPluginDispatch: (plugin) => {},
+  };
   const [generatedModule, imports] = await oraPromise(
-    async () => generator.generateModule(moduleMeta),
+    async () => generator.generateModule(moduleMeta, pluginOptions),
     `Processing ${moduleMeta.kind} module ${chalk.bold(moduleMeta.path)}`
   );
 
