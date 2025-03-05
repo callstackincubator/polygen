@@ -7,9 +7,10 @@ import type { Plugin } from '../../plugin.js';
 export function cocoapods(): Plugin {
   return {
     name: 'core/ios-cocoapods',
+    title: 'CocoaPods Integration',
 
     async finalizeCodegen({ output }): Promise<void> {
-      await output.writeAllTo({
+      await output.forPath('@host').writeAllTo({
         'ReactNativeWebAssemblyHost.podspec': buildPodspecSource(),
       });
     },

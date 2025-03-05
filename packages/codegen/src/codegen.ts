@@ -75,6 +75,11 @@ export interface CodegenOptions {
   generateMetadata?: boolean;
 }
 
+export interface PluginDispatchOptions {
+  beforePluginDispatch?: (plugin: Plugin) => Promise<unknown> | unknown;
+  afterPluginDispatch?: (plugin: Plugin) => Promise<unknown> | unknown;
+}
+
 /**
  * Main generator class for WebAssembly to C code generation.
  *
@@ -181,7 +186,8 @@ export class Codegen {
    * @param module The module configuration to generate code for.
    */
   async generateModule(
-    module: ResolvedModule
+    module: ResolvedModule,
+    options: PluginDispatchOptions = {}
   ): Promise<[W2CGeneratedModule, W2CExternModule[]]> {
     const [moduleContext, imports] = await this.context.addModule(module);
     const generator = this.generator.forPath(
@@ -199,7 +205,9 @@ export class Codegen {
     };
 
     for (const plugin of this.plugins) {
+      await options.beforePluginDispatch?.(plugin);
       await plugin.moduleGenerated?.(pluginContext);
+      await options.afterPluginDispatch?.(plugin);
     }
 
     return [moduleContext, imports];

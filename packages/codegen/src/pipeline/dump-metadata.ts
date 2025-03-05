@@ -6,6 +6,7 @@ import type { Plugin } from '../plugin.js';
 export function dumpMetadata(): Plugin {
   return {
     name: 'core/dump-metadata',
+    title: 'Dump Metadata',
 
     async moduleGenerated({ output, context }): Promise<void> {
       const exportsPromise = output.writeTo(
