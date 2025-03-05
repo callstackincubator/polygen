@@ -8,7 +8,7 @@ import {
 } from '../helpers/source-builder.js';
 import { HEADER } from './common.js';
 
-export function buildHostSource(generatedModules: W2CGeneratedModule[]) {
+export function buildLoaderSource(generatedModules: W2CGeneratedModule[]) {
   const moduleNames = toArgumentList(generatedModules, (el) => el.name);
 
   const moduleChecksums = generatedModules
