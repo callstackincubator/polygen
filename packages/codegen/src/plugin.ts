@@ -5,14 +5,16 @@ import type { OutputGenerator } from './helpers/output-generator.js';
 
 export interface ModuleGeneratedContext {
   codegen: Codegen;
-  output: OutputGenerator;
+  moduleOutput: OutputGenerator;
   context: W2CGeneratedModule;
   module: ResolvedModule;
 }
 
-export interface AllModulesGeneratedContext {
+export interface HostProjectGeneratedContext {
   codegen: Codegen;
-  output: OutputGenerator;
+  rootOutput: OutputGenerator;
+  projectOutput: OutputGenerator;
+  generatedModules: W2CGeneratedModule[];
 }
 
 /**
@@ -23,5 +25,7 @@ export interface Plugin {
   title: string;
 
   moduleGenerated?(callContext: ModuleGeneratedContext): Promise<void>;
-  finalizeCodegen?(callContext: AllModulesGeneratedContext): Promise<void>;
+  hostProjectGenerated?(
+    callContext: HostProjectGeneratedContext
+  ): Promise<void>;
 }

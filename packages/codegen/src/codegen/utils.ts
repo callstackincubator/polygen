@@ -13,7 +13,6 @@ import type {
   GeneratedEntity,
   GeneratedModuleFunction,
   GeneratedSymbol,
-  ResolvedModuleImport,
 } from './types.js';
 
 export function mangleSymbolName(name: string, mangledModule: string) {
@@ -75,6 +74,14 @@ export interface SymbolMatchHandler<TResult = void> {
   memory: (memory: GeneratedSymbol<ModuleMemory>) => TResult;
 }
 
+/**
+ * Matches a GeneratedSymbol to a handler based on its kind.
+ *
+ * Throws `SymbolMatchError` if the kind is unknown.
+ *
+ * @param symbol Symbol to match
+ * @param matcher Handler to match the symbol based on its type
+ */
 export function matchSymbol<TResult = void>(
   symbol: GeneratedSymbol,
   matcher: SymbolMatchHandler<TResult>

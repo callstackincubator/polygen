@@ -3,24 +3,20 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { PolygenModuleConfig } from '@callstack/polygen-config';
 import type { Project, ResolvedModule } from '@callstack/polygen-project';
+import { DEFAULT_PLUGINS } from './codegen-pipeline.js';
 import { CodegenContext } from './codegen/context.js';
 import type { W2CExternModule, W2CGeneratedModule } from './codegen/modules.js';
-import { generateHostModuleBridge } from './generators/host.js';
-import { generateImportedModuleBridge } from './generators/import-bridge.js';
 import { generateModuleExportsBridge } from './generators/module-bridge.js';
 import {
   OutputGenerator,
   type WrittenFilesMap,
 } from './helpers/output-generator.js';
-import { cocoapods } from './pipeline/react-native/cocoapods.js';
-import { metroResolver } from './pipeline/react-native/metro.js';
 import type {
-  AllModulesGeneratedContext,
+  HostProjectGeneratedContext,
   ModuleGeneratedContext,
   Plugin,
 } from './plugin.js';
-
-const DEFAULT_PLUGINS: Plugin[] = [cocoapods(), metroResolver()];
+import * as templates from './templates/library/index.js';
 
 export {
   FileExternallyChangedError,
@@ -100,11 +96,6 @@ export class Codegen {
   public readonly options: CodegenOptions;
 
   /**
-   * Output generator instance used to write generated files to disk.
-   */
-  public readonly generator: OutputGenerator;
-
-  /**
    * Shared context for all modules.
    *
    * Holds codegen state and module information.
@@ -115,6 +106,11 @@ export class Codegen {
    * Collection of plugins to dispatch.
    */
   public plugins: Plugin[];
+
+  /**
+   * Output generator instance used to write generated files to disk.
+   */
+  private readonly generator: OutputGenerator;
 
   /**
    * Creates a new W2CGenerator instance for the specified project and options.
@@ -199,7 +195,7 @@ export class Codegen {
 
     const pluginContext: ModuleGeneratedContext = {
       codegen: this,
-      output: generator,
+      moduleOutput: generator,
       context: moduleContext,
       module,
     };
@@ -214,40 +210,49 @@ export class Codegen {
   }
 
   /**
-   * Generates the host module and its corresponding bridges using the specified context and options.
-   *
-   * @param context The shared context containing module information and configurations.
-   * @return A promise that resolves with the results of generating bridges for imported modules. Each promise result contains the status of the operation (fulfilled or rejected).
-   */
-  async generateHostModule() {
-    const generator = this.generator.forPath(UMBRELLA_PROJECT_NAME);
-    await generateHostModuleBridge(generator, this.context.modules);
-  }
-
-  /**
    * Generates the imported module by creating necessary files and configurations in the specified output directory.
    *
    * @param module The imported module data that needs to be processed and generated.
    * @return A promise that resolves when the module generation process is completed.
    */
   async generateImportedModule(module: W2CExternModule) {
-    const generator = this.generator.forPath(UMBRELLA_PROJECT_NAME);
-    await generateImportedModuleBridge(generator.forPath(`imports`), module);
+    const generator = this.hostModuleOutput;
+    await generator.writeAllTo({
+      [`${module.name}-imports.h`]: templates.buildImportBridgeHeader(module),
+      [`${module.name}-imports.cpp`]: templates.buildImportBridgeSource(module),
+    });
+  }
+
+  /**
+   * Returns the output generator for the host module.
+   */
+  get hostModuleOutput(): OutputGenerator {
+    return this.generator.forPath(UMBRELLA_PROJECT_NAME);
+  }
+
+  /**
+   * Generates the host module and its corresponding bridges using the specified context and options.
+   *
+   * @param context The shared context containing module information and configurations.
+   * @return A promise that resolves with the results of generating bridges for imported modules. Each promise result contains the status of the operation (fulfilled or rejected).
+   */
+  async generateHostModule() {
+    const pluginContext: HostProjectGeneratedContext = {
+      codegen: this,
+      rootOutput: this.generator,
+      projectOutput: this.hostModuleOutput,
+      generatedModules: this.context.modules,
+    };
+
+    for (const plugin of this.plugins) {
+      await plugin.hostProjectGenerated?.(pluginContext);
+    }
   }
 
   /**
    * Finalizes the generation process by writing the generated files to the output directory.
    */
   async finalize() {
-    const pluginContext: AllModulesGeneratedContext = {
-      codegen: this,
-      output: this.generator,
-    };
-
-    for (const plugin of this.plugins) {
-      await plugin.finalizeCodegen?.(pluginContext);
-    }
-
     const generatedMapPath = this.generator.outputPathTo('polygen-output.json');
     const contents = {
       files: this.generator.writtenFiles,

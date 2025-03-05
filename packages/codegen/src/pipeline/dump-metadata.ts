@@ -8,13 +8,13 @@ export function dumpMetadata(): Plugin {
     name: 'core/dump-metadata',
     title: 'Dump Metadata',
 
-    async moduleGenerated({ output, context }): Promise<void> {
-      const exportsPromise = output.writeTo(
+    async moduleGenerated({ moduleOutput, context }): Promise<void> {
+      const exportsPromise = moduleOutput.writeTo(
         `${context.name}.exports.json`,
         JSON.stringify(context.exports, null, 2)
       );
 
-      const importsPromise = await output.writeTo(
+      const importsPromise = await moduleOutput.writeTo(
         `${context.name}.imports.json`,
         JSON.stringify(context.imports, null, 2)
       );

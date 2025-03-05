@@ -99,8 +99,10 @@ export async function generate(options: GenerateOptions, project?: Project) {
     await generateModule(codegen, resolvedModule);
   }
 
-  await codegen.generateHostModule();
-  consola.success('Generated host module');
+  await oraPromise(
+    () => codegen.generateHostModule(),
+    'Generating host module'
+  );
 
   const generateImportsPromises = codegen.context.importedModules
     .values()

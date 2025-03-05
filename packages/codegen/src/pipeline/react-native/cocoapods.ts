@@ -9,8 +9,8 @@ export function cocoapods(): Plugin {
     name: 'core/ios-cocoapods',
     title: 'CocoaPods Integration',
 
-    async finalizeCodegen({ output }): Promise<void> {
-      await output.forPath('@host').writeAllTo({
+    async hostProjectGenerated({ projectOutput }): Promise<void> {
+      await projectOutput.forPath('@host').writeAllTo({
         'ReactNativeWebAssemblyHost.podspec': buildPodspecSource(),
       });
     },

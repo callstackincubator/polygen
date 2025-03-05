@@ -21,7 +21,7 @@ export function metroResolver(): Plugin {
      * @param resolvedPath - The resolved path to the WebAssembly module file.
      * @return A promise that resolves when the JavaScript module file is successfully created.
      */
-    async moduleGenerated({ output, module }): Promise<void> {
+    async moduleGenerated({ moduleOutput, module }): Promise<void> {
       const cleanFileName = path.basename(module.path, '.wasm');
       const dirnameInModule = path.dirname(module.path);
       const generatedModulePath = path.join(
@@ -33,7 +33,7 @@ export function metroResolver(): Plugin {
         module.resolvedPath
       );
 
-      const generator = output.forPath('modules');
+      const generator = moduleOutput.forPath('modules');
       await generator.writeTo(generatedModulePath, source);
     },
   };
