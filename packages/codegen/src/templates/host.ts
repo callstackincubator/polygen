@@ -6,28 +6,28 @@ import {
   toInitializerList,
   toStringLiteral,
 } from '../helpers/source-builder.js';
+import * as cpp from '../source-builder/builder.js';
+import { FunctionBuilder, VariableBuilder } from '../source-builder/builder.js';
+import { TypeBuilder } from '../source-builder/builder.types.js';
 import { HEADER } from './common.js';
 
 export function buildLoaderSource(generatedModules: W2CGeneratedModule[]) {
+  // std::shared_ptr<Module>
+  const moduleRefType = new TypeBuilder('Module').asSharedPtr();
+
   const moduleNames = toArgumentList(generatedModules, (el) => el.name);
 
-  const moduleChecksums = generatedModules
-    .map(({ name, checksum }) =>
-      toInitializerList([name, checksum.toString('hex')], toStringLiteral)
-    )
-    .join(',\n      ')
-    .trimEnd()
-    .replace(/,$/, '');
+  const moduleChecksums = generatedModules.map(({ name, checksum }) =>
+    toInitializerList([name, checksum.toString('hex')], toStringLiteral)
+  );
 
-  const moduleFactoriesMap = generatedModules
-    .map(({ checksum, moduleFactoryFunctionName }) =>
+  const moduleFactoriesMap = generatedModules.map(
+    ({ checksum, moduleFactoryFunctionName }) =>
       toInitializerList(
         [checksum.toString('hex'), moduleFactoryFunctionName],
         toStringLiteral
       )
-    )
-    .join(',\n      ')
-    .trimEnd();
+  );
 
   function makeModuleFactoryDecl(module: W2CGeneratedModule) {
     return `std::shared_ptr<Module> ${module.moduleFactoryFunctionName}();`;
@@ -39,34 +39,30 @@ export function buildLoaderSource(generatedModules: W2CGeneratedModule[]) {
     );
   }
 
-  return (
-    HEADER +
-    stripIndent(`
-    #include <sstream>
-    #include <ReactNativePolygen/w2c.h>
-    #include <ReactNativePolygen/checksum.h>
-    #include <ReactNativePolygen/bridge.h>
+  const moduleNamesVar = new VariableBuilder('moduleNames')
+    .withType((t) => t.stringVector.asConst())
+    .withInitializer((v) => moduleNames);
 
-    namespace callstack::polygen::generated {
+  // TODO: skip in release
+  const moduleChecksumsVar = new VariableBuilder('moduleChecksums')
+    .withType((t) => t.map(t.string, t.string))
+    .withInitializer((v) => moduleChecksums);
 
-    using ModuleFactoryFunction = std::function<std::shared_ptr<Module>()>;
+  const moduleFactoryByChecksumVar = new VariableBuilder(
+    'moduleFactoryByChecksum'
+  )
+    .withType((t) => t.map(t.string, t.of('ModuleFactoryFunction')))
+    .withInitializer((v) => moduleFactoriesMap);
 
-    ${generatedModules.map(makeModuleFactoryDecl).join('\n    ')}
+  const moduleNamesGetter = new FunctionBuilder('getAvailableModules')
+    .withReturnType(moduleNamesVar.type.asRef())
+    .withBody((b) => b.return_(moduleNamesVar.name));
 
-    const std::vector<std::string> moduleNames { ${moduleNames} };
-    // TODO: skip in release
-    const std::unordered_map<std::string, std::string> moduleChecksums {
-      ${moduleChecksums}
-    };
-    std::unordered_map<std::string, ModuleFactoryFunction> moduleFactoryByChecksum {
-      ${moduleFactoriesMap}
-    };
-
-    const std::vector<std::string>& getAvailableModules() {
-      return moduleNames;
-    }
-
-    std::shared_ptr<Module> loadWebAssemblyModule(std::span<uint8_t> moduleData) {
+  const loadWebAssemblyModuleFunc = new FunctionBuilder('loadWebAssemblyModule')
+    .addParameter({ type: 'std::span<uint8_t>', name: 'moduleData' })
+    .withReturnType(moduleRefType)
+    .withBody((b) =>
+      b.insertRaw(`
       if (ModuleMetadataView::isMetadata(moduleData)) {
         auto metadata = ModuleMetadataView::fromBuffer(moduleData);
         auto& name = metadata->getName();
@@ -90,9 +86,31 @@ export function buildLoaderSource(generatedModules: W2CGeneratedModule[]) {
 
         throw LoaderError { "Tried to load an unknown WebAssembly Module from binary buffer. Polygen can only load statically precompilied modules." };
       }
-    }
+      `)
+    );
 
-    }
-  `)
-  );
+  const builder = new cpp.SourceFileBuilder();
+  builder
+    .insertRaw(HEADER)
+    .includeSystem('sstream')
+    .includeSystem('ReactNativePolygen/w2c.h')
+    .includeSystem('ReactNativePolygen/checksum.h')
+    .includeSystem('ReactNativePolygen/bridge.h')
+    .spacing(1)
+    .namespace('callstack::polygen::generated', (builder) =>
+      builder
+        .using(
+          'ModuleFactoryFunction',
+          builder.type((t) => t.function(t.of('Module').asSharedPtr(), []))
+        )
+        .writeManyLines(generatedModules, makeModuleFactoryDecl)
+        .spacing(1)
+        .defineVariable(moduleNamesVar)
+        .defineVariable(moduleChecksumsVar)
+        .defineVariable(moduleFactoryByChecksumVar)
+        .defineFunction(moduleNamesGetter)
+        .defineFunction(loadWebAssemblyModuleFunc)
+    );
+
+  return builder.toString();
 }

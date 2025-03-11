@@ -1,6 +1,7 @@
 import type { ModuleEntityKind } from '@callstack/wasm-parser';
 import stripIndent from 'strip-indent';
 import type { W2CGeneratedModule } from '../../codegen/modules.js';
+import * as cpp from '../../source-builder/builder.js';
 import { HEADER } from '../common.js';
 
 export function buildStaticLibraryHeader(module: W2CGeneratedModule) {
@@ -49,6 +50,26 @@ export function buildStaticLibrarySource(module: W2CGeneratedModule) {
     .values()
     .map((e) => `{"${e.localName}", ${symbolTypeMapping[e.target.kind]}}`);
   const moduleExports = [...moduleExportsIter].join(', ');
+
+  const importsVar = new cpp.VariableBuilder('imports')
+    .withType((t) => t.of('Module::ImportInfo').asVector().asConst())
+    .withInitializer((e) => e.listOf(moduleImports));
+  const exportsVar = new cpp.VariableBuilder('exports').withType((t) =>
+    t.of('Module::ExportInfo').asVector().asConst()
+  );
+
+  // const builder = new cpp.SourceFileBuilder();
+  //
+  // builder
+  //   .writeIncludeGuard()
+  //   .includeLocal('static-module.h')
+  //   .includeLocal('jsi-exports-bridge.h');
+  //
+  // builder.usingNamespace('facebook');
+  //
+  // builder.namespace('callstack::polygen::generated', () => builder);
+  //
+  // return builder.toString();
 
   return (
     HEADER +
