@@ -1,3 +1,4 @@
+import fs from 'node:fs/promises';
 import {
   FileExternallyChangedError,
   FileOverwriteError,
@@ -30,6 +31,18 @@ command.action(async (project, options) => {
   if (options.force) {
     consola.warn('Using force overwrite flag, all files will be overwritten');
   }
+
+  const outputDirStat = await fs.stat(project.paths.fullOutputDirectory);
+  if (outputDirStat.isFile()) {
+    consola.error(
+      `Output directory ${chalk.magenta(
+        project.paths.fullOutputDirectory
+      )} is a file`
+    );
+    return;
+  }
+
+  await fs.mkdir(project.paths.fullOutputDirectory, { recursive: true });
 
   if (options.clean) {
     await cleanGeneratedFiles(project);

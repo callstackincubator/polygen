@@ -24,7 +24,6 @@ function(react_native_codegen TARGET_NAME)
 
     set(OUTPUT_DIR "${CMAKE_BINARY_DIR}/rn-codegen")
     set(GENERATED_SOURCE_PATH "${OUTPUT_DIR}/build/generated/ios")
-    message(GENERATED_SOURCE_PATH=${GENERATED_SOURCE_PATH})
 
     add_custom_command(
         DEPENDS ${TARGET_NAME}

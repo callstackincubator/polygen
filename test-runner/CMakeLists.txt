@@ -15,3 +15,5 @@ add_subdirectory(../packages/polygen/cpp polygen)
 add_subdirectory(fakern)
 add_subdirectory(shell)
 
+add_subdirectory(tests)
+
