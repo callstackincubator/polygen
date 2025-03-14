@@ -178,7 +178,7 @@ export class W2CGeneratedModule extends W2CModuleBase {
    * Name of the function that creates a new instance of the module.
    */
   public get moduleFactoryFunctionName(): string {
-    return `create${this.generatedClassName}Module`;
+    return `get${this.generatedClassName}Module`;
   }
 
   /**

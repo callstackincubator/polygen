@@ -9,6 +9,7 @@
 #include <ReactCommon/TurboModule.h>
 #include <RNPolygenSpecJSI.h>
 #include <ReactNativePolygen/WebAssembly.h>
+#include <ReactNativePolygen/Loader.h>
 
 namespace facebook::react {
 
@@ -84,6 +85,8 @@ public:
 private:
   // Utility
   jsi::Object buildModuleMetadata(jsi::Runtime &rt, const std::shared_ptr<callstack::polygen::Module>& mod);
+  const callstack::polygen::ModuleBag& moduleRegistry_;
+  callstack::polygen::Loader moduleLoader_;
 };
 
 }

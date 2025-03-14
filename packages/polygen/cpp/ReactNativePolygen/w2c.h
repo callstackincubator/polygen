@@ -38,7 +38,7 @@ public:
   static ModuleMetadataView* fromBuffer(std::span<uint8_t> moduleData);
   static bool isMetadata(std::span<uint8_t> moduleData);
   
-  const std::string_view getName() const {
+  const std::string getName() const {
     return { name, nameLength };
   }
 };

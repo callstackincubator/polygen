@@ -10,7 +10,7 @@ export function cocoapods(): Plugin {
     title: 'CocoaPods Integration',
 
     async hostProjectGenerated({ projectOutput }): Promise<void> {
-      await projectOutput.forPath('@host').writeAllTo({
+      await projectOutput.writeAllTo({
         'ReactNativeWebAssemblyHost.podspec': buildPodspecSource(),
       });
     },

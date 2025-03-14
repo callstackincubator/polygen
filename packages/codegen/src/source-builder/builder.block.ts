@@ -1,11 +1,7 @@
 import type { FunctionBuilder, VariableBuilder } from './builder.decls.js';
-import { TYPE_FACTORY, type TypeAction } from './builder.types.js';
+import { type TypeAction, types } from './builder.types.js';
 import type { BuilderAction } from './common.js';
 import { SourceWriter } from './source-writer.js';
-// export { types, TypeBuilder } from './builder.types.js';
-export { VariableBuilder } from './builder.decls.js';
-export { SourceFileBuilder } from './builder.file.js';
-export { FunctionBuilder } from './builder.decls.js';
 
 export class SourceBuilderError extends Error {
   constructor(message: string) {
@@ -14,7 +10,7 @@ export class SourceBuilderError extends Error {
   }
 }
 
-export class SourceBuilder {
+export class SourceBlockBuilder {
   protected writer: SourceWriter;
   public readonly isHeader: boolean;
 
@@ -52,7 +48,7 @@ export class SourceBuilder {
    * @return C++ Type as string
    */
   type(builder: TypeAction): string {
-    return builder(TYPE_FACTORY).toString();
+    return builder(types).toString();
   }
 
   /**
@@ -63,7 +59,7 @@ export class SourceBuilder {
    */
   writeManyLines<T>(
     elements: T[],
-    generator: (element: T, builder: SourceBuilder) => string
+    generator: (element: T, builder: SourceBlockBuilder) => string
   ): this {
     elements.forEach((element) => {
       this.writer.writeLine(generator(element, this));
@@ -96,22 +92,26 @@ export class SourceBuilder {
   //
   // ------------------------------------------------------------------------------------------ C++ DECLARATIONS
   //
-  namespace(name: string, action: BuilderAction<SourceBuilder>): this {
+  namespace(name: string, action: BuilderAction<SourceBlockBuilder>): this {
     this.writer.writeLine(`namespace ${name} {`);
     this.spacing(1);
-    this.writer.withIndent(() => action(this));
+    action(this);
     this.spacing(1);
     this.writer.writeLine('}');
     return this;
   }
 
   defineFunction(builder: FunctionBuilder): this {
+    this.writer.writeLine('');
     builder.build(this.writer);
+    this.spacing();
     return this;
   }
 
   defineVariable(builder: VariableBuilder): this {
+    this.writer.writeLine('');
     builder.build(this.writer);
+    this.spacing();
     return this;
   }
 

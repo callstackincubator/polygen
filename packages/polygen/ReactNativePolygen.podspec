@@ -14,7 +14,9 @@ Pod::Spec.new do |s|
   s.platforms    = { :ios => min_ios_version_supported }
   s.source       = { :git => "https://github.com/callstack/polygen.git", :tag => "#{s.version}" }
 
-  s.source_files = "ios/**/*.{h,m,mm}", "cpp/**/*.{hpp,cpp,c,h}"
+  s.source_files = "ios/ReactNativePolygen/**/*.{h,m,mm}", "cpp/ReactNativePolygen/**/*.{hpp,cpp,c,h}"
+  s.public_header_files = "ios/ReactNativePolygen/**/*.h", "cpp/ReactNativePolygen/**/*.h"
+  s.header_mappings_dir = "cpp/ReactNativePolygen"
 
   # Use install_modules_dependencies helper to install the dependencies if React Native version >=0.71.0.
   # See https://github.com/facebook/react-native/blob/febf6b7f33fdb4904669f99d795eba4c0f95d7bf/scripts/cocoapods/new_architecture.rb#L79.
@@ -39,5 +41,12 @@ Pod::Spec.new do |s|
     end
   end
 
+  s.subspec "Runtime" do |ss|
+    ss.source_files = "cpp/wasm-rt/**/*.{hpp,cpp,c,h}"
+    ss.public_header_files = "cpp/wasm-rt/**/*.h"
+    ss.header_mappings_dir = "cpp/wasm-rt"
+  end
+
+# s.dependency "ReactNativePolygen/Runtime"
 #   s.prepare_command = "sh scripts/regenerate.sh"
 end

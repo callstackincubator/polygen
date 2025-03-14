@@ -9,37 +9,15 @@
 #include <span>
 #include <string>
 #include <vector>
-#include <wasm-rt/wasm-rt.h>
-#include <ReactNativePolygen/WebAssembly/Module.h>
+#include <wasm-rt.h>
+#include <ReactNativePolygen/ModuleBag.h>
 
 namespace callstack::polygen {
 
 namespace generated {
 
-/**
- * Returns a vector of available WebAssembly module names.
- *
- * Available modules are modules which were pre-compiled.
- */
-const std::vector<std::string>& getAvailableModules();
+const ModuleBag& getModuleBag();
 
-/**
- * Loads specified WebAssembly module.
- *
- * Module data must either be either:
- *  - a binary WebAssembly module, that was pre-compiled and it's checksum matches one of available modules,
- *  - a mocked WebAssembly module metadata, that contains WebAssembly module name and its checksum.
- */
-std::shared_ptr<callstack::polygen::Module> loadWebAssemblyModule(std::span<uint8_t> moduleData);
-
-};
-
-/**
- * Thrown when loading WebAssembly module failed for some reason.
- */
-class LoaderError: public std::runtime_error {
-public:
-  explicit LoaderError(const std::string& what);
 };
 
 /**

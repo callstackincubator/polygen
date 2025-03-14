@@ -15,7 +15,9 @@ using namespace callstack::polygen;
 
 namespace facebook::react {
     ReactNativePolygen::ReactNativePolygen(std::shared_ptr<CallInvoker> jsInvoker)
-        : NativePolygenCxxSpecJSI(std::move(jsInvoker)) {
+        : NativePolygenCxxSpecJSI(std::move(jsInvoker))
+        , moduleRegistry_(generated::getModuleBag())
+        , moduleLoader_(moduleRegistry_) {
         wasm_rt_init();
     }
 
@@ -38,7 +40,7 @@ namespace facebook::react {
         auto buffer = moduleData.getArrayBuffer(rt);
         std::span<uint8_t> bufferView{buffer.data(rt), buffer.size(rt)};
         try {
-            auto mod = generated::loadWebAssemblyModule(bufferView);
+            auto mod = moduleLoader_.loadModule(bufferView);
             NativeStateHelper::attach(rt, holder, mod);
             return buildModuleMetadata(rt, mod);
         } catch (const LoaderError &loaderError) {

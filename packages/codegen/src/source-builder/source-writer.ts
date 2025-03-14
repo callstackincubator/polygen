@@ -25,7 +25,13 @@ export class SourceWriter {
    * @param str String to write
    */
   public write(str: string): this {
-    this.source += this.indentString(str);
+    if (str.includes('\n') && !str.endsWith('\n')) {
+      for (const line of str.split('\n')) {
+        this.source += this.indentString(line + '\n');
+      }
+    } else {
+      this.source += this.indentString(str);
+    }
     return this;
   }
 
@@ -38,6 +44,13 @@ export class SourceWriter {
     return this.write(`${line}\n`);
   }
 
+  /**
+   * Write multiple items to the source code.
+   *
+   * @param elements Elements to write
+   * @param builder Builder function to generate the line for each element
+   * @param joiner How to join the generated elements
+   */
   public writeMany<T>(
     elements: T[],
     builder: (element: T, writer: SourceWriter) => string | unknown,
@@ -57,6 +70,12 @@ export class SourceWriter {
     return this;
   }
 
+  /**
+   * Write a list of elements separated by a comma.
+   *
+   * @param elements Elements to write
+   * @param builder Builder function to generate the source for each element
+   */
   public writeCommaList<T>(
     elements: T[],
     builder: (element: T, writer: SourceWriter) => string | unknown
@@ -80,6 +99,11 @@ export class SourceWriter {
     return this;
   }
 
+  /**
+   * Write a block of code with increased indentation.
+   *
+   * @param cb Callback to use to write the indented block
+   */
   public withIndent(cb: () => void): this {
     this.pushIndent();
     cb();
@@ -88,11 +112,22 @@ export class SourceWriter {
     return this;
   }
 
+  /**
+   * Returns the generated source code as a string.
+   */
   public toString() {
     return this.source;
   }
 
   private indentString(str: string) {
-    return ' '.repeat(this.indentLevel * this.indentSize) + str.trimStart();
+    if (this.isFreshLine) {
+      return ' '.repeat(this.indentLevel * this.indentSize) + str;
+    }
+
+    return str;
+  }
+
+  private get isFreshLine() {
+    return this.source.endsWith('\n');
   }
 }

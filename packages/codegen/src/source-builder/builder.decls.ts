@@ -1,10 +1,10 @@
+import { SourceBlockBuilder } from './builder.block.js';
 import {
-  EXPRESSION_FACTORY,
   type ExpressionAction,
   ExpressionBuilder,
+  exprs,
 } from './builder.expr.js';
-import { SourceBuilder } from './builder.js';
-import { TYPE_FACTORY, type TypeAction, TypeBuilder } from './builder.types.js';
+import { type TypeAction, TypeBuilder, types } from './builder.types.js';
 import type { AnyBuilder, BuilderAction } from './common.js';
 import type { SourceWriter } from './source-writer.js';
 
@@ -17,7 +17,7 @@ export class FunctionBuilder implements AnyBuilder {
   private name: string;
   private returnType: string = 'void';
   private parameters: FunctionParameter[] = [];
-  private bodyAction?: BuilderAction<SourceBuilder>;
+  private bodyAction?: BuilderAction<SourceBlockBuilder>;
 
   constructor(
     name: string,
@@ -33,7 +33,7 @@ export class FunctionBuilder implements AnyBuilder {
     if (type instanceof TypeBuilder) {
       this.returnType = type.toString();
     } else {
-      this.returnType = type(TYPE_FACTORY).toString();
+      this.returnType = type(types).toString();
     }
     return this;
   }
@@ -43,7 +43,7 @@ export class FunctionBuilder implements AnyBuilder {
     return this;
   }
 
-  withBody(block: BuilderAction<SourceBuilder>): this {
+  withBody(block: BuilderAction<SourceBlockBuilder>): this {
     this.bodyAction = block;
     return this;
   }
@@ -60,8 +60,7 @@ export class FunctionBuilder implements AnyBuilder {
     if (this.bodyAction) {
       writer.writeLine('{');
       writer.withIndent(() => {
-        const bodyBuilder = this.bodyAction!(new SourceBuilder(false, writer));
-        writer.writeLine(bodyBuilder.toString());
+        this.bodyAction!(new SourceBlockBuilder(false, writer));
       });
       writer.writeLine('}');
     } else {
@@ -74,10 +73,11 @@ export class VariableBuilder implements AnyBuilder {
   private _name: string;
   private _type: TypeBuilder;
   private expressionBuilder?: ExpressionBuilder;
+  private initializerMultiline: boolean = false;
 
   constructor(name: string, typeBuilder?: TypeBuilder) {
     this._name = name;
-    this._type = typeBuilder ?? TYPE_FACTORY.auto;
+    this._type = typeBuilder ?? types.auto;
   }
 
   get name(): string {
@@ -97,26 +97,38 @@ export class VariableBuilder implements AnyBuilder {
     if (type instanceof TypeBuilder) {
       this._type = type;
     } else {
-      this._type = type(TYPE_FACTORY);
+      this._type = type(types);
     }
     return this;
   }
 
   withInitializer(
-    expressionBuilder: ExpressionBuilder | ExpressionAction
+    expressionBuilder: ExpressionBuilder | ExpressionAction,
+    multiLine: boolean = false
   ): this {
     if (expressionBuilder instanceof ExpressionBuilder) {
       this.expressionBuilder = expressionBuilder;
     } else {
-      this.expressionBuilder = expressionBuilder(EXPRESSION_FACTORY);
+      this.expressionBuilder = expressionBuilder(exprs);
     }
+    this.initializerMultiline = multiLine;
     return this;
   }
 
   build(writer: SourceWriter) {
     writer.write(`${this._type.toString()} ${this._name}`);
     if (this.expressionBuilder) {
-      writer.write(` { ${this.expressionBuilder.build(writer)} }`);
+      writer.write(' { ');
+      if (this.initializerMultiline) {
+        writer.writeLine('');
+        writer.withIndent(() => {
+          this.expressionBuilder!.build(writer);
+        });
+        writer.writeLine('');
+      } else {
+        this.expressionBuilder.build(writer);
+      }
+      writer.write(' }');
     }
     writer.write(';');
   }

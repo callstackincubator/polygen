@@ -1,7 +1,7 @@
-import { SourceBuilder, SourceBuilderError } from './builder.js';
+import { SourceBlockBuilder, SourceBuilderError } from './builder.block.js';
 import type { SourceWriter } from './source-writer.js';
 
-export class SourceFileBuilder extends SourceBuilder {
+export class SourceFileBuilder extends SourceBlockBuilder {
   constructor(writer?: SourceWriter) {
     super(false, writer);
   }

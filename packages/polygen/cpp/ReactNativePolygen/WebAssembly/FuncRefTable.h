@@ -8,7 +8,7 @@
 
 #include <optional>
 #include <jsi/jsi.h>
-#include <wasm-rt/wasm-rt.h>
+#include <wasm-rt.h>
 #include "Table.h"
 
 namespace callstack::polygen {

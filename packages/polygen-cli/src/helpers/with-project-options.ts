@@ -10,8 +10,8 @@ function withProjectOptions<TOptions extends object>(
   ) => void | Promise<void>
 ) {
   return async (...allArgs: any[]) => {
-    const args = allArgs.slice(0, -1) as string[];
-    const options = allArgs[allArgs.length - 1] as TOptions & GlobalOptions;
+    const args = allArgs.slice(0, -2) as string[];
+    const options = allArgs[allArgs.length - 2] as TOptions & GlobalOptions;
     const project = options.project
       ? await Project.fromPath(options.project)
       : await Project.findClosest();

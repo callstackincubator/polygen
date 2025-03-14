@@ -1,7 +1,7 @@
 import type { AnyBuilder } from './common.js';
 import type { SourceWriter } from './source-writer.js';
 
-export const TYPE_FACTORY = {
+export const types = {
   get auto() {
     return new TypeBuilder('auto');
   },
@@ -33,7 +33,7 @@ export const TYPE_FACTORY = {
   },
 };
 
-export type TypeAction = (t: typeof TYPE_FACTORY) => TypeBuilder;
+export type TypeAction = (t: typeof types) => TypeBuilder;
 
 export class TypeBuilder implements AnyBuilder {
   private type: string;

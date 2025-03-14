@@ -12,8 +12,18 @@ namespace callstack::polygen {
 
 class StaticLibraryModule : public Module {
 public:
-  explicit StaticLibraryModule(const std::string& name) : Module(name) {}
-  explicit StaticLibraryModule(std::string&& name) : Module(std::move(name)) {}
+  StaticLibraryModule(
+    const std::string& name,
+    std::vector<Import>&& imports,
+    std::vector<Export>&& exports,
+    Factory&& factory
+  ) : Module(name, std::move(imports), std::move(exports), std::move(factory)) {}
+  StaticLibraryModule(
+    std::string&& name,
+    std::vector<Import>&& imports,
+    std::vector<Export>&& exports,
+    Factory&& factory
+  ) : Module(std::move(name), std::move(imports), std::move(exports), std::move(factory)) {}
   ~StaticLibraryModule() {}
 
   StaticLibraryModule(StaticLibraryModule&& other) = default;

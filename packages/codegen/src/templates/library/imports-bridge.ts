@@ -11,10 +11,7 @@ import type {
   ResolvedModuleImport,
 } from '../../codegen/types.js';
 import { matchSymbol } from '../../codegen/utils.js';
-import {
-  toArgumentList,
-  toInitializerList,
-} from '../../helpers/source-builder.js';
+import { cpp } from '../../source-builder/index.js';
 import {
   HEADER,
   STRUCT_TYPE_PREFIX,
@@ -119,7 +116,7 @@ function wrapJSIReturnIntoNative(
       toJSINumber(`${varName}.${STRUCT_TYPE_PREFIX[t]}${i}`, t)
     );
 
-    return `return ${toInitializerList(elements)}`;
+    return `return ${cpp.exprs.initializerListOf(elements).toString()}`;
   }
 
   if (resultTypes.length === 1) {
@@ -157,7 +154,7 @@ function makeImportFunc(
   `;
 
   return `
-    /* import: '${func.module}' '${func.localName}' */
+    /* import: '${func.module.name}' '${func.localName}' */
     ${prototype}${withBody ? body : ';'}
   `;
 }

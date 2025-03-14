@@ -13,7 +13,22 @@ namespace facebook::react {
 
 class SharedLibraryModule : public Module {
 public:
-  explicit SharedLibraryModule(const std::string& name, void* handle): Module(name), ptr_(handle) {}
+  SharedLibraryModule(
+    const std::string& name,
+    std::vector<Import>&& imports,
+    std::vector<Export>&& exports,,
+    Factory&& factory
+    void* handle
+  ) : Module(name, std::move(imports), std::move(exports), std::move(factory)), ptr_(handle) {}
+  SharedLibraryModule(
+    std::string&& name,
+    std::vector<Import>&& imports,
+    std::vector<Export>&& exports,,
+    Factory&& factory
+    void* handle
+  ) : Module(std::move(name), std::move(imports), std::move(exports), std::move(factory)), ptr_(handle) {}
+  ~StaticLibraryModule() {}
+  
   ~SharedLibraryModule() {
     dlclose(this->ptr_);
     this->ptr_ = nullptr;

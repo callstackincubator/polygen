@@ -1606,6 +1606,28 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
+    - ReactNativePolygen/Runtime (= 0.2.0)
+    - Yoga
+  - ReactNativePolygen/Runtime (0.2.0):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.01.01.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
     - Yoga
   - ReactNativeWebAssemblyHost (0.0.1):
     - DoubleConversion
@@ -1986,7 +2008,7 @@ SPEC CHECKSUMS:
   ReactCodegen: 3982de3211b80e119d9daa9cd6af090d75cb8e90
   ReactCommon: 6a952e50c2a4b694731d7682aaa6c79bc156e4ad
   ReactNativeHost: a27bb5af1c4d73dd3e80cc7ce295407f414e0e8c
-  ReactNativePolygen: 5236e21326c11204e935ed4e44736b7178c2628c
+  ReactNativePolygen: da30174a46dc58e1d91489d8ee6c070cea647c5e
   ReactNativeWebAssemblyHost: cc689d810f1b4540a12906988768c489dcbe9ab3
   ReactTestApp-DevSupport: 42abce6b0c88dfb47c86e80aa22831b2abcc3144
   ReactTestApp-Resources: 7db90c026cccdf40cfa495705ad436ccc4d64154
