@@ -23,7 +23,7 @@ export {
   FileOverwriteError,
 } from './helpers/output-generator.js';
 
-const UMBRELLA_PROJECT_NAME = '@host';
+const UMBRELLA_PROJECT_NAME = 'host';
 
 const ASSETS_DIR = path.join(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -254,14 +254,23 @@ export class Codegen {
    */
   async finalize() {
     const generatedMapPath = this.generator.outputPathTo('polygen-output.json');
+    const resolvedExternalModules =
+      await this.project.modules.getExternalModules();
     const contents = {
       files: this.generator.writtenFiles,
+      externalPackages: Object.fromEntries(
+        resolvedExternalModules.map((m) => [m.packageName, m.resolvedPath])
+      ),
     };
 
     await fs.writeFile(
       generatedMapPath,
       JSON.stringify(contents, undefined, 2)
     );
+  }
+
+  get rootOutput(): OutputGenerator {
+    return this.generator;
   }
 
   private outputPathForModule(module: PolygenModuleConfig, name: string) {

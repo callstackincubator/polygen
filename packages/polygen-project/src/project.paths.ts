@@ -60,7 +60,7 @@ export class ProjectPaths {
       return targetPath.slice(fullProjectPath.length).replace(/^\/+/, '');
     }
 
-    return targetPath;
+    return path.relative(this.project.projectRoot, targetPath);
   }
 
   /**

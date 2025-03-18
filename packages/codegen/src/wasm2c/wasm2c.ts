@@ -78,19 +78,20 @@ export interface Wasm2cGenerateOptions {
  * Returns the output files for a given configuration.
  *
  * @param inputFile Path to the input WASM module
- * @param outputPath Path to the output C source file
+ * @param outputDir Path to the directory containing the output files
  * @param options Optional configuration for the generation process
  */
 export function getOutputFilesFor(
   inputFile: string,
-  outputPath: string,
+  outputDir: string,
   options?: Wasm2cGenerateOptions
 ): string[] {
-  const outputDirectory = path.dirname(outputPath);
-  const moduleBasename = path.basename(inputFile, '.wasm');
+  const defaultModuleName = path.basename(inputFile, '.wasm');
+  const moduleName = options?.moduleName ?? defaultModuleName;
+  const outputDirectory = path.dirname(outputDir);
   return [
-    `${outputDirectory}/${moduleBasename}.c`,
-    `${outputDirectory}/${moduleBasename}.h`,
+    `${outputDirectory}/${moduleName}.c`, // source must be first
+    `${outputDirectory}/${moduleName}.h`,
   ];
 }
 
@@ -98,39 +99,39 @@ export function getOutputFilesFor(
  * Generates C source files from a given WebAssembly input file.
  *
  * @param inputPath The path to the WebAssembly (.wasm) input file.
- * @param outputSourcePath The path where the generated C source file will be saved.
+ * @param outputDir Directory path where the generated C source file will be saved.
  * @param options Optional configuration for the generation process, including the module name.
  * @return A promise that resolves once the C source file generation is complete.
  */
 export async function generateCSources(
   inputPath: string,
-  outputSourcePath: string,
+  outputDir: string,
   options?: Wasm2cGenerateOptions
 ): Promise<string[]> {
   await ensureBinaryAvailable();
-  const generatedFiles = getOutputFilesFor(
-    inputPath,
-    outputSourcePath,
-    options
-  );
+  const generatedFiles = getOutputFilesFor(inputPath, outputDir, options);
 
-  const args = [inputPath, '-o', outputSourcePath];
   const defaultModuleName = path.basename(inputPath, '.wasm');
   const moduleName = options?.moduleName ?? defaultModuleName;
+  const args = [inputPath, '-o', generatedFiles[0]!];
 
   args.push('--module-name');
   args.push(moduleName);
 
+  await fs.mkdir(path.dirname(outputDir), { recursive: true });
   await execa(finalWasm2cPath!, args);
 
   // Check generated files exist
   const statPromises = generatedFiles.map((file) => fs.stat(file));
-  const fileStats = await Promise.all(statPromises);
+  const results = await Promise.allSettled(statPromises);
 
-  for (const stat of fileStats) {
-    if (!stat.isFile()) {
-      throw new Wasm2cError(`Failed to generate file ${stat}`);
+  let i = 0;
+  for (const res of results) {
+    if (res.status !== 'fulfilled' || !res.value?.isFile()) {
+      throw new Wasm2cError(`Failed to generate file ${generatedFiles[i]}`);
     }
+
+    i += 1;
   }
 
   return generatedFiles;

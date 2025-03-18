@@ -9,7 +9,7 @@ interface PolygenConfig {
   addPolyfill?: boolean;
 }
 
-const OUTPUT_INFO = 'polygen-output.json';
+const OUTPUT_INFO = 'metro.json';
 
 function splitExternalPackages(name: string): [string, string] {
   const parts = name.split('/');
@@ -35,7 +35,7 @@ export function withPolygenConfig(
     // Load polygen-output.json to get the mapping of resolved external packages
     const polygenModuleMapping = JSON.parse(
       fs.readFileSync(project.paths.pathToOutput(OUTPUT_INFO), 'utf-8')
-    ).externalPackages as Record<string, string>;
+    ).resolvedPackages as Record<string, string>;
 
     let packageName = '';
     // Path to directory where the mock modules are located

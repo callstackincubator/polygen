@@ -1,5 +1,6 @@
 import path from 'path';
 import { BinaryWriter, ByteOrder } from '@callstack/polygen-binary-utils';
+import { resolveProjectDependency } from '@callstack/polygen-project';
 import { computeFileChecksumBuffer } from '../../helpers/checksum.js';
 import type { Plugin } from '../../plugin.js';
 
@@ -21,7 +22,7 @@ export function metroResolver(): Plugin {
      * @param resolvedPath - The resolved path to the WebAssembly module file.
      * @return A promise that resolves when the JavaScript module file is successfully created.
      */
-    async moduleGenerated({ moduleOutput, module }): Promise<void> {
+    async moduleGenerated({ codegen, module }): Promise<void> {
       const cleanFileName = path.basename(module.path, '.wasm');
       const dirnameInModule = path.dirname(module.path);
       const generatedModulePath = path.join(
@@ -33,8 +34,29 @@ export function metroResolver(): Plugin {
         module.resolvedPath
       );
 
-      const generator = moduleOutput.forPath('modules');
+      const generator = codegen.rootOutput.forPath('modules');
       await generator.writeTo(generatedModulePath, source);
+    },
+
+    async hostProjectGenerated({ codegen, rootOutput }): Promise<void> {
+      const { project } = codegen;
+      const modules = await project.modules.getExternalModules();
+      const resolvedPackages: Record<string, string> = {};
+
+      for (const m of modules) {
+        const packagePath = await resolveProjectDependency(
+          codegen.project,
+          m.packageName
+        );
+
+        resolvedPackages[m.packageName] =
+          project.paths.globalPathToLocal(packagePath);
+      }
+
+      await rootOutput.writeTo(
+        'metro.json',
+        JSON.stringify({ resolvedPackages })
+      );
     },
   };
 }

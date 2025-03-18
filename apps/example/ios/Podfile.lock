@@ -1790,7 +1790,7 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../../../node_modules/react-native/ReactCommon`)
   - "ReactNativeHost (from `../../../node_modules/@rnx-kit/react-native-host`)"
   - "ReactNativePolygen (from `../../../node_modules/@callstack/polygen`)"
-  - "ReactNativeWebAssemblyHost (from `../node_modules/.polygen-out/@host`)"
+  - ReactNativeWebAssemblyHost (from `../node_modules/.polygen-out/host`)
   - ReactTestApp-DevSupport (from `../../../node_modules/react-native-test-app`)
   - ReactTestApp-Resources (from `..`)
   - RNGestureHandler (from `../../../node_modules/react-native-gesture-handler`)
@@ -1932,7 +1932,7 @@ EXTERNAL SOURCES:
   ReactNativePolygen:
     :path: "../../../node_modules/@callstack/polygen"
   ReactNativeWebAssemblyHost:
-    :path: "../node_modules/.polygen-out/@host"
+    :path: "../node_modules/.polygen-out/host"
   ReactTestApp-DevSupport:
     :path: "../../../node_modules/react-native-test-app"
   ReactTestApp-Resources:

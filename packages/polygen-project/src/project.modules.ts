@@ -46,7 +46,9 @@ export class ProjectModules {
    * Local modules
    */
   public async getLocalModules(): Promise<ResolvedLocalModule[]> {
-    const promises = this.declaredLocalModules.map(this.resolvePolygenModule);
+    const promises = this.declaredLocalModules.map((e) =>
+      this.resolvePolygenModule(e)
+    );
     return Promise.all(promises);
   }
 
@@ -61,8 +63,8 @@ export class ProjectModules {
    * External modules
    */
   public async getExternalModules(): Promise<ResolvedExternalModule[]> {
-    const promises = this.declaredExternalModules.map(
-      this.resolvePolygenModule
+    const promises = this.declaredExternalModules.map((e) =>
+      this.resolvePolygenModule(e)
     );
     return Promise.all(promises);
   }
