@@ -66,11 +66,13 @@
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
-  "devDependencies": {
+  "dependencies": {
     "@callstack/polygen-cli": "0.2.0",
+    "del-cli": "^5.1.0"
+  },
+  "devDependencies": {
     "@callstack/polygen-typescript-config": "workspace:^",
     "@types/react": "^18.2.44",
-    "del-cli": "^5.1.0",
     "react": "17.0.2",
     "react-native": "0.75.4",
     "react-native-builder-bob": "^0.30.2",
