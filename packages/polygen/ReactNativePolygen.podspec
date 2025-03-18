@@ -14,7 +14,7 @@ Pod::Spec.new do |s|
   s.platforms    = { :ios => min_ios_version_supported }
   s.source       = { :git => "https://github.com/callstack/polygen.git", :tag => "#{s.version}" }
 
-  s.source_files = "ios/ReactNativePolygen/**/*.{h,m,mm}", "cpp/ReactNativePolygen/**/*.{hpp,cpp,c,h}"
+  s.source_files = "ios/**/*.{h,m,mm}", "cpp/ReactNativePolygen/**/*.{hpp,cpp,c,h}"
   s.public_header_files = "ios/ReactNativePolygen/**/*.h", "cpp/ReactNativePolygen/**/*.h"
   s.header_mappings_dir = "cpp/ReactNativePolygen"
 

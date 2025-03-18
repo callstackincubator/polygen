@@ -8,12 +8,14 @@ export function buildStaticLibraryHeader(module: W2CGeneratedModule) {
 
   const moduleFactoryFunction = new cpp.FunctionBuilder(
     module.moduleFactoryFunctionName
-  ).withReturnType(moduleType.asConstRef());
+  ).withReturnType(moduleType.asSharedPtr());
 
-  const builder = new cpp.SourceFileBuilder()
+  const builder = new cpp.SourceFileBuilder(true)
     .insertRaw(HEADER)
     .writeIncludeGuard()
-    .includeSystem('ReactNativePolygen/StaticLibraryModule.h');
+    .spacing()
+    .includeSystem('ReactNativePolygen/StaticLibraryModule.h')
+    .spacing();
 
   builder.namespace('callstack::polygen::generated', (builder) =>
     builder.defineFunction(moduleFactoryFunction)
@@ -53,30 +55,47 @@ export function buildStaticLibrarySource(module: W2CGeneratedModule) {
       ])
     );
 
-  const moduleVar = new cpp.VariableBuilder('module')
-    .withType(moduleType.asConst())
-    .withInitializer((i) =>
-      i.initializerListOf([
-        i.string(module.name),
-        i.initializerListOf([...moduleImports]),
-        i.initializerListOf([...moduleExports]),
-        i.symbol(module.moduleFactoryFunctionName),
-      ])
+  const moduleVar = new cpp.VariableBuilder('moduleInfo')
+    .withType(moduleType)
+    .withInitializer(
+      (i) =>
+        i.listOf(
+          [
+            i.string(module.name),
+            i.initializerListOf([...moduleImports]),
+            i.initializerListOf([...moduleExports]),
+            i.symbol(`create${module.generatedClassName}Exports`),
+          ],
+          true
+        ),
+      true
     );
+
+  const moduleSharedVar = new cpp.VariableBuilder('moduleSharedInfo')
+    .withType(abstractModuleType.asSharedPtr())
+    .withInitializer((i) => i.symbol(moduleVar.name).addressOf());
 
   const moduleGetterFunc = new cpp.FunctionBuilder(
     module.moduleFactoryFunctionName
   )
-    .withReturnType(abstractModuleType.asConstRef())
-    .withBody((b) => b.return_(moduleVar.name));
+    .withReturnType(moduleSharedVar.type)
+    .withBody((b) => b.return_(moduleSharedVar.name));
 
-  const builder = new cpp.SourceFileBuilder();
-  builder.includeLocal('static-module.h').includeLocal('jsi-exports-bridge.h');
+  const builder = new cpp.SourceFileBuilder(false);
+  builder
+    .insertRaw(HEADER)
+    .spacing()
+    .includeLocal('static-module.h')
+    .includeLocal('jsi-exports-bridge.h')
+    .spacing(2);
 
   builder.usingNamespace('facebook');
 
   builder.namespace('callstack::polygen::generated', () =>
-    builder.defineVariable(moduleVar).defineFunction(moduleGetterFunc)
+    builder
+      .defineVariable(moduleVar)
+      .defineVariable(moduleSharedVar)
+      .defineFunction(moduleGetterFunc)
   );
 
   return builder.toString();

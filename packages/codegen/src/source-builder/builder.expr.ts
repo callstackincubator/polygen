@@ -32,6 +32,10 @@ export class ExpressionBuilder implements AnyBuilder, ToStringBuilder {
     }
   }
 
+  addressOf(): ExpressionBuilder {
+    return new ExpressionBuilder(`&${this.expression}`);
+  }
+
   build(writer: SourceWriter): void {
     writer.write(this.expression);
   }

@@ -48,12 +48,12 @@ public:
          std::vector<Import>&& imports,
          std::vector<Export>&& exports,
          Factory&& factory
-  ) : name_(name), imports_(std::move(imports)), exports_(std::move(exports_)), factory_(std::move(factory_)) {}
+  ) : name_(name), imports_(std::move(imports)), exports_(std::move(exports)), factory_(std::move(factory)) {}
   Module(std::string&& name,
          std::vector<Import>&& imports,
          std::vector<Export>&& exports,
          Factory&& factory
-  ) : name_(std::move(name)), imports_(std::move(imports)), exports_(std::move(exports_)), factory_(std::move(factory_)) {}
+  ) : name_(std::move(name)), imports_(std::move(imports)), exports_(std::move(exports)), factory_(std::move(factory)) {}
   virtual ~Module() {}
 
   // Allow moving

@@ -2,8 +2,8 @@ import { SourceBlockBuilder, SourceBuilderError } from './builder.block.js';
 import type { SourceWriter } from './source-writer.js';
 
 export class SourceFileBuilder extends SourceBlockBuilder {
-  constructor(writer?: SourceWriter) {
-    super(false, writer);
+  constructor(isHeader: boolean, writer?: SourceWriter) {
+    super(isHeader, writer);
   }
 
   //

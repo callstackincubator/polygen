@@ -111,7 +111,7 @@ export async function generate(options: GenerateOptions, project?: Project) {
       consola.success(`Generated import ${chalk.magenta(mod.name)} bridge`);
     });
 
-  await Promise.allSettled(generateImportsPromises);
+  await Promise.all(generateImportsPromises);
   await codegen.finalize();
 
   consola.info(

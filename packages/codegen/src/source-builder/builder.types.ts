@@ -50,38 +50,31 @@ export class TypeBuilder implements AnyBuilder {
     return this.type;
   }
 
-  public asVector(): this {
-    this.type = `std::vector<${this.type}>`;
-    return this;
+  public asVector(): TypeBuilder {
+    return new TypeBuilder(`std::vector<${this.type}>`);
   }
 
-  public asSharedPtr(): this {
-    this.type = `std::shared_ptr<${this.type}>`;
-    return this;
+  public asSharedPtr(): TypeBuilder {
+    return new TypeBuilder(`std::shared_ptr<${this.type}>`);
   }
 
-  public asConst(): this {
-    this.type = `const ${this.type}`;
-    return this;
+  public asConst(): TypeBuilder {
+    return new TypeBuilder(`const ${this.type}`);
   }
 
-  public asRef(): this {
-    this.type = `${this.type}&`;
-    return this;
+  public asRef(): TypeBuilder {
+    return new TypeBuilder(`${this.type}&`);
   }
 
-  public asConstRef(): this {
-    this.type = `const ${this.type}&`;
-    return this;
+  public asConstRef(): TypeBuilder {
+    return new TypeBuilder(`const ${this.type}&`);
   }
 
-  public asPtr(): this {
-    this.type = `${this.type}*`;
-    return this;
+  public asPtr(): TypeBuilder {
+    return new TypeBuilder(`${this.type}*`);
   }
 
-  public asConstPtr(): this {
-    this.type = `const ${this.type}*`;
-    return this;
+  public asConstPtr(): TypeBuilder {
+    return new TypeBuilder(`const ${this.type}*`);
   }
 }

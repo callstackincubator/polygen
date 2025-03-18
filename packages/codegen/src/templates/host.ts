@@ -25,7 +25,7 @@ export function buildLoaderSource(generatedModules: W2CGeneratedModule[]) {
     .withReturnType(moduleBagVar.type.asRef())
     .withBody((b) => b.return_(moduleBagVar.name));
 
-  const builder = new cpp.SourceFileBuilder();
+  const builder = new cpp.SourceFileBuilder(true);
   builder
     .insertRaw(HEADER)
     .includeSystem('ReactNativePolygen/Loader.h')

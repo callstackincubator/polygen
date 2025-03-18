@@ -169,7 +169,7 @@ export class OutputGenerator {
     const promises = Object.entries(contentMap).map(([to, content]) =>
       this.writeTo(to, content)
     );
-    await Promise.allSettled(promises);
+    await Promise.all(promises);
   }
 
   /**
@@ -209,7 +209,7 @@ export class OutputGenerator {
     const promises = assets.map(async ([from, to]) => {
       await this.copyAsset(from, to);
     });
-    await Promise.allSettled(promises);
+    await Promise.all(promises);
   }
 
   /**

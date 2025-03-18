@@ -15,7 +15,7 @@ export async function generateModuleExportsBridge(
 ) {
   try {
     // TODO; remove generated files on dev (or always)
-    await Promise.allSettled([
+    await Promise.all([
       generateCSource(generator, module, options),
       generateJSIBridge(generator, module),
     ]);

@@ -21,11 +21,14 @@ struct ModuleBagEntry {
   std::string name;
   std::string checksum;
   ModuleFactoryFunction factory;
+  
+  ModuleBagEntry(std::string&& name, std::string&& checksum, ModuleFactoryFunction&& factory)
+  : name(std::move(name)), checksum(std::move(checksum)), factory(std::move(factory)) {}
 };
 
 class ModuleBag final {
 public:
-  ModuleBag(std::initializer_list<ModuleBagEntry> items) {
+  explicit ModuleBag(std::initializer_list<ModuleBagEntry> items) {
     moduleNames_.reserve(items.size());
     
     for (auto& item : items) {
