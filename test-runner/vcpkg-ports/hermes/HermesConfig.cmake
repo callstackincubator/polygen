@@ -1,0 +1,25 @@
+get_filename_component(PACKAGE_PREFIX_DIR "${CMAKE_CURRENT_LIST_DIR}/../../" ABSOLUTE)
+
+set(Hermes_INCLUDE_DIR "${PACKAGE_PREFIX_DIR}/include")
+set(HermesPrivate_INCLUDE_DIR "${PACKAGE_PREFIX_DIR}/include/hermes-private/include")
+set(JSI_INCLUDE_DIR "${PACKAGE_PREFIX_DIR}/include/jsi")
+set(Hermes_LIBRARY "${PACKAGE_PREFIX_DIR}/lib/libhermesvm${CMAKE_SHARED_LIBRARY_SUFFIX}")
+
+if (NOT TARGET Hermes::Hermes)
+    add_library(Hermes::Hermes UNKNOWN IMPORTED)
+    set_property(TARGET Hermes::Hermes PROPERTY IMPORTED_LOCATION ${Hermes_LIBRARY})
+    target_include_directories(Hermes::Hermes INTERFACE "${Hermes_INCLUDE_DIR}")
+    target_link_libraries(Hermes::Hermes INTERFACE "${Hermes_LIBRARY}")
+endif()
+
+if (NOT TARGET JSI)
+    add_library(JSI INTERFACE IMPORTED)
+    target_include_directories(JSI INTERFACE "${JSI_INCLUDE_DIR}")
+    target_link_libraries(JSI INTERFACE "${Hermes_LIBRARY}")
+endif()
+
+if (NOT TARGET Hermes::HermesPrivate)
+    add_library(Hermes::HermesPrivate INTERFACE IMPORTED)
+#    target_link_libraries(Hermes::HermesPrivate Hermes::Hermes)
+    target_include_directories(Hermes::HermesPrivate INTERFACE "${HermesPrivate_INCLUDE_DIR}")
+endif()

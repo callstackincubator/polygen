@@ -1,18 +1,22 @@
-import fs from 'node:fs/promises';
 import {
   DependencyNotFoundError,
   PackageNotADependencyError,
-  Project,
+  type Project,
   resolveProjectDependency,
 } from '@callstack/polygen-project';
 import chalk from 'chalk';
-import { Argument, Command, Option } from 'commander';
+import { Argument, Option } from 'commander';
 import consola from 'consola';
 import { globby } from 'globby';
 import { oraPromise } from 'ora';
 import 'core-js/proposals/set-methods-v2.js';
+import { ProjectCommand } from '../helpers/with-project-options.js';
 
-const command = new Command('scan')
+interface Options {
+  update: boolean;
+}
+
+const command = new ProjectCommand<Options>('scan')
   .description('Searches for WebAssembly modules in the project')
   .addArgument(
     new Argument('[package-name]', 'Optional name of external package')
@@ -20,10 +24,6 @@ const command = new Command('scan')
   .addOption(
     new Option('-u, --update', 'Automatically update polygen config file')
   );
-
-interface Options {
-  update: boolean;
-}
 
 async function scanLocal(project: Project): Promise<void> {
   const { paths: pathsToScan } = project.options.scan;
@@ -33,7 +33,9 @@ async function scanLocal(project: Project): Promise<void> {
     'Scanning for WebAssembly modules'
   );
 
-  const currentModules = new Set(project.localModules.map((m) => m.path));
+  const currentModules = new Set(
+    project.modules.declaredLocalModules.map((m) => m.path)
+  );
   const foundModules = new Set(files);
   const added = foundModules.difference(currentModules);
   const removed = currentModules.difference(foundModules);
@@ -50,7 +52,7 @@ async function scanLocal(project: Project): Promise<void> {
 
   if (added.size > 0) {
     consola.info(
-      `To add them to the project, add following lines to your ${chalk.bold(project.configFileName)}:`
+      `To add them to the project, add following lines to your ${chalk.bold(project.paths.configFileName)}:`
     );
     consola.log(``);
 
@@ -99,7 +101,9 @@ async function scanExternal(
   );
 
   const currentModules = new Set(
-    project.getModulesOfExternalDependency(packageName).map((m) => m.path)
+    project.modules
+      .getModulesOfExternalDependency(packageName)
+      .map((m) => m.path)
   );
   const foundModules = new Set(files);
   const added = foundModules.difference(currentModules);
@@ -117,7 +121,7 @@ async function scanExternal(
 
   if (added.size > 0) {
     consola.info(
-      `To add them to the project, add following lines to your ${chalk.bold(project.configFileName)}:`
+      `To add them to the project, add following lines to your ${chalk.bold(project.paths.configFileName)}:`
     );
     consola.log(``);
 
@@ -136,9 +140,7 @@ async function scanExternal(
   }
 }
 
-command.action(async (packageName, options: Options) => {
-  const project = await Project.findClosest();
-
+command.action(async (project, options, packageName) => {
   if (packageName) {
     await scanExternal(project, packageName);
   } else {

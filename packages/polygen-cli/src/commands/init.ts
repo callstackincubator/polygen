@@ -8,7 +8,7 @@ import chalk from 'chalk';
 import { Command, Option } from 'commander';
 import consola from 'consola';
 import {
-  PackageManager,
+  type PackageManager,
   addDependency,
   detectPackageManager,
   installDependencies,

@@ -1,0 +1,2 @@
+add_subdirectory(wasm-rt)
+add_subdirectory(ReactNativePolygen)
