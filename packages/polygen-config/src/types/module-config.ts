@@ -21,7 +21,7 @@ export interface Wasm2CModuleConfig {
    * This option is useful when the module is large and outputting to a single file
    * impacts compilation times.
    *
-   * This option overrides the global `splitThreshold` option.
+   * This option overrides the global `codegenFileSplitThreshold` option.
    * However, if global option `enableCodegenFileSplit` is set to `false`, this has no effect.
    */
   numOutputs?: number;
