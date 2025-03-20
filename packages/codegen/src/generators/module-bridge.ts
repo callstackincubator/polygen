@@ -1,3 +1,8 @@
+import path from 'node:path';
+import type {
+  PolygenModuleConfig,
+  ResolvedPolygenOutputConfig,
+} from '@callstack/polygen-config';
 import consola from 'consola';
 import type { W2CGeneratedModule } from '../codegen/modules.js';
 import type { OutputGenerator } from '../helpers/output-generator.js';
@@ -6,6 +11,8 @@ import { generateCSources, getOutputFilesFor } from '../wasm2c/wasm2c.js';
 
 export interface ModuleGeneratorOptions {
   forceGenerate?: boolean;
+  outputConfig: ResolvedPolygenOutputConfig;
+  moduleConfig: PolygenModuleConfig;
 }
 
 export async function generateModuleExportsBridge(
@@ -30,10 +37,29 @@ async function generateCSource(
   options: ModuleGeneratorOptions
 ) {
   const outputPath = generator.outputPathTo(module.name);
-  const generatedFiles = getOutputFilesFor(module.sourceModulePath, outputPath);
+  const outputDir = path.dirname(outputPath);
+  const generatedFiles = getOutputFilesFor(module.sourceModulePath, outputDir);
 
+  const { moduleConfig, outputConfig } = options;
+  const { enableCodegenFileSplit, codegenFileSplitThreshold } = outputConfig;
+
+  let numOutputs: number | undefined;
+  if (enableCodegenFileSplit) {
+    // module.numOutputs takes priority over splitOutputThreshold
+    if (moduleConfig.wasm2c?.numOutputs) {
+      numOutputs = moduleConfig.wasm2c.numOutputs;
+    } else if (codegenFileSplitThreshold) {
+      const numFunctions = module.body.functions.length;
+      numOutputs = Math.ceil(numFunctions / codegenFileSplitThreshold);
+    }
+  }
+
+  const { moduleName } = moduleConfig.wasm2c ?? {};
   return generatingFromModule(generator, module, options, generatedFiles, () =>
-    generateCSources(module.sourceModulePath, outputPath)
+    generateCSources(module.sourceModulePath, outputDir, {
+      numOutputs,
+      moduleName,
+    })
   );
 }
 

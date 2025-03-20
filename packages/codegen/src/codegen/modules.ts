@@ -1,4 +1,5 @@
 import path from 'node:path';
+import type { PolygenModuleConfig } from '@callstack/polygen-config';
 import type { Module, ModuleMemory, ModuleTable } from '@callstack/wasm-parser';
 import { mangleModuleName } from '../wasm2c/mangle.js';
 import type { CodegenContext } from './context.js';
@@ -123,9 +124,11 @@ export class W2CGeneratedModule extends W2CModuleBase {
     context: CodegenContext,
     body: Module,
     checksum: Buffer,
-    sourceModulePath: string
+    sourceModulePath: string,
+    moduleSpec: PolygenModuleConfig
   ) {
-    const name = path.basename(sourceModulePath, '.wasm');
+    const name =
+      moduleSpec.wasm2c?.moduleName ?? path.basename(sourceModulePath, '.wasm');
     super(name);
 
     this.body = body;

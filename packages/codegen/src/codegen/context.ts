@@ -47,7 +47,8 @@ export class CodegenContext {
       this,
       moduleBody,
       checksum,
-      module.resolvedPath
+      module.resolvedPath,
+      module
     );
     this.modules.push(generatedModule);
 

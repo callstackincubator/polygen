@@ -24,6 +24,9 @@ function assertVersion(output: string) {
   }
 }
 
+/**
+ * Attempts to locate `wasm2c` binary.
+ */
 async function findBinary(): Promise<string> {
   try {
     const { stdout, exitCode } = await execa`which wasm2c`;
@@ -72,6 +75,19 @@ export interface Wasm2cGenerateOptions {
    * The name of the generated module.
    */
   moduleName?: string;
+
+  /**
+   * Overrides the number of outputs for the module.
+   */
+  numOutputs?: number;
+}
+
+function getModuleNameFor(
+  inputFile: string,
+  options?: Wasm2cGenerateOptions
+): string {
+  const defaultModuleName = path.basename(inputFile, '.wasm');
+  return options?.moduleName ?? defaultModuleName;
 }
 
 /**
@@ -86,13 +102,22 @@ export function getOutputFilesFor(
   outputDir: string,
   options?: Wasm2cGenerateOptions
 ): string[] {
-  const defaultModuleName = path.basename(inputFile, '.wasm');
-  const moduleName = options?.moduleName ?? defaultModuleName;
-  const outputDirectory = path.dirname(outputDir);
-  return [
-    `${outputDirectory}/${moduleName}.c`, // source must be first
-    `${outputDirectory}/${moduleName}.h`,
-  ];
+  const moduleName = getModuleNameFor(inputFile, options);
+
+  let outputFiles = [`${moduleName}.h`];
+
+  if (options?.numOutputs && options.numOutputs > 1) {
+    const sourceFiles = Array.from({ length: options.numOutputs }).map(
+      (_, i) => `${moduleName}_${i}.c`
+    );
+
+    outputFiles.push(`${moduleName}-impl.h`);
+    outputFiles = outputFiles.concat(sourceFiles);
+  } else {
+    outputFiles.push(`${moduleName}.c`);
+  }
+
+  return outputFiles.map((filename) => path.join(outputDir, filename));
 }
 
 /**
@@ -111,12 +136,14 @@ export async function generateCSources(
   await ensureBinaryAvailable();
   const generatedFiles = getOutputFilesFor(inputPath, outputDir, options);
 
-  const defaultModuleName = path.basename(inputPath, '.wasm');
-  const moduleName = options?.moduleName ?? defaultModuleName;
-  const args = [inputPath, '-o', generatedFiles[0]!];
+  const moduleName = getModuleNameFor(inputPath, options);
+  const args = [inputPath, '-o', `${outputDir}/${moduleName}.c`];
 
-  args.push('--module-name');
-  args.push(moduleName);
+  args.push('--module-name', moduleName);
+
+  if (options?.numOutputs) {
+    args.push('--num-outputs', options.numOutputs.toString());
+  }
 
   await fs.mkdir(path.dirname(outputDir), { recursive: true });
   await execa(finalWasm2cPath!, args);

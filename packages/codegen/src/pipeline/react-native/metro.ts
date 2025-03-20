@@ -1,6 +1,10 @@
 import path from 'path';
 import { BinaryWriter, ByteOrder } from '@callstack/polygen-binary-utils';
-import { resolveProjectDependency } from '@callstack/polygen-project';
+import {
+  ResolvedModule,
+  resolveProjectDependency,
+} from '@callstack/polygen-project';
+import type { W2CGeneratedModule } from '../../codegen/modules.js';
 import { computeFileChecksumBuffer } from '../../helpers/checksum.js';
 import type { Plugin } from '../../plugin.js';
 
@@ -22,7 +26,7 @@ export function metroResolver(): Plugin {
      * @param resolvedPath - The resolved path to the WebAssembly module file.
      * @return A promise that resolves when the JavaScript module file is successfully created.
      */
-    async moduleGenerated({ codegen, module }): Promise<void> {
+    async moduleGenerated({ codegen, module, context }): Promise<void> {
       const cleanFileName = path.basename(module.path, '.wasm');
       const dirnameInModule = path.dirname(module.path);
       const generatedModulePath = path.join(
@@ -31,7 +35,8 @@ export function metroResolver(): Plugin {
         `${cleanFileName}.js`
       );
       const source = await buildMetroVirtualModuleSourceFor(
-        module.resolvedPath
+        module.resolvedPath,
+        context
       );
 
       const generator = codegen.rootOutput.forPath('modules');
@@ -66,9 +71,10 @@ export function metroResolver(): Plugin {
  * @param pathToModule
  */
 async function buildMetroVirtualModuleSourceFor(
-  pathToModule: string
+  pathToModule: string,
+  moduleContext: W2CGeneratedModule
 ): Promise<string> {
-  const cleanName = path.basename(pathToModule, '.wasm');
+  const cleanName = moduleContext.name;
   const checksumRaw = await computeFileChecksumBuffer(pathToModule);
   const checksumHex = new TextEncoder().encode(checksumRaw.toString('hex'));
 

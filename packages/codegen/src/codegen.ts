@@ -191,6 +191,8 @@ export class Codegen {
     );
     await generateModuleExportsBridge(generator, moduleContext, {
       forceGenerate: this.options.forceGenerate,
+      outputConfig: this.project.options.output,
+      moduleConfig: module,
     });
 
     const pluginContext: ModuleGeneratedContext = {
