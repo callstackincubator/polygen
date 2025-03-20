@@ -94,8 +94,6 @@ async function FuncDocTable(props: { func: FunctionSymbolDocumentation }) {
           ))}
         </tbody>
       </table>
-
-      <pre>{JSON.stringify(func.jsdocTags, undefined, 2)}</pre>
     </>
   );
 }

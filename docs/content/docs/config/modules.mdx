@@ -4,7 +4,7 @@ description: Module configrations
 icon: Hammer
 ---
 
-import { TypeTable } from "fumadocs-ui/components/type-table";
+import Link from 'fumadocs-core/link';
 import { DocTable } from "@/components/DocTable";
 
 ## modules
@@ -28,3 +28,63 @@ export default polygenConfig({
 ```
 
 <DocTable path="../packages/polygen-config/src/helpers.ts" name="localModule" />
+<DocTable path="../packages/polygen-config/src/helpers.ts" name="externalModule" />
+
+# Module options
+
+## `wasm2c`
+
+- __Type__: `PolygenModuleCommonConfig`
+- __Default__: `{}`
+
+Option overrides for `wasm2c` codegen for this module.
+
+## `wasm2c.moduleName`
+
+- __Type__: `string`
+- __Default__: `undefined`
+
+Overrides the module name in generated C code. By default, the module name is the same as the input file name, without the extension.
+
+```ts title="polygen.config.mjs"
+import {
+  localModule,
+  polygenConfig,
+} from '@callstack/polygen-config';
+
+export default polygenConfig({
+  modules: [
+    localModule('path/to/my-module.wasm', {
+      wasm2c: {
+         moduleName: 'MyModule', // [!code highlight]
+      }
+    })
+  ],
+});
+```
+
+## `wasm2c.numOutputs`
+
+- __Type__: `number`
+- __Default__: `undefined`
+
+Overrides the number of output files for this module.
+If not set, the number of output files is determined by the global
+<Link href="output#codegenfilesplitthreshold">`output.codegenFileSplitThreshold` option</Link>.
+
+```ts title="polygen.config.mjs"
+import {
+  localModule,
+  polygenConfig,
+} from '@callstack/polygen-config';
+
+export default polygenConfig({
+  modules: [
+    localModule('path/to/my-module.wasm', {
+      wasm2c: {
+         numOutputs: 2, // [!code highlight]
+      }
+    })
+  ],
+});
+```

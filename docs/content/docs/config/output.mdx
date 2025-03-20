@@ -1,0 +1,84 @@
+---
+title: Output options
+description: Output configuration
+icon: Hammer
+---
+
+## `directory`
+
+- __Type__: `string`
+- __Default__: `node_modules/.polygen-out`
+
+Output config
+
+```ts title="polygen.config.mjs"
+import {
+  polygenConfig,
+} from '@callstack/polygen-config';
+
+export default polygenConfig({
+  output: {
+    directory: 'my-generated-output' // [!code highlight]
+  },
+});
+```
+
+## `enableCodegenFileSplit`
+
+- __Type__: `boolean`
+- __Default__: `true`
+
+If enabled, Polygen will split large modules into multiple source files (`wasm2c --num-outputs` option).
+
+Number of output files is determined using the following rules:
+
+ - If module option `wasm2c.numOutputs` is set, it will be used,
+ - Otherwise, the number of output files is set to the number of functions in the module divided by `output.codegenSourceFileSplitFunctionsPerFile`, rounded up.
+
+If set to `false`, this feature is disabled globally.
+
+```ts title="polygen.config.mjs"
+import {
+  polygenConfig,
+} from '@callstack/polygen-config';
+
+export default polygenConfig({
+  output: {
+    // Disables source file splitting globally
+    enableCodegenFileSplit: false // [!code highlight]
+  },
+});
+```
+
+## `codegenFileSplitThreshold`
+
+- __Type__: `number`
+- __Default__: `100`
+
+If `output.codegenFileSplitThreshold` is set to `100`, and module has `150` functions, `2` output files will be generated.
+
+<Callout type="info">
+  This option is used only if `output.enableCodegenFileSplit` is set to `true`.
+</Callout>
+
+```ts title="polygen.config.mjs"
+import {
+  localModule,
+  polygenConfig,
+} from '@callstack/polygen-config';
+
+export default polygenConfig({
+  output: {
+    // Set threshold to 200 functions per file
+    codegenFileSplitThreshold: 200 // [!code highlight]
+  },
+  modules: [
+    localModule('path/to/module', {
+      wasm2c: {
+        // Override the number of output files for this module (over default threshold)
+        numOutputs: 5 // [!code highlight]
+      }
+    })
+  ]
+});
+```

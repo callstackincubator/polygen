@@ -3,5 +3,5 @@
   "title": "Configuration reference",
   "description": "Polygen Config reference",
   "icon": "Hammer",
-  "pages": ["index", "modules"]
+  "pages": ["index", "output", "modules"]
 }
