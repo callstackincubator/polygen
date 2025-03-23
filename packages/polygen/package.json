@@ -30,6 +30,7 @@
     "ios",
     "cpp",
     "*.podspec",
+    "*.rb",
     "!ios/build",
     "!android/build",
     "!android/gradle",
