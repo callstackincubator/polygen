@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {
@@ -40,9 +41,19 @@ async function maybeAddDeps(
   const { verbose } = options;
   const pkgJsonPath = path.join(projectRoot, 'package.json');
   const pkgJsonText = await fs.readFile(pkgJsonPath, 'utf8');
-  const pkgJson = JSON.parse(pkgJsonText);
 
-  const { dependencies } = pkgJson;
+  const pkgJson = JSON.parse(pkgJsonText) as unknown;
+  assert(
+    typeof pkgJson === 'object' && pkgJson !== null,
+    'Expected package.json to be an object'
+  );
+
+  const { dependencies = {} } = pkgJson as Record<string, unknown>;
+  assert(
+    typeof dependencies === 'object' && dependencies !== null,
+    'Expected dependencies to be an object'
+  );
+
   if ('@callstack/polygen' in dependencies) {
     consola.debug(
       "@callstack/polygen is already in project's dependencies, skipping..."
