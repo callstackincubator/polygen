@@ -1,10 +1,10 @@
 <a id="readme-top"></a>
 
 <!-- PROJECT LOGO -->
-<p align="center">
-  <img src="docs/public/polygen-logo.png" width="150" alt="" />
-</p>
-<h1 align="center">Polygen: WebAssembly Toolkit for React Native</h1>
+<a href="https://www.callstack.com/open-source" align="center">
+  <img src="https://github.com/user-attachments/assets/f7fdd8b3-6220-482c-b8d5-4c3b5ccd2b4b" alt="Polygen" />
+</a>
+<h3 align="center">WebAssembly Toolkit for React Native</h3>
 
 <!-- SHIELDS -->
 <p align="center">
