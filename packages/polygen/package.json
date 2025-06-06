@@ -7,19 +7,11 @@
   "types": "./dist/index.d.ts",
   "react-native": "",
   "bin": "cli.mjs",
+  "type": "commonjs",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "require": "./dist/index.js"
-    },
-    "./polyfill": {
-      "types": "./dist/polyfill.d.ts",
-      "require": "./dist/polyfill.js"
-    },
-    "./config": {
-      "types": "./dist/config.d.ts",
-      "require": "./dist/config.js"
-    },
+    ".": "./dist/index.js",
+    "./polyfill": "./dist/polyfill.js",
+    "./config": "./dist/config.js",
     "./package.json": "./package.json"
   },
   "files": [
